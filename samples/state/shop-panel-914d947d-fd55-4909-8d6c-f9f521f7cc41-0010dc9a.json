@@ -1,0 +1,146 @@
+{
+  "key": "914d947d-fd55-4909-8d6c-f9f521f7cc41-0010dc9a",
+  "mark": "S04-10097",
+  "dbId": 10097,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvU25vd2Rvbi1Ub3dlcnMtU2FtcGxlLUFyY2hpdGVjdHVyYWwucnZ0",
+  "savedAt": "2026-09-26T22:30:05.172Z",
+  "frame": {
+    "lengthIn": 439.36935975059464,
+    "heightIn": 160.27309978323578,
+    "openings": [
+      {
+        "left": 0,
+        "right": 48.35826286563149,
+        "bottom": 20.72496979955635,
+        "top": 118.82316018412308
+      },
+      {
+        "left": 64.93823870527658,
+        "right": 114.67816622421182,
+        "bottom": 20.72496979955635,
+        "top": 118.82316018412308
+      },
+      {
+        "left": 132.63980671716064,
+        "right": 182.37973423609589,
+        "bottom": 20.72496979955635,
+        "top": 118.82316018412308
+      },
+      {
+        "left": 216.92135056868983,
+        "right": 266.661278087625,
+        "bottom": 20.72496979955635,
+        "top": 118.82316018412308
+      },
+      {
+        "left": 284.6229185805739,
+        "right": 334.36284609950917,
+        "bottom": 20.72496979955635,
+        "top": 117.44149553081931
+      },
+      {
+        "left": 352.32448659245796,
+        "right": 402.06441411139326,
+        "bottom": 20.72496979955635,
+        "top": 118.82316018412308
+      }
+    ],
+    "studIn": 6,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 43,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "S04-10097",
+    "project": "Snowdon Towers (Arch)",
+    "level": "L3",
+    "wallType": "Chase - GWB & Metal Stud 6 5/8\"",
+    "assembly": "6\" stud chase, 1 layer one side",
+    "board": "1 + 0 layers, 5/8\" Type X",
+    "fireRating": "1 HR",
+    "date": "2026-09-26",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "L3"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on SD104 - Fourth Floor Plan; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "FULL HEIGHT TO SLAB ABOVE. Top of wall at the underside of floor \"Finish Floor - Laminate\" (beside side A); 13'-4\" base to slab. Deflection head (slip track) per framing engineer. Revit: Up to level: L4."
+      ],
+      [
+        "BASE OF WALL",
+        "ON SLAB. Bottom track on floor \"Finish Floor - Laminate\" (beside side A)."
+      ],
+      [
+        "LEFT END",
+        "Meets Party - 6 1/8\" (2-hr), Chase - GWB & Metal Stud 6 5/8\""
+      ],
+      [
+        "RIGHT END",
+        "Meets Chase - GWB & Metal Stud 6 5/8\", Party - 6 1/8\" (2-hr)"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Floors (4): Finish Floor - Laminate"
+      ]
+    ]
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "L3"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on SD104 - Fourth Floor Plan; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "FULL HEIGHT TO SLAB ABOVE. Top of wall at the underside of floor \"Finish Floor - Laminate\" (beside side A); 13'-4\" base to slab. Deflection head (slip track) per framing engineer. Revit: Up to level: L4."
+    ],
+    [
+      "BASE OF WALL",
+      "ON SLAB. Bottom track on floor \"Finish Floor - Laminate\" (beside side A)."
+    ],
+    [
+      "LEFT END",
+      "Meets Party - 6 1/8\" (2-hr), Chase - GWB & Metal Stud 6 5/8\""
+    ],
+    [
+      "RIGHT END",
+      "Meets Chase - GWB & Metal Stud 6 5/8\", Party - 6 1/8\" (2-hr)"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Floors (4): Finish Floor - Laminate"
+    ]
+  ],
+  "view": {
+    "flip": false
+  }
+}
