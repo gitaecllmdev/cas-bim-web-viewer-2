@@ -19,8 +19,6 @@
                 "Autodesk.PropertiesManager"
             ],
             "tools": [
-                "isolate",
-                "hide",
                 "showall",
                 "fit",
                 "top"
@@ -42,8 +40,7 @@
                 "isolate",
                 "hide",
                 "showall",
-                "fit",
-                "xray"
+                "fit"
             ]
         }
     },
@@ -56,11 +53,8 @@
         "toolbar": {
             "builtin": [],
             "tools": [
-                "isolate",
                 "showall",
-                "fit",
-                "zoompick",
-                "shot"
+                "fit"
             ]
         }
     },
@@ -74,8 +68,7 @@
             "builtin": [],
             "tools": [
                 "showall",
-                "fit",
-                "shot"
+                "fit"
             ]
         }
     },
