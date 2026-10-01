@@ -1,0 +1,122 @@
+{
+  "key": "58372e90-1476-4a88-9e8c-8eb82e26e2d6-01950e10",
+  "mark": "SW6-2-79746",
+  "dbId": 79746,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T05:57:47.833Z",
+  "frame": {
+    "lengthIn": 357.5186568899588,
+    "heightIn": 276.0587097504745,
+    "openings": [
+      {
+        "left": 31.67886833202166,
+        "right": 83.7227234489144,
+        "bottom": 0,
+        "top": 98.43076946021016
+      },
+      {
+        "left": 153.86878904124808,
+        "right": 205.91264415814078,
+        "bottom": 0,
+        "top": 98.43076946021016
+      },
+      {
+        "left": 276.0587097504745,
+        "right": 328.1025648673672,
+        "bottom": 0,
+        "top": 98.43076946021016
+      }
+    ],
+    "studIn": 6,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "SW6-2-79746",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "_SW62HR - 6\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD.",
+    "assembly": "6\" C-H shaft wall, 2 layers one side + 1\" shaftliner",
+    "board": "2 + 0 layers, 5/8\" Regular",
+    "fireRating": "TWO HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: Level 2, offset +3'-0\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Meets CONCRETE CURB - 8\" WIDE, CONCRETE SHEAR WALL - 18\""
+      ],
+      [
+        "WITHIN 1 FT",
+        "Generic Models (3): 4'-0\" X 8'-0\" DOOR; Floors (1): HD - FLOOR  12\""
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: Level 2, offset +3'-0\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Meets CONCRETE CURB - 8\" WIDE, CONCRETE SHEAR WALL - 18\""
+    ],
+    [
+      "WITHIN 1 FT",
+      "Generic Models (3): 4'-0\" X 8'-0\" DOOR; Floors (1): HD - FLOOR  12\""
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

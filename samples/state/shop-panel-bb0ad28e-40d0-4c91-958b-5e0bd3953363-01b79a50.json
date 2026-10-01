@@ -1,0 +1,111 @@
+{
+  "key": "bb0ad28e-40d0-4c91-958b-5e0bd3953363-01b79a50",
+  "mark": "W-107336",
+  "dbId": 107336,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T05:59:13.275Z",
+  "frame": {
+    "lengthIn": 703.8920385353932,
+    "heightIn": 283.32761299537844,
+    "openings": [
+      {
+        "left": 396.2159587982245,
+        "right": 471.47485600012186,
+        "bottom": 0,
+        "top": 92.96687301410854
+      }
+    ],
+    "studIn": 8,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": [
+      "Gap across the wall from 23'-5 1/8\" to 23'-7 3/8\" (beam, slab or stepped top?): not framed as an opening. Verify the top of wall."
+    ]
+  },
+  "info": {
+    "mark": "W-107336",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "8\" Stud",
+    "assembly": "8\" studs, no board",
+    "board": "0 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 6\" Stud"
+      ],
+      [
+        "RIGHT END",
+        "Meets Cream Metal Panel MT10 - Oyster White, _82013 - 8\" STUD FULL HEIGHT W/ 2 LAYERS 5/8\" GYP. - THERMAL INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Walls (34): _21000 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES NO INSUL., _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, ...; Doors (3): 36\" x 84\" - 20 Min., 6080_MDMF_GYPWALL; Floors (3): 8\" CURB; Ceilings (2): Metal Panel - CHAMPAIGNE @ Tower Soffit; Structural Columns (2): 1'6\" x 3'"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 6\" Stud"
+    ],
+    [
+      "RIGHT END",
+      "Meets Cream Metal Panel MT10 - Oyster White, _82013 - 8\" STUD FULL HEIGHT W/ 2 LAYERS 5/8\" GYP. - THERMAL INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Walls (34): _21000 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES NO INSUL., _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, ...; Doors (3): 36\" x 84\" - 20 Min., 6080_MDMF_GYPWALL; Floors (3): 8\" CURB; Ceilings (2): Metal Panel - CHAMPAIGNE @ Tower Soffit; Structural Columns (2): 1'6\" x 3'"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

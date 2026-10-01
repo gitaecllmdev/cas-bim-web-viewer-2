@@ -1,0 +1,118 @@
+{
+  "key": "fa755fc9-62c9-4e3b-a1b5-f58d5e1e187d-019f1e8b",
+  "mark": "SW42HR-87123",
+  "dbId": 87123,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T05:59:31.458Z",
+  "frame": {
+    "lengthIn": 418.4210784730897,
+    "heightIn": 138.1579032694164,
+    "openings": [
+      {
+        "left": 3.9473686648404684,
+        "right": 39.47368664840469,
+        "bottom": 0,
+        "top": 89.47368973638396
+      }
+    ],
+    "studIn": 4,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "SW42HR-87123",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "Level 1",
+    "wallType": "_SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD.",
+    "assembly": "4\" C-H shaft wall, 2 layers one side + 1\" shaftliner",
+    "board": "2 + 0 layers, 5/8\" Regular",
+    "fireRating": "TWO HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "Level 1"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR, offset -1'-0\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+      ],
+      [
+        "RIGHT END",
+        "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Doors (2): 36\" x 84\" - 90 Min. CATWALK INNER DOOR, 36\" x 84\" - 90 Min. CATWALK OUTER DOOR; Supports (2): Support - Metal - Circular, Grand Stair Support Stringer; Lines (1): #289127; Plumbing Fixtures (1): Player Suite; Stairs (1): 7\" max riser 11\" tread; Structural Framing (1): C10X15.3; Walls (1): _34223 - 3 5/8\" STUD W/ 2 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL - 2 HOUR RATED"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "Level 1"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR, offset -1'-0\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+    ],
+    [
+      "RIGHT END",
+      "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Doors (2): 36\" x 84\" - 90 Min. CATWALK INNER DOOR, 36\" x 84\" - 90 Min. CATWALK OUTER DOOR; Supports (2): Support - Metal - Circular, Grand Stair Support Stringer; Lines (1): #289127; Plumbing Fixtures (1): Player Suite; Stairs (1): 7\" max riser 11\" tread; Structural Framing (1): C10X15.3; Walls (1): _34223 - 3 5/8\" STUD W/ 2 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL - 2 HOUR RATED"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

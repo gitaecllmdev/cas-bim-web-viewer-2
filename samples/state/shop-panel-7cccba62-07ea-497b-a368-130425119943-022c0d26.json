@@ -1,0 +1,115 @@
+{
+  "key": "7cccba62-07ea-497b-a368-130425119943-022c0d26",
+  "mark": "32003-270607",
+  "dbId": 270607,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T05:58:58.732Z",
+  "frame": {
+    "lengthIn": 168,
+    "heightIn": 110,
+    "openings": [
+      {
+        "left": 5,
+        "right": 44,
+        "bottom": 0,
+        "top": 84
+      },
+      {
+        "left": 125,
+        "right": 164,
+        "bottom": 0,
+        "top": 84
+      }
+    ],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "32003-270607",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "3RD FLOOR",
+    "wallType": "_32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL.",
+    "assembly": "3 5/8\" stud, 2 layers 5/8\" (1 + 1)",
+    "board": "1 + 1 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "3RD FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 4TH FLOOR, offset -0'-10\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Meets _62003 - 6\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Walls (4): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; Generic Models (3): CASE - 2 BAY TV CONSOLE DRESSER, Plasma 55\" Non Wall Based, CASE - 2 B AY TV WALL; Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; <Room Separation> (1): #136409; Lines (1): #270604"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "3RD FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 4TH FLOOR, offset -0'-10\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Meets _62003 - 6\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Walls (4): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; Generic Models (3): CASE - 2 BAY TV CONSOLE DRESSER, Plasma 55\" Non Wall Based, CASE - 2 B AY TV WALL; Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; <Room Separation> (1): #136409; Lines (1): #270604"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

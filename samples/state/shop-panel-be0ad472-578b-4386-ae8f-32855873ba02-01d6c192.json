@@ -1,0 +1,117 @@
+{
+  "key": "be0ad472-578b-4386-ae8f-32855873ba02-01d6c192",
+  "mark": "81013-169937",
+  "dbId": 169937,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T05:58:21.420Z",
+  "frame": {
+    "lengthIn": 306,
+    "heightIn": 210,
+    "openings": [
+      {
+        "left": 120,
+        "right": 300,
+        "bottom": 22,
+        "top": 90
+      }
+    ],
+    "studIn": 8,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "81013-169937",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+    "assembly": "8\" stud, 1 layer 5/8\" (one side)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +18'-0\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND LIMESTONE CLADDING 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 6\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS, Cream Metal Panel MT10 - Oyster White"
+      ],
+      [
+        "RIGHT END",
+        "Meets DRIFTWOOD METAL PANEL, 8\" Stud"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Curtain Wall Mullions (9): 3D.Profile-Vertical Mullion-Detail-No Cap, 4\" x 6\" rectangular, 2.5\" x 6\" rectangular; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +18'-0\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND LIMESTONE CLADDING 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 6\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS, Cream Metal Panel MT10 - Oyster White"
+    ],
+    [
+      "RIGHT END",
+      "Meets DRIFTWOOD METAL PANEL, 8\" Stud"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Curtain Wall Mullions (9): 3D.Profile-Vertical Mullion-Detail-No Cap, 4\" x 6\" rectangular, 2.5\" x 6\" rectangular; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}
