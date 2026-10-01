@@ -1,0 +1,111 @@
+{
+  "key": "e072646a-28f2-4e11-b643-7cd7436addd2-01b5e882",
+  "mark": "W-106335",
+  "dbId": 106335,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:49:38.264Z",
+  "frame": {
+    "lengthIn": 270,
+    "heightIn": 282,
+    "openings": [
+      {
+        "left": 13,
+        "right": 270,
+        "bottom": 0,
+        "top": 138
+      }
+    ],
+    "studIn": 8,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": [
+      "Gap across the wall from 15'-6\" to 19'-10\" (beam, slab or stepped top?): not framed as an opening. Verify the top of wall."
+    ]
+  },
+  "info": {
+    "mark": "W-106335",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "8\" Stud",
+    "assembly": "8\" studs, no board",
+    "board": "0 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +24'-0\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL., _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+      ],
+      [
+        "RIGHT END",
+        "Meets Cream Metal Panel MT10 - Oyster White, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" Stud"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Curtain Wall Mullions (12): 4\" x 6\" rectangular, 2.5\" x 6\" rectangular, 6\" x 6\" Square Corner; <Room Separation> (2): #102130, #102194; Ceilings (2): Metal Panel @ Canopy, Stone Panel Soffit at Brow; Floors (2): HD - FLOOR  12\", 8\" CURB; Doors (1): Store Front Double Door"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +24'-0\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL., _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+    ],
+    [
+      "RIGHT END",
+      "Meets Cream Metal Panel MT10 - Oyster White, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" Stud"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Curtain Wall Mullions (12): 4\" x 6\" rectangular, 2.5\" x 6\" rectangular, 6\" x 6\" Square Corner; <Room Separation> (2): #102130, #102194; Ceilings (2): Metal Panel @ Canopy, Stone Panel Soffit at Brow; Floors (2): HD - FLOOR  12\", 8\" CURB; Doors (1): Store Front Double Door"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

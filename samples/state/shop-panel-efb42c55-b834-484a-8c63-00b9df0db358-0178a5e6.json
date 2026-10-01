@@ -1,0 +1,113 @@
+{
+  "key": "efb42c55-b834-484a-8c63-00b9df0db358-0178a5e6",
+  "mark": "SW42HR-32685",
+  "dbId": 32685,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:49:14.182Z",
+  "frame": {
+    "lengthIn": 184,
+    "heightIn": 117,
+    "openings": [],
+    "studIn": 4,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": [
+      "Gap across the wall from 9'-8\" to 9'-9\" (beam, slab or stepped top?): not framed as an opening. Verify the top of wall."
+    ]
+  },
+  "info": {
+    "mark": "SW42HR-32685",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "_SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD.",
+    "assembly": "4\" C-H shaft wall, 2 layers one side + 1\" shaftliner",
+    "board": "2 + 0 layers, 5/8\" Regular",
+    "fireRating": "TWO HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR, offset -1'-0\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Ceilings (1): TYPE Q - 2 HOUR RATED LID W/ 4\" C-H- STUDS; Handrails (1): Circular - 1 1/2\" w/ wall mount; Stairs (1): 7\" max riser 11\" tread; Supports (1): Grand Stair Support Stringer"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 2ND FLOOR, offset -1'-0\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Meets _SW42HR - 4\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Ceilings (1): TYPE Q - 2 HOUR RATED LID W/ 4\" C-H- STUDS; Handrails (1): Circular - 1 1/2\" w/ wall mount; Stairs (1): 7\" max riser 11\" tread; Supports (1): Grand Stair Support Stringer"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

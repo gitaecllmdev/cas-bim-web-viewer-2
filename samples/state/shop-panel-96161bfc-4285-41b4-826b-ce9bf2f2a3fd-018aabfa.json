@@ -1,0 +1,115 @@
+{
+  "key": "96161bfc-4285-41b4-826b-ce9bf2f2a3fd-018aabfa",
+  "mark": "31000-67981",
+  "dbId": 67981,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:48:09.908Z",
+  "frame": {
+    "lengthIn": 238,
+    "heightIn": 136,
+    "openings": [
+      {
+        "left": 61.99999999999999,
+        "right": 114,
+        "bottom": 0,
+        "top": 98
+      },
+      {
+        "left": 145,
+        "right": 196.99999999999997,
+        "bottom": 0,
+        "top": 98
+      }
+    ],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "31000-67981",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "10TH FLOOR",
+    "wallType": "_31000 - 3 5/8\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - NO INSUL.",
+    "assembly": "3 5/8\" stud, 1 layer 5/8\" (one side)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "10TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 11TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL."
+      ],
+      [
+        "RIGHT END",
+        "Meets CONCRETE SHEAR WALL - 18\""
+      ],
+      [
+        "WITHIN 1 FT",
+        "Lines (4): #68188, #88629, #68187, ...; Floors (2): Shower Depression; Generic Models (2): 4'-0\" X 8'-0\" DOOR"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "10TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 11TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL."
+    ],
+    [
+      "RIGHT END",
+      "Meets CONCRETE SHEAR WALL - 18\""
+    ],
+    [
+      "WITHIN 1 FT",
+      "Lines (4): #68188, #88629, #68187, ...; Floors (2): Shower Depression; Generic Models (2): 4'-0\" X 8'-0\" DOOR"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

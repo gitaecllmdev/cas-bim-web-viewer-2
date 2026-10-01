@@ -1,0 +1,111 @@
+{
+  "key": "ff100627-b0d4-49e4-b9c4-6469fb7e0530-01b5a35b",
+  "mark": "W-106253",
+  "dbId": 106253,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:50:41.447Z",
+  "frame": {
+    "lengthIn": 316,
+    "heightIn": 22,
+    "openings": [],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "W-106253",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "3 5/8\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS MT11 - Harvest Gold Mica",
+    "assembly": "3 5/8\" exterior CFS behind cladding, gyp inside + sheathing",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "fireRating": "TWO HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +13'-10\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets 3 5/8\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS MT11 - Harvest Gold Mica, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+      ],
+      [
+        "RIGHT END",
+        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 3 5/8\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS MT11 - Harvest Gold Mica"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Walls (2): 8\" STL STUD W/ 1 LAYER GYP. AND GFRC; Ceilings (1): Metal Panel - CHAMPAIGNE @ Tower Soffit"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: GROUND FLOOR, offset +13'-10\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets 3 5/8\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS MT11 - Harvest Gold Mica, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+    ],
+    [
+      "RIGHT END",
+      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 3 5/8\" STL STUD W/ 1 LAYER GWB & METAL CLADDING LOWRISE FINS MT11 - Harvest Gold Mica"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Walls (2): 8\" STL STUD W/ 1 LAYER GYP. AND GFRC; Ceilings (1): Metal Panel - CHAMPAIGNE @ Tower Soffit"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

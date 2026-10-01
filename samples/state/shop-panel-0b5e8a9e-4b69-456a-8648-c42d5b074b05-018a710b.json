@@ -1,0 +1,110 @@
+{
+  "key": "0b5e8a9e-4b69-456a-8648-c42d5b074b05-018a710b",
+  "mark": "W-67667",
+  "dbId": 67667,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:51:10.543Z",
+  "frame": {
+    "lengthIn": 298,
+    "heightIn": 13,
+    "openings": [],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "W-67667",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "6TH FLOOR",
+    "wallType": "Soffit Wall",
+    "assembly": "3 5/8\" soffit framing, 1 layer one side (assumed)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "6TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.06.0 - LEVEL 6 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Lighting Fixtures (6): 4\" Incandescent; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS; Lines (1): #111759"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "6TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.06.0 - LEVEL 6 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Lighting Fixtures (6): 4\" Incandescent; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS; Lines (1): #111759"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

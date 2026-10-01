@@ -1,0 +1,103 @@
+{
+  "key": "28d001d5-a6fc-4a07-9b61-9fe313806c3e-016d2be7",
+  "mark": "64223-18404",
+  "dbId": 18404,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:50:05.781Z",
+  "frame": {
+    "lengthIn": 77,
+    "heightIn": 111.99999999999999,
+    "openings": [],
+    "studIn": 6,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "64223-18404",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "6TH FLOOR",
+    "wallType": "_64223 - 6\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL. - 2 HOUR RATED",
+    "assembly": "6\" stud, 4 layers 5/8\" (2 + 2)",
+    "board": "2 + 2 layers, 5/8\" Regular",
+    "fireRating": "ONE HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "6TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _64223 - 6\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL. - 2 HOUR RATED"
+      ],
+      [
+        "RIGHT END",
+        "Meets _34223 - 3 5/8\" STUD W/ 2 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL - 2 HOUR RATED, Soffit Wall"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Generic Models (2): CASE - PLAYER SUITE SHOWER BENCH; Plumbing Fixtures (2): Player Suite"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "6TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _64223 - 6\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL. - 2 HOUR RATED"
+    ],
+    [
+      "RIGHT END",
+      "Meets _34223 - 3 5/8\" STUD W/ 2 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL - 2 HOUR RATED, Soffit Wall"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Generic Models (2): CASE - PLAYER SUITE SHOWER BENCH; Plumbing Fixtures (2): Player Suite"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "key": "ef52756e-9254-4f01-aead-5bc30f0ed54f-01798811",
+  "mark": "62003-33341",
+  "dbId": 33341,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:48:36.948Z",
+  "frame": {
+    "lengthIn": 137,
+    "heightIn": 111.99999999999999,
+    "openings": [],
+    "studIn": 6,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "62003-33341",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "12TH FLOOR",
+    "wallType": "_62003 - 6\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL.",
+    "assembly": "6\" stud, 2 layers 5/8\" (1 + 1)",
+    "board": "1 + 1 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "12TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.12.0 - LEVEL 12 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: ROOF, offset -2'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Generic Models (1): CASE - PLAYER SUITE SHOWER BENCH"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "12TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.12.0 - LEVEL 12 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: ROOF, offset -2'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Generic Models (1): CASE - PLAYER SUITE SHOWER BENCH"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

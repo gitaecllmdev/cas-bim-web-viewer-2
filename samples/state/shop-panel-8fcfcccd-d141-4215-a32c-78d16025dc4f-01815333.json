@@ -1,0 +1,110 @@
+{
+  "key": "8fcfcccd-d141-4215-a32c-78d16025dc4f-01815333",
+  "mark": "W-60599",
+  "dbId": 60599,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:44:10.932Z",
+  "frame": {
+    "lengthIn": 182,
+    "heightIn": 9,
+    "openings": [],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "W-60599",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "4TH FLOOR",
+    "wallType": "Soffit Wall",
+    "assembly": "3 5/8\" soffit framing, 1 layer one side (assumed)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "4TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.04.0 - LEVEL 4 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 5TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Free end (no wall within 1 ft)"
+      ],
+      [
+        "RIGHT END",
+        "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "<Room Separation> (1): #136559"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "4TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.04.0 - LEVEL 4 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 5TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Free end (no wall within 1 ft)"
+    ],
+    [
+      "RIGHT END",
+      "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "<Room Separation> (1): #136559"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

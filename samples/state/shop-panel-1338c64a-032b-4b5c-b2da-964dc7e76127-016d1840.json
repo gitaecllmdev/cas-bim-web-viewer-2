@@ -1,0 +1,110 @@
+{
+  "key": "1338c64a-032b-4b5c-b2da-964dc7e76127-016d1840",
+  "mark": "33123-18115",
+  "dbId": 18115,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:44:37.430Z",
+  "frame": {
+    "lengthIn": 110,
+    "heightIn": 111.99999999999999,
+    "openings": [
+      {
+        "left": 12,
+        "right": 48,
+        "bottom": 0,
+        "top": 84
+      }
+    ],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "33123-18115",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "6TH FLOOR",
+    "wallType": "_33123 - 3 5/8\" STUD W/ 3 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED",
+    "assembly": "3 5/8\" stud, 3 layers 5/8\" (2 + 1)",
+    "board": "2 + 1 layers, 5/8\" Regular",
+    "fireRating": "ONE HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "6TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _33123 - 3 5/8\" STUD W/ 3 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED"
+      ],
+      [
+        "RIGHT END",
+        "Meets _33123 - 3 5/8\" STUD W/ 3 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED, _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2, _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Doors (4): 36\" x 84\" - 20 Min., 72\" x 84\"; Curtain Wall Mullions (3): 3D.Profile-Vertical Mullion-Detail-No Cap; Walls (3): _32023 - 3 5/8\" STUD FULL HEIGHT W/ 2 LAYERS 5/8\" GYP. - ACOUSTICAL INSUL., _31023 - 3 5/8\" STUD W/1 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL., _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.; Ceilings (2): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; <Room Separation> (1): #10411; Generic Models (1): Generic Models 1; Lines (1): #127507"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "6TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 7TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _33123 - 3 5/8\" STUD W/ 3 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED"
+    ],
+    [
+      "RIGHT END",
+      "Meets _33123 - 3 5/8\" STUD W/ 3 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED, _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2, _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Doors (4): 36\" x 84\" - 20 Min., 72\" x 84\"; Curtain Wall Mullions (3): 3D.Profile-Vertical Mullion-Detail-No Cap; Walls (3): _32023 - 3 5/8\" STUD FULL HEIGHT W/ 2 LAYERS 5/8\" GYP. - ACOUSTICAL INSUL., _31023 - 3 5/8\" STUD W/1 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL., _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.; Ceilings (2): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; <Room Separation> (1): #10411; Generic Models (1): Generic Models 1; Lines (1): #127507"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

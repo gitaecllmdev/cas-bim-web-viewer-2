@@ -1,0 +1,102 @@
+{
+  "key": "7f10c830-571c-4145-9833-c8f4ff18b3f8-0179b2ca",
+  "mark": "21002-34240",
+  "dbId": 34240,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:50:55.821Z",
+  "frame": {
+    "lengthIn": 338.5457005820952,
+    "heightIn": 112.4914511427848,
+    "openings": [],
+    "studIn": 2.5,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "21002-34240",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "2ND FLOOR",
+    "wallType": "_21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL",
+    "assembly": "2 1/2\" stud, 1 layer 5/8\" (one side)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "2ND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 3RD FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED, _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL, CONCRETE SHEAR WALL - 20\""
+      ],
+      [
+        "RIGHT END",
+        "Meets CONCRETE SHEAR WALL - 18\", _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL"
+      ],
+      [
+        "WITHIN 1 FT",
+        "<Room Separation> (6): #11914, #10157, #137138, ...; Curtain Panels (4): Wicona - WICTEC 50SG - 32mm Double Glazed Panel, Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Curtain Wall Mullions (2): 3D.Profile-Vertical Mullion-Detail-No Cap; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Walls (1): _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "2ND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 3RD FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED, _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL, CONCRETE SHEAR WALL - 20\""
+    ],
+    [
+      "RIGHT END",
+      "Meets CONCRETE SHEAR WALL - 18\", _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL"
+    ],
+    [
+      "WITHIN 1 FT",
+      "<Room Separation> (6): #11914, #10157, #137138, ...; Curtain Panels (4): Wicona - WICTEC 50SG - 32mm Double Glazed Panel, Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Curtain Wall Mullions (2): 3D.Profile-Vertical Mullion-Detail-No Cap; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Walls (1): _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

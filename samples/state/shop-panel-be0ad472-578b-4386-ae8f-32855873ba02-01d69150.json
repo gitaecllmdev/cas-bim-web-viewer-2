@@ -1,0 +1,111 @@
+{
+  "key": "be0ad472-578b-4386-ae8f-32855873ba02-01d69150",
+  "mark": "W-169581",
+  "dbId": 169581,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:47:30.631Z",
+  "frame": {
+    "lengthIn": 96,
+    "heightIn": 72,
+    "openings": [],
+    "studIn": 8,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "W-169581",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "GROUND FLOOR",
+    "wallType": "8\" STL STUD W/ 1 LAYER GYP. AND GFRC",
+    "assembly": "8\" exterior CFS behind cladding, gyp inside + sheathing",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "fireRating": "TWO HOUR RATED PARTITION",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "GROUND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" Stud"
+      ],
+      [
+        "RIGHT END",
+        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+      ],
+      [
+        "WITHIN 1 FT",
+        "Curtain Wall Mullions (3): 2.5\" x 6\" rectangular, 4\" x 6\" rectangular; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "GROUND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.01.0 - LEVEL 1 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" Stud"
+    ],
+    [
+      "RIGHT END",
+      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+    ],
+    [
+      "WITHIN 1 FT",
+      "Curtain Wall Mullions (3): 2.5\" x 6\" rectangular, 4\" x 6\" rectangular; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "key": "3c3980af-dc1e-4cf4-8af5-ea1c62ab31ac-01799cfc",
+  "mark": "11002-33752",
+  "dbId": 33752,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:44:25.402Z",
+  "frame": {
+    "lengthIn": 247.99999999999997,
+    "heightIn": 111.99999999999999,
+    "openings": [
+      {
+        "left": 213,
+        "right": 216,
+        "bottom": 0,
+        "top": 84
+      }
+    ],
+    "studIn": 1.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "11002-33752",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "8TH FLOOR",
+    "wallType": "_11002 - 1 5/8\" FULL HEIGHT STUD  W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.",
+    "assembly": "1 5/8\" stud, 1 layer 5/8\" (one side)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "8TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 9TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets CONCRETE SHEAR WALL - 20\", _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL."
+      ],
+      [
+        "RIGHT END",
+        "Meets _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2, CONCRETE SHEAR WALL - 20\", _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL., _61003 - 6\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Walls (2): _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.; <Room Separation> (1): #136694; Generic Models (1): ADA - 60 IN CLEAR FLOOR SPACE"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "8TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 9TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets CONCRETE SHEAR WALL - 20\", _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL."
+    ],
+    [
+      "RIGHT END",
+      "Meets _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2, CONCRETE SHEAR WALL - 20\", _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL., _61003 - 6\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Walls (2): _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.; <Room Separation> (1): #136694; Generic Models (1): ADA - 60 IN CLEAR FLOOR SPACE"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

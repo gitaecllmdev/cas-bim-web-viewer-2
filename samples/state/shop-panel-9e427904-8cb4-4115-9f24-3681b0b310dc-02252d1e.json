@@ -1,0 +1,102 @@
+{
+  "key": "9e427904-8cb4-4115-9f24-3681b0b310dc-02252d1e",
+  "mark": "81013-259043",
+  "dbId": 259043,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:45:45.010Z",
+  "frame": {
+    "lengthIn": 89,
+    "heightIn": 111.99999999999999,
+    "openings": [],
+    "studIn": 8,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "81013-259043",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "2ND FLOOR",
+    "wallType": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+    "assembly": "8\" stud, 1 layer 5/8\" (one side)",
+    "board": "1 + 0 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "2ND FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "NO ROOM FOUND"
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 3RD FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+      ],
+      [
+        "RIGHT END",
+        "Meets _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL., _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+      ],
+      [
+        "WITHIN 1 FT",
+        "Curtain Panels (7): Metal - Aluminum - Cream MT10 - Osyter White, Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Curtain Wall Mullions (4): 3D. Profile -90 Out Side Corner Detail-1; Floors (2): HD - FLOOR  12\", HD - FLOOR  8\""
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "2ND FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "NO ROOM FOUND"
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 3RD FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+    ],
+    [
+      "RIGHT END",
+      "Meets _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL., _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL."
+    ],
+    [
+      "WITHIN 1 FT",
+      "Curtain Panels (7): Metal - Aluminum - Cream MT10 - Osyter White, Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Curtain Wall Mullions (4): 3D. Profile -90 Out Side Corner Detail-1; Floors (2): HD - FLOOR  12\", HD - FLOOR  8\""
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}

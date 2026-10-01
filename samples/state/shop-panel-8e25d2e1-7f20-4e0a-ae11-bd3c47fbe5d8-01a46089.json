@@ -1,0 +1,110 @@
+{
+  "key": "8e25d2e1-7f20-4e0a-ae11-bd3c47fbe5d8-01a46089",
+  "mark": "32002-91883",
+  "dbId": 91883,
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
+  "savedAt": "2026-10-01T01:46:45.073Z",
+  "frame": {
+    "lengthIn": 80,
+    "heightIn": 24,
+    "openings": [],
+    "studIn": 3.625,
+    "rows": 1,
+    "spacingIn": 16,
+    "mils": 33,
+    "member": "stud",
+    "notes": []
+  },
+  "info": {
+    "mark": "32002-91883",
+    "project": "Wilton Phase 2B Hotel Tower (demo)",
+    "level": "10TH FLOOR",
+    "wallType": "_32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap",
+    "assembly": "3 5/8\" stud, 2 layers 5/8\" (1 + 1)",
+    "board": "1 + 1 layers, 5/8\" Regular",
+    "date": "2026-10-01",
+    "drawnBy": "CAS BIM Web Viewer",
+    "sourceNote": "Revit model via APS Viewer; framing laid out from the wall geometry",
+    "conditions": [
+      [
+        "LEVEL",
+        "10TH FLOOR"
+      ],
+      [
+        "SIDE A (AS DRAWN)",
+        "-"
+      ],
+      [
+        "SIDE B (FAR SIDE)",
+        "-"
+      ],
+      [
+        "ROOMS",
+        "The wall is not on A1.10.0 - LEVEL 10 FLOOR PLAN; open its level plan to read the rooms."
+      ],
+      [
+        "HEAD OF WALL",
+        "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 11TH FLOOR, offset -0'-8\"."
+      ],
+      [
+        "BASE OF WALL",
+        "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+      ],
+      [
+        "LEFT END",
+        "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., Soffit Wall"
+      ],
+      [
+        "RIGHT END",
+        "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap, _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL"
+      ],
+      [
+        "WITHIN 1 FT",
+        "<Room Separation> (1): #137297; Doors (1): 72\" x 84\"  - PS Closet; Structural Columns (1): 1'6\" x 3'"
+      ]
+    ],
+    "sheet": "auto"
+  },
+  "conditions": [
+    [
+      "LEVEL",
+      "10TH FLOOR"
+    ],
+    [
+      "SIDE A (AS DRAWN)",
+      "-"
+    ],
+    [
+      "SIDE B (FAR SIDE)",
+      "-"
+    ],
+    [
+      "ROOMS",
+      "The wall is not on A1.10.0 - LEVEL 10 FLOOR PLAN; open its level plan to read the rooms."
+    ],
+    [
+      "HEAD OF WALL",
+      "NO SLAB ABOVE IN MODEL. Nothing found above the wall in the model (roof, soffit or open to above?). Verify the head condition. Revit: Up to level: 11TH FLOOR, offset -0'-8\"."
+    ],
+    [
+      "BASE OF WALL",
+      "NO SLAB BELOW IN MODEL. Nothing found under the wall in the model. Verify the base condition."
+    ],
+    [
+      "LEFT END",
+      "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., Soffit Wall"
+    ],
+    [
+      "RIGHT END",
+      "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap, _21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL"
+    ],
+    [
+      "WITHIN 1 FT",
+      "<Room Separation> (1): #137297; Doors (1): 72\" x 84\"  - PS Closet; Structural Columns (1): 1'6\" x 3'"
+    ]
+  ],
+  "view": {
+    "flip": false,
+    "sheet": "auto"
+  }
+}
