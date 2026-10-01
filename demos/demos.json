@@ -1,10 +1,10 @@
 [
     {
         "id": "07-explorer",
-        "name": "7 · 3D Model Explorer",
+        "name": "7 · APS Viewer Capabilities",
         "extensionId": "Drywall.Explorer",
-        "for": "Everyone: a tour of the 3D viewer",
-        "summary": "Isolate walls, framing, doors, MEP or structure in one click; color by stud size or level; cut, explode, orbit, walk and measure the model.",
+        "for": "Everyone: what the APS viewer does, in 3D and 2D",
+        "summary": "Find and isolate walls, framing, doors or MEP; color by any property; cut, explode, walk and measure; the plan beside the model with areas and markups; saved views, screenshots and the full capability list.",
         "featured": true
     },
     {
