@@ -3,7 +3,7 @@
   "mark": "W-169580",
   "dbId": 169580,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:47:19.960Z",
+  "savedAt": "2026-10-01T16:59:01.956Z",
   "frame": {
     "lengthIn": 96,
     "heightIn": 27.999999999999996,
@@ -64,7 +64,197 @@
         "<Room Separation> (1): #102203; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Curtain Wall Mullions (1): 2.5\" x 6\" rectangular; Floors (1): 8\" CURB"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "GROUND FLOOR / Level 1",
+          "y": 0
+        }
+      ],
+      "context": [
+        {
+          "name": "23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg",
+          "category": "23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg",
+          "rects": [
+            [
+              0,
+              27.999999999999996,
+              6,
+              28.999999999999996
+            ],
+            [
+              93,
+              27.999999999999996,
+              96,
+              28.999999999999996
+            ],
+            [
+              0,
+              28.999999999999996,
+              3,
+              29.999999999999996
+            ]
+          ]
+        },
+        {
+          "name": "8\" STL STUD W/ 1 LAYER GYP. AND GFRC",
+          "category": "Walls",
+          "rects": [
+            [
+              6,
+              27.999999999999996,
+              93,
+              28.999999999999996
+            ],
+            [
+              3,
+              28.999999999999996,
+              96,
+              29.999999999999996
+            ],
+            [
+              0,
+              29.999999999999996,
+              96,
+              30.999999999999996
+            ],
+            [
+              0,
+              30.999999999999996,
+              96,
+              31.999999999999996
+            ],
+            [
+              0,
+              31.999999999999996,
+              96,
+              33
+            ],
+            [
+              0,
+              33,
+              96,
+              34
+            ],
+            [
+              0,
+              34,
+              96,
+              35
+            ],
+            [
+              0,
+              35,
+              96,
+              36
+            ],
+            [
+              0,
+              36,
+              96,
+              37
+            ],
+            [
+              0,
+              37,
+              96,
+              38
+            ],
+            [
+              0,
+              38,
+              96,
+              39
+            ],
+            [
+              0,
+              39,
+              96,
+              40
+            ]
+          ]
+        },
+        {
+          "name": "8\" CURB",
+          "category": "Floors",
+          "rects": [
+            [
+              0,
+              -1,
+              96,
+              0
+            ],
+            [
+              0,
+              -2,
+              96,
+              -1
+            ],
+            [
+              0,
+              -3,
+              96,
+              -2
+            ],
+            [
+              0,
+              -4,
+              96,
+              -3
+            ],
+            [
+              0,
+              -5,
+              96,
+              -4
+            ],
+            [
+              0,
+              -6,
+              96,
+              -5
+            ],
+            [
+              0,
+              -7,
+              96,
+              -6
+            ],
+            [
+              0,
+              -8,
+              96,
+              -7
+            ],
+            [
+              0,
+              -9,
+              96,
+              -8
+            ],
+            [
+              0,
+              -10,
+              96,
+              -9
+            ],
+            [
+              0,
+              -11,
+              96,
+              -10
+            ],
+            [
+              0,
+              -12,
+              96,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [

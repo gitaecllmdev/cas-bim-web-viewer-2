@@ -3,9 +3,9 @@
   "mark": "W-67667",
   "dbId": 67667,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:51:10.543Z",
+  "savedAt": "2026-10-01T17:03:26.305Z",
   "frame": {
-    "lengthIn": 298,
+    "lengthIn": 299,
     "heightIn": 13,
     "openings": [],
     "studIn": 3.625,
@@ -63,7 +63,167 @@
         "Lighting Fixtures (6): 4\" Incandescent; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS; Lines (1): #111759"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "7TH FLOOR",
+          "y": 21.375
+        }
+      ],
+      "context": [
+        {
+          "name": "TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS",
+          "category": "Ceilings",
+          "rects": [
+            [
+              0,
+              -1,
+              299,
+              0
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "Lines",
+          "rects": [
+            [
+              0,
+              -2,
+              299,
+              -1
+            ],
+            [
+              0,
+              -3,
+              299,
+              -2
+            ],
+            [
+              0,
+              -4,
+              299,
+              -3
+            ],
+            [
+              0,
+              -5,
+              299,
+              -4
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              9.966666666666665,
+              -6,
+              23.255555555555553,
+              -5
+            ],
+            [
+              9.966666666666665,
+              -7,
+              23.255555555555553,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              63.12222222222222,
+              -6,
+              79.73333333333332,
+              -5
+            ],
+            [
+              63.12222222222222,
+              -7,
+              76.41111111111111,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              116.27777777777777,
+              -6,
+              132.88888888888889,
+              -5
+            ],
+            [
+              119.6,
+              -7,
+              129.56666666666666,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              169.4333333333333,
+              -6,
+              186.04444444444442,
+              -5
+            ],
+            [
+              172.75555555555553,
+              -7,
+              186.04444444444442,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              225.9111111111111,
+              -6,
+              239.2,
+              -5
+            ],
+            [
+              225.9111111111111,
+              -7,
+              239.2,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "4\" Incandescent",
+          "category": "Lighting Fixtures",
+          "rects": [
+            [
+              279.06666666666666,
+              -6,
+              295.67777777777775,
+              -5
+            ],
+            [
+              279.06666666666666,
+              -7,
+              292.35555555555555,
+              -6
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [

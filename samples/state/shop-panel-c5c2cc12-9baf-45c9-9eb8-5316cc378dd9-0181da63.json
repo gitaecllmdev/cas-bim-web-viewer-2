@@ -3,7 +3,7 @@
   "mark": "64123-61252",
   "dbId": 61252,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:49:52.352Z",
+  "savedAt": "2026-10-01T17:01:54.488Z",
   "frame": {
     "lengthIn": 75,
     "heightIn": 111.99999999999999,
@@ -49,18 +49,260 @@
       ],
       [
         "LEFT END",
-        "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL., _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2"
+        "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL."
       ],
       [
         "RIGHT END",
-        "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL., _34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED"
+        "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL."
       ],
       [
         "WITHIN 1 FT",
-        "<Room Separation> (6): #11717, #138534, #138639, ..."
+        "<Room Separation> (4): #11717, #138534, #138639, ..."
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "5TH FLOOR",
+          "y": 0
+        },
+        {
+          "name": "6TH FLOOR",
+          "y": 120
+        }
+      ],
+      "context": [
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              0,
+              113.99999999999999,
+              18,
+              114.99999999999999
+            ],
+            [
+              0,
+              114.99999999999999,
+              18,
+              115.99999999999999
+            ],
+            [
+              0,
+              115.99999999999999,
+              21,
+              116.99999999999999
+            ],
+            [
+              0,
+              116.99999999999999,
+              21,
+              117.99999999999999
+            ],
+            [
+              0,
+              117.99999999999999,
+              21,
+              118.99999999999999
+            ],
+            [
+              0,
+              118.99999999999999,
+              21,
+              119.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              72,
+              113.99999999999999,
+              75,
+              114.99999999999999
+            ],
+            [
+              72,
+              114.99999999999999,
+              75,
+              115.99999999999999
+            ],
+            [
+              72,
+              115.99999999999999,
+              75,
+              116.99999999999999
+            ],
+            [
+              72,
+              116.99999999999999,
+              75,
+              117.99999999999999
+            ],
+            [
+              69,
+              117.99999999999999,
+              75,
+              118.99999999999999
+            ],
+            [
+              69,
+              118.99999999999999,
+              75,
+              119.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "_21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              119.99999999999999,
+              75,
+              120.99999999999999
+            ],
+            [
+              0,
+              120.99999999999999,
+              75,
+              121.99999999999999
+            ],
+            [
+              0,
+              121.99999999999999,
+              75,
+              122.99999999999999
+            ],
+            [
+              0,
+              122.99999999999999,
+              75,
+              123.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              0,
+              -1,
+              21,
+              0
+            ],
+            [
+              0,
+              -2,
+              21,
+              -1
+            ],
+            [
+              0,
+              -3,
+              21,
+              -2
+            ],
+            [
+              0,
+              -4,
+              21,
+              -3
+            ],
+            [
+              0,
+              -5,
+              18,
+              -4
+            ],
+            [
+              0,
+              -6,
+              18,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              69,
+              -1,
+              75,
+              0
+            ],
+            [
+              69,
+              -2,
+              75,
+              -1
+            ],
+            [
+              72,
+              -3,
+              75,
+              -2
+            ],
+            [
+              72,
+              -4,
+              75,
+              -3
+            ],
+            [
+              72,
+              -5,
+              75,
+              -4
+            ],
+            [
+              72,
+              -6,
+              75,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "_21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              -9,
+              75,
+              -8
+            ],
+            [
+              0,
+              -10,
+              75,
+              -9
+            ],
+            [
+              0,
+              -11,
+              75,
+              -10
+            ],
+            [
+              0,
+              -12,
+              75,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -85,15 +327,15 @@
     ],
     [
       "LEFT END",
-      "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL., _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2"
+      "Meets _SW2.52HR - 2 1/2\" CH STUD W/ 2 LAYERS 5/8\" GYP W/ 1\" SHAFT BRD. FULL HEIGHT - ACOUSTICAL INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL."
     ],
     [
       "RIGHT END",
-      "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL., _21003 - 2 1/2\" STUD W/ 1 LAYER 5/8\" GYP. FULL HT. - NO INSUL., _34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED"
+      "Meets _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL., _31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL."
     ],
     [
       "WITHIN 1 FT",
-      "<Room Separation> (6): #11717, #138534, #138639, ..."
+      "<Room Separation> (4): #11717, #138534, #138639, ..."
     ]
   ],
   "view": {

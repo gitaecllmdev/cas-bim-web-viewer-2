@@ -3,7 +3,7 @@
   "mark": "34123-19995",
   "dbId": 19995,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:45:23.909Z",
+  "savedAt": "2026-10-01T16:56:55.555Z",
   "frame": {
     "lengthIn": 238,
     "heightIn": 111.99999999999999,
@@ -60,7 +60,141 @@
         "Ceilings (2): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Structural Columns (2): 1'6\" x 2', 1'6\" x 3'"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "9TH FLOOR",
+          "y": 0
+        },
+        {
+          "name": "10TH FLOOR",
+          "y": 120
+        }
+      ],
+      "context": [
+        {
+          "name": "_21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              119.99999999999999,
+              3.0126582278481013,
+              120.99999999999999
+            ],
+            [
+              0,
+              120.99999999999999,
+              3.0126582278481013,
+              121.99999999999999
+            ],
+            [
+              0,
+              121.99999999999999,
+              3.0126582278481013,
+              122.99999999999999
+            ],
+            [
+              0,
+              122.99999999999999,
+              3.0126582278481013,
+              123.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "_34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED",
+          "category": "Walls",
+          "rects": [
+            [
+              3.0126582278481013,
+              119.99999999999999,
+              238,
+              120.99999999999999
+            ],
+            [
+              3.0126582278481013,
+              120.99999999999999,
+              238,
+              121.99999999999999
+            ],
+            [
+              3.0126582278481013,
+              121.99999999999999,
+              238,
+              122.99999999999999
+            ],
+            [
+              3.0126582278481013,
+              122.99999999999999,
+              238,
+              123.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "_21002 - 2 1/2\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              -9,
+              3.0126582278481013,
+              -8
+            ],
+            [
+              0,
+              -10,
+              3.0126582278481013,
+              -9
+            ],
+            [
+              0,
+              -11,
+              3.0126582278481013,
+              -10
+            ],
+            [
+              0,
+              -12,
+              3.0126582278481013,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_34123 - 3 5/8\" STUD W/ 4 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTICAL INSUL. - 1 HOUR RATED",
+          "category": "Walls",
+          "rects": [
+            [
+              3.0126582278481013,
+              -9,
+              238,
+              -8
+            ],
+            [
+              3.0126582278481013,
+              -10,
+              238,
+              -9
+            ],
+            [
+              3.0126582278481013,
+              -11,
+              238,
+              -10
+            ],
+            [
+              3.0126582278481013,
+              -12,
+              238,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [

@@ -3,7 +3,7 @@
   "mark": "W-106408",
   "dbId": 106408,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T05:58:33.227Z",
+  "savedAt": "2026-10-01T17:05:11.619Z",
   "frame": {
     "lengthIn": 279,
     "heightIn": 277,
@@ -66,10 +66,288 @@
       ],
       [
         "WITHIN 1 FT",
-        "Curtain Wall Mullions (16): 6\" x 6\" Square Corner, 4\" x 6\" rectangular; Ceilings (2): Metal Panel - CHAMPAIGNE @ Tower Soffit, Stone Panel Soffit at Brow; Floors (2): HD - FLOOR  12\", 8\" CURB; Roofs (1): Brow Metal Coping (Cream) on framing; Walls (1): Cream Metal Panel MT10 - Oyster White"
+        "Curtain Wall Mullions (16): 6\" x 6\" Square Corner, 4\" x 6\" rectangular; Ceilings (1): Metal Panel - CHAMPAIGNE @ Tower Soffit; Floors (1): 8\" CURB; Roofs (1): Brow Metal Coping (Cream) on framing; Walls (1): Cream Metal Panel MT10 - Oyster White"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "GROUND FLOOR / Level 1",
+          "y": 0
+        },
+        {
+          "name": "2ND FLOOR",
+          "y": 288
+        }
+      ],
+      "context": [
+        {
+          "name": "8\" STL STUD W/ 1 LAYER GYP. AND GFRC",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              277,
+              3.1000000000000005,
+              278
+            ],
+            [
+              0,
+              278,
+              3.1000000000000005,
+              279
+            ],
+            [
+              0,
+              279,
+              3.1000000000000005,
+              280
+            ],
+            [
+              0,
+              280,
+              3.1000000000000005,
+              281
+            ],
+            [
+              0,
+              281,
+              3.1000000000000005,
+              282
+            ],
+            [
+              0,
+              282,
+              3.1000000000000005,
+              283
+            ],
+            [
+              0,
+              283,
+              3.1000000000000005,
+              284
+            ],
+            [
+              0,
+              284,
+              3.1000000000000005,
+              285
+            ],
+            [
+              0,
+              285,
+              3.1000000000000005,
+              286
+            ],
+            [
+              0,
+              286,
+              3.1000000000000005,
+              287
+            ],
+            [
+              0,
+              287,
+              3.1000000000000005,
+              288
+            ],
+            [
+              0,
+              288,
+              3.1000000000000005,
+              289
+            ]
+          ]
+        },
+        {
+          "name": "HD - FLOOR  12\"",
+          "category": "Floors",
+          "rects": [
+            [
+              3.1000000000000005,
+              277,
+              279.00000000000006,
+              278
+            ],
+            [
+              3.1000000000000005,
+              278,
+              279.00000000000006,
+              279
+            ],
+            [
+              3.1000000000000005,
+              279,
+              279.00000000000006,
+              280
+            ],
+            [
+              3.1000000000000005,
+              280,
+              279.00000000000006,
+              281
+            ],
+            [
+              3.1000000000000005,
+              281,
+              279.00000000000006,
+              282
+            ],
+            [
+              3.1000000000000005,
+              282,
+              279.00000000000006,
+              283
+            ],
+            [
+              3.1000000000000005,
+              283,
+              279.00000000000006,
+              284
+            ],
+            [
+              3.1000000000000005,
+              284,
+              279.00000000000006,
+              285
+            ],
+            [
+              3.1000000000000005,
+              285,
+              279.00000000000006,
+              286
+            ],
+            [
+              3.1000000000000005,
+              286,
+              279.00000000000006,
+              287
+            ],
+            [
+              3.1000000000000005,
+              287,
+              279.00000000000006,
+              288
+            ]
+          ]
+        },
+        {
+          "name": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              3.1000000000000005,
+              288,
+              12.400000000000002,
+              289
+            ]
+          ]
+        },
+        {
+          "name": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              12.400000000000002,
+              288,
+              269.70000000000005,
+              289
+            ]
+          ]
+        },
+        {
+          "name": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              269.70000000000005,
+              288,
+              279.00000000000006,
+              289
+            ]
+          ]
+        },
+        {
+          "name": "8\" CURB",
+          "category": "Floors",
+          "rects": [
+            [
+              9.3,
+              -1,
+              279.00000000000006,
+              0
+            ],
+            [
+              9.3,
+              -2,
+              279.00000000000006,
+              -1
+            ],
+            [
+              9.3,
+              -3,
+              279.00000000000006,
+              -2
+            ],
+            [
+              9.3,
+              -4,
+              279.00000000000006,
+              -3
+            ],
+            [
+              9.3,
+              -5,
+              279.00000000000006,
+              -4
+            ],
+            [
+              9.3,
+              -6,
+              279.00000000000006,
+              -5
+            ],
+            [
+              9.3,
+              -7,
+              279.00000000000006,
+              -6
+            ],
+            [
+              9.3,
+              -8,
+              279.00000000000006,
+              -7
+            ],
+            [
+              9.3,
+              -9,
+              279.00000000000006,
+              -8
+            ],
+            [
+              9.3,
+              -10,
+              279.00000000000006,
+              -9
+            ],
+            [
+              9.3,
+              -11,
+              279.00000000000006,
+              -10
+            ],
+            [
+              9.3,
+              -12,
+              279.00000000000006,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -102,7 +380,7 @@
     ],
     [
       "WITHIN 1 FT",
-      "Curtain Wall Mullions (16): 6\" x 6\" Square Corner, 4\" x 6\" rectangular; Ceilings (2): Metal Panel - CHAMPAIGNE @ Tower Soffit, Stone Panel Soffit at Brow; Floors (2): HD - FLOOR  12\", 8\" CURB; Roofs (1): Brow Metal Coping (Cream) on framing; Walls (1): Cream Metal Panel MT10 - Oyster White"
+      "Curtain Wall Mullions (16): 6\" x 6\" Square Corner, 4\" x 6\" rectangular; Ceilings (1): Metal Panel - CHAMPAIGNE @ Tower Soffit; Floors (1): 8\" CURB; Roofs (1): Brow Metal Coping (Cream) on framing; Walls (1): Cream Metal Panel MT10 - Oyster White"
     ]
   ],
   "view": {

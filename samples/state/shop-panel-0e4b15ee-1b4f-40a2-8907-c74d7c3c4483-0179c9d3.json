@@ -3,7 +3,7 @@
   "mark": "62023-37045",
   "dbId": 37045,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:50:32.315Z",
+  "savedAt": "2026-10-01T17:02:40.265Z",
   "frame": {
     "lengthIn": 116,
     "heightIn": 136,
@@ -56,10 +56,186 @@
       ],
       [
         "WITHIN 1 FT",
-        "Plumbing Fixtures (2): U836901 - vara cc bowl open ab white, U816801 - vara close coupled cistern with dual flush valve - 4/2.6 litres litres; <Room Separation> (1): #136254; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Floors (1): HD - FLOOR  7\"; Walls (1): _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+        "Plumbing Fixtures (2): U836901 - vara cc bowl open ab white, U816801 - vara close coupled cistern with dual flush valve - 4/2.6 litres litres; <Room Separation> (1): #136254; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Floors (1): HD - FLOOR  7\"; Generic Models (1): ADA - 60 IN CLEAR FLOOR SPACE; Lines (1): #105172; Walls (1): _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "11TH FLOOR",
+          "y": 0
+        },
+        {
+          "name": "12TH FLOOR",
+          "y": 144
+        }
+      ],
+      "context": [
+        {
+          "name": "ADA - 60 IN CLEAR FLOOR SPACE",
+          "category": "Generic Models",
+          "rects": [
+            [
+              0,
+              -1,
+              65.43589743589743,
+              0
+            ],
+            [
+              0,
+              -2,
+              65.43589743589743,
+              -1
+            ],
+            [
+              0,
+              -3,
+              65.43589743589743,
+              -2
+            ],
+            [
+              0,
+              -4,
+              65.43589743589743,
+              -3
+            ],
+            [
+              0,
+              -5,
+              65.43589743589743,
+              -4
+            ],
+            [
+              0,
+              -6,
+              62.46153846153845,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              65.43589743589743,
+              -1,
+              115.99999999999999,
+              0
+            ],
+            [
+              65.43589743589743,
+              -2,
+              115.99999999999999,
+              -1
+            ],
+            [
+              65.43589743589743,
+              -3,
+              115.99999999999999,
+              -2
+            ],
+            [
+              65.43589743589743,
+              -4,
+              115.99999999999999,
+              -3
+            ],
+            [
+              65.43589743589743,
+              -5,
+              115.99999999999999,
+              -4
+            ],
+            [
+              62.46153846153845,
+              -6,
+              115.99999999999999,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "HD - FLOOR  7\"",
+          "category": "Floors",
+          "rects": [
+            [
+              71.38461538461537,
+              -7,
+              115.99999999999999,
+              -6
+            ],
+            [
+              71.38461538461537,
+              -8,
+              115.99999999999999,
+              -7
+            ]
+          ]
+        },
+        {
+          "name": "_32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              29.74358974358974,
+              -9,
+              101.12820512820511,
+              -8
+            ],
+            [
+              29.74358974358974,
+              -10,
+              101.12820512820511,
+              -9
+            ],
+            [
+              29.74358974358974,
+              -11,
+              101.12820512820511,
+              -10
+            ],
+            [
+              29.74358974358974,
+              -12,
+              101.12820512820511,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_31003 - 3 5/8\" STUD FULL HEIGHT W/ 1 LAYER 5/8\" GYP. - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              101.12820512820511,
+              -9,
+              107.07692307692307,
+              -8
+            ],
+            [
+              101.12820512820511,
+              -10,
+              107.07692307692307,
+              -9
+            ],
+            [
+              101.12820512820511,
+              -11,
+              107.07692307692307,
+              -10
+            ],
+            [
+              101.12820512820511,
+              -12,
+              107.07692307692307,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -92,7 +268,7 @@
     ],
     [
       "WITHIN 1 FT",
-      "Plumbing Fixtures (2): U836901 - vara cc bowl open ab white, U816801 - vara close coupled cistern with dual flush valve - 4/2.6 litres litres; <Room Separation> (1): #136254; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Floors (1): HD - FLOOR  7\"; Walls (1): _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
+      "Plumbing Fixtures (2): U836901 - vara cc bowl open ab white, U816801 - vara close coupled cistern with dual flush valve - 4/2.6 litres litres; <Room Separation> (1): #136254; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; Floors (1): HD - FLOOR  7\"; Generic Models (1): ADA - 60 IN CLEAR FLOOR SPACE; Lines (1): #105172; Walls (1): _32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL."
     ]
   ],
   "view": {

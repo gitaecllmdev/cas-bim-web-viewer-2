@@ -3,7 +3,7 @@
   "mark": "11000-89730",
   "dbId": 89730,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:46:53.739Z",
+  "savedAt": "2026-10-01T16:58:35.029Z",
   "frame": {
     "lengthIn": 141,
     "heightIn": 24.999999999999996,
@@ -52,7 +52,7 @@
       ],
       [
         "LEFT END",
-        "Meets _11002 - 1 5/8\" FULL HEIGHT STUD  W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Valance, Soffit Wall"
+        "Meets _11002 - 1 5/8\" FULL HEIGHT STUD  W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Soffit Wall"
       ],
       [
         "RIGHT END",
@@ -63,7 +63,281 @@
         "Lines (1): #129437; Structural Columns (1): 1'6\" x 2'; Walls (1): _61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL."
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "11TH FLOOR",
+          "y": 33.375
+        }
+      ],
+      "context": [
+        {
+          "name": "_61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              120,
+              33,
+              126,
+              34
+            ],
+            [
+              120,
+              34,
+              126,
+              35
+            ],
+            [
+              120,
+              35,
+              126,
+              36
+            ],
+            [
+              120,
+              36,
+              126,
+              37
+            ]
+          ]
+        },
+        {
+          "name": "_61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              126,
+              33,
+              141,
+              34
+            ],
+            [
+              126,
+              34,
+              141,
+              35
+            ],
+            [
+              126,
+              35,
+              141,
+              36
+            ],
+            [
+              126,
+              36,
+              141,
+              37
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "Lines",
+          "rects": [
+            [
+              0,
+              -1,
+              120,
+              0
+            ],
+            [
+              0,
+              -2,
+              120,
+              -1
+            ],
+            [
+              0,
+              -3,
+              120,
+              -2
+            ],
+            [
+              0,
+              -4,
+              120,
+              -3
+            ],
+            [
+              0,
+              -5,
+              120,
+              -4
+            ],
+            [
+              0,
+              -6,
+              120,
+              -5
+            ],
+            [
+              0,
+              -7,
+              120,
+              -6
+            ]
+          ]
+        },
+        {
+          "name": "_61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              120,
+              -1,
+              126,
+              0
+            ],
+            [
+              120,
+              -2,
+              126,
+              -1
+            ],
+            [
+              120,
+              -3,
+              126,
+              -2
+            ],
+            [
+              120,
+              -4,
+              126,
+              -3
+            ],
+            [
+              120,
+              -5,
+              126,
+              -4
+            ],
+            [
+              120,
+              -6,
+              126,
+              -5
+            ],
+            [
+              120,
+              -7,
+              126,
+              -6
+            ],
+            [
+              120,
+              -8,
+              126,
+              -7
+            ],
+            [
+              120,
+              -9,
+              126,
+              -8
+            ],
+            [
+              120,
+              -10,
+              126,
+              -9
+            ],
+            [
+              120,
+              -11,
+              126,
+              -10
+            ],
+            [
+              120,
+              -12,
+              126,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_61010 - 6\" STUD W/ 1 LAYER 5/8\" GYP. HEIGHT VARIES - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              126,
+              -1,
+              141,
+              0
+            ],
+            [
+              126,
+              -2,
+              141,
+              -1
+            ],
+            [
+              126,
+              -3,
+              141,
+              -2
+            ],
+            [
+              126,
+              -4,
+              141,
+              -3
+            ],
+            [
+              126,
+              -5,
+              141,
+              -4
+            ],
+            [
+              126,
+              -6,
+              141,
+              -5
+            ],
+            [
+              126,
+              -7,
+              141,
+              -6
+            ],
+            [
+              126,
+              -8,
+              141,
+              -7
+            ],
+            [
+              126,
+              -9,
+              141,
+              -8
+            ],
+            [
+              126,
+              -10,
+              141,
+              -9
+            ],
+            [
+              126,
+              -11,
+              141,
+              -10
+            ],
+            [
+              126,
+              -12,
+              141,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -92,7 +366,7 @@
     ],
     [
       "LEFT END",
-      "Meets _11002 - 1 5/8\" FULL HEIGHT STUD  W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Valance, Soffit Wall"
+      "Meets _11002 - 1 5/8\" FULL HEIGHT STUD  W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Soffit Wall"
     ],
     [
       "RIGHT END",

@@ -3,7 +3,7 @@
   "mark": "81013-169937",
   "dbId": 169937,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T05:58:21.420Z",
+  "savedAt": "2026-10-01T17:04:54.179Z",
   "frame": {
     "lengthIn": 306,
     "heightIn": 210,
@@ -67,10 +67,506 @@
       ],
       [
         "WITHIN 1 FT",
-        "Curtain Wall Mullions (9): 3D.Profile-Vertical Mullion-Detail-No Cap, 4\" x 6\" rectangular, 2.5\" x 6\" rectangular; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
+        "Curtain Wall Mullions (9): 4\" x 6\" rectangular, 2.5\" x 6\" rectangular, 3D.Profile-Vertical Mullion-Detail-No Cap; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "GROUND FLOOR / Level 1",
+          "y": -6
+        }
+      ],
+      "context": [
+        {
+          "name": "18. Profile - Standard Sill Receptor At Balcony-Det 2F",
+          "category": "Curtain Wall Mullions",
+          "rects": [
+            [
+              0,
+              210,
+              61.199999999999996,
+              211
+            ],
+            [
+              0,
+              211,
+              61.199999999999996,
+              212
+            ]
+          ]
+        },
+        {
+          "name": "18. Profile - Standard Sill Receptor At Balcony-Det 2F",
+          "category": "Curtain Wall Mullions",
+          "rects": [
+            [
+              61.199999999999996,
+              210,
+              119,
+              211
+            ],
+            [
+              61.199999999999996,
+              211,
+              119,
+              212
+            ]
+          ]
+        },
+        {
+          "name": "18. Profile - Standard Sill Receptor At Balcony-Det 2F",
+          "category": "Curtain Wall Mullions",
+          "rects": [
+            [
+              119,
+              210,
+              180.2,
+              211
+            ],
+            [
+              119,
+              211,
+              180.2,
+              212
+            ]
+          ]
+        },
+        {
+          "name": "18. Profile - Standard Sill Receptor At Balcony-Det 2F",
+          "category": "Curtain Wall Mullions",
+          "rects": [
+            [
+              180.2,
+              210,
+              241.4,
+              211
+            ],
+            [
+              180.2,
+              211,
+              241.4,
+              212
+            ]
+          ]
+        },
+        {
+          "name": "18. Profile - Standard Sill Receptor At Balcony-Det 2F",
+          "category": "Curtain Wall Mullions",
+          "rects": [
+            [
+              241.4,
+              210,
+              299.2,
+              211
+            ],
+            [
+              241.4,
+              211,
+              299.2,
+              212
+            ]
+          ]
+        },
+        {
+          "name": "Metal - Aluminum - Driftwood Mica",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              299.2,
+              210,
+              302.59999999999997,
+              211
+            ],
+            [
+              299.2,
+              211,
+              302.59999999999997,
+              212
+            ],
+            [
+              299.2,
+              212,
+              302.59999999999997,
+              213
+            ],
+            [
+              299.2,
+              213,
+              302.59999999999997,
+              214
+            ],
+            [
+              299.2,
+              214,
+              302.59999999999997,
+              215
+            ],
+            [
+              299.2,
+              215,
+              302.59999999999997,
+              216
+            ],
+            [
+              299.2,
+              216,
+              302.59999999999997,
+              217
+            ],
+            [
+              299.2,
+              217,
+              302.59999999999997,
+              218
+            ],
+            [
+              299.2,
+              218,
+              302.59999999999997,
+              219
+            ],
+            [
+              299.2,
+              219,
+              302.59999999999997,
+              220
+            ],
+            [
+              299.2,
+              220,
+              302.59999999999997,
+              221
+            ],
+            [
+              299.2,
+              221,
+              302.59999999999997,
+              222
+            ]
+          ]
+        },
+        {
+          "name": "Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              0,
+              213,
+              57.8,
+              214
+            ]
+          ]
+        },
+        {
+          "name": "Generic Models 1",
+          "category": "Generic Models",
+          "rects": [
+            [
+              57.8,
+              213,
+              61.199999999999996,
+              214
+            ],
+            [
+              57.8,
+              214,
+              61.199999999999996,
+              215
+            ],
+            [
+              57.8,
+              215,
+              61.199999999999996,
+              216
+            ],
+            [
+              57.8,
+              216,
+              61.199999999999996,
+              217
+            ],
+            [
+              57.8,
+              217,
+              61.199999999999996,
+              218
+            ],
+            [
+              57.8,
+              218,
+              61.199999999999996,
+              219
+            ],
+            [
+              57.8,
+              219,
+              61.199999999999996,
+              220
+            ],
+            [
+              57.8,
+              220,
+              61.199999999999996,
+              221
+            ],
+            [
+              57.8,
+              221,
+              61.199999999999996,
+              222
+            ]
+          ]
+        },
+        {
+          "name": "Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              61.199999999999996,
+              213,
+              119,
+              214
+            ]
+          ]
+        },
+        {
+          "name": "Generic Models 1",
+          "category": "Generic Models",
+          "rects": [
+            [
+              119,
+              213,
+              122.39999999999999,
+              214
+            ],
+            [
+              119,
+              214,
+              122.39999999999999,
+              215
+            ],
+            [
+              119,
+              215,
+              122.39999999999999,
+              216
+            ],
+            [
+              119,
+              216,
+              122.39999999999999,
+              217
+            ],
+            [
+              119,
+              217,
+              122.39999999999999,
+              218
+            ],
+            [
+              119,
+              218,
+              122.39999999999999,
+              219
+            ],
+            [
+              119,
+              219,
+              122.39999999999999,
+              220
+            ],
+            [
+              119,
+              220,
+              122.39999999999999,
+              221
+            ],
+            [
+              119,
+              221,
+              122.39999999999999,
+              222
+            ]
+          ]
+        },
+        {
+          "name": "Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              122.39999999999999,
+              213,
+              180.2,
+              214
+            ]
+          ]
+        },
+        {
+          "name": "Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              180.2,
+              213,
+              238,
+              214
+            ]
+          ]
+        },
+        {
+          "name": "Generic Models 1",
+          "category": "Generic Models",
+          "rects": [
+            [
+              238,
+              213,
+              241.4,
+              214
+            ],
+            [
+              238,
+              214,
+              241.4,
+              215
+            ],
+            [
+              238,
+              215,
+              241.4,
+              216
+            ],
+            [
+              238,
+              216,
+              241.4,
+              217
+            ],
+            [
+              238,
+              217,
+              241.4,
+              218
+            ],
+            [
+              238,
+              218,
+              241.4,
+              219
+            ],
+            [
+              238,
+              219,
+              241.4,
+              220
+            ],
+            [
+              238,
+              220,
+              241.4,
+              221
+            ],
+            [
+              238,
+              221,
+              241.4,
+              222
+            ]
+          ]
+        },
+        {
+          "name": "Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box",
+          "category": "Curtain Panels",
+          "rects": [
+            [
+              241.4,
+              213,
+              299.2,
+              214
+            ]
+          ]
+        },
+        {
+          "name": "8\" CURB",
+          "category": "Floors",
+          "rects": [
+            [
+              0,
+              -1,
+              306,
+              0
+            ],
+            [
+              0,
+              -2,
+              306,
+              -1
+            ],
+            [
+              0,
+              -3,
+              306,
+              -2
+            ],
+            [
+              0,
+              -4,
+              306,
+              -3
+            ],
+            [
+              0,
+              -5,
+              306,
+              -4
+            ],
+            [
+              0,
+              -6,
+              306,
+              -5
+            ],
+            [
+              0,
+              -7,
+              306,
+              -6
+            ],
+            [
+              0,
+              -8,
+              306,
+              -7
+            ],
+            [
+              0,
+              -9,
+              306,
+              -8
+            ],
+            [
+              0,
+              -10,
+              306,
+              -9
+            ],
+            [
+              0,
+              -11,
+              306,
+              -10
+            ],
+            [
+              0,
+              -12,
+              306,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -107,7 +603,7 @@
     ],
     [
       "WITHIN 1 FT",
-      "Curtain Wall Mullions (9): 3D.Profile-Vertical Mullion-Detail-No Cap, 4\" x 6\" rectangular, 2.5\" x 6\" rectangular; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
+      "Curtain Wall Mullions (9): 4\" x 6\" rectangular, 2.5\" x 6\" rectangular, 3D.Profile-Vertical Mullion-Detail-No Cap; Curtain Panels (6): Wicona - WICTEC 50SG - 32mm Spandrel Shadow Box; Generic Models (2): Generic Models 1; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg; Floors (1): 8\" CURB"
     ]
   ],
   "view": {

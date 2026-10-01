@@ -3,7 +3,7 @@
   "mark": "32023-37044",
   "dbId": 37044,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:49:01.980Z",
+  "savedAt": "2026-10-01T17:00:54.265Z",
   "frame": {
     "lengthIn": 240,
     "heightIn": 136,
@@ -66,7 +66,177 @@
         "Ceilings (2): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS; <Room Separation> (1): #136261; Doors (1): 36\" x 84\" - GS Bedroom; Generic Models (1): ADA - 60 IN CLEAR FLOOR SPACE"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "11TH FLOOR",
+          "y": 0
+        },
+        {
+          "name": "12TH FLOOR",
+          "y": 144
+        }
+      ],
+      "context": [
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              0,
+              -1,
+              192,
+              0
+            ],
+            [
+              204,
+              -1,
+              234,
+              0
+            ],
+            [
+              0,
+              -2,
+              192,
+              -1
+            ],
+            [
+              204,
+              -2,
+              234,
+              -1
+            ],
+            [
+              0,
+              -3,
+              192,
+              -2
+            ],
+            [
+              204,
+              -3,
+              234,
+              -2
+            ],
+            [
+              0,
+              -4,
+              192,
+              -3
+            ],
+            [
+              204,
+              -4,
+              234,
+              -3
+            ],
+            [
+              0,
+              -5,
+              192,
+              -4
+            ],
+            [
+              201,
+              -5,
+              234,
+              -4
+            ],
+            [
+              0,
+              -6,
+              195,
+              -5
+            ],
+            [
+              201,
+              -6,
+              237,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "36\" x 84\" - GS Bedroom",
+          "category": "Doors",
+          "rects": [
+            [
+              192,
+              -1,
+              204,
+              0
+            ],
+            [
+              234,
+              -1,
+              240,
+              0
+            ],
+            [
+              192,
+              -2,
+              204,
+              -1
+            ],
+            [
+              234,
+              -2,
+              240,
+              -1
+            ],
+            [
+              192,
+              -3,
+              204,
+              -2
+            ],
+            [
+              234,
+              -3,
+              240,
+              -2
+            ],
+            [
+              192,
+              -4,
+              204,
+              -3
+            ],
+            [
+              234,
+              -4,
+              240,
+              -3
+            ],
+            [
+              192,
+              -5,
+              201,
+              -4
+            ],
+            [
+              234,
+              -5,
+              240,
+              -4
+            ],
+            [
+              195,
+              -6,
+              201,
+              -5
+            ],
+            [
+              237,
+              -6,
+              240,
+              -5
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [

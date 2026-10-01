@@ -3,7 +3,7 @@
   "mark": "W-169581",
   "dbId": 169581,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:47:30.631Z",
+  "savedAt": "2026-10-01T16:59:12.345Z",
   "frame": {
     "lengthIn": 96,
     "heightIn": 72,
@@ -53,18 +53,323 @@
       ],
       [
         "LEFT END",
-        "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" Stud"
+        "Meets 8\" Stud, Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
       ],
       [
         "RIGHT END",
-        "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+        "Meets _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
       ],
       [
         "WITHIN 1 FT",
         "Curtain Wall Mullions (3): 2.5\" x 6\" rectangular, 4\" x 6\" rectangular; 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg (1): 23009 - Sky River Phase 2B Overall Site - Landscape LS.dwg"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [],
+      "context": [
+        {
+          "name": "8\" Stud",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              72,
+              42,
+              73
+            ],
+            [
+              0,
+              73,
+              42,
+              74
+            ],
+            [
+              0,
+              74,
+              42,
+              75
+            ],
+            [
+              0,
+              75,
+              42,
+              76
+            ],
+            [
+              0,
+              76,
+              42,
+              77
+            ],
+            [
+              0,
+              77,
+              42,
+              78
+            ],
+            [
+              0,
+              78,
+              42,
+              79
+            ],
+            [
+              0,
+              79,
+              42,
+              80
+            ],
+            [
+              0,
+              80,
+              42,
+              81
+            ],
+            [
+              0,
+              81,
+              42,
+              82
+            ],
+            [
+              0,
+              82,
+              42,
+              83
+            ],
+            [
+              0,
+              83,
+              42,
+              84
+            ],
+            [
+              0,
+              -1,
+              42,
+              0
+            ],
+            [
+              0,
+              -2,
+              42,
+              -1
+            ],
+            [
+              0,
+              -3,
+              42,
+              -2
+            ],
+            [
+              0,
+              -4,
+              42,
+              -3
+            ],
+            [
+              0,
+              -5,
+              42,
+              -4
+            ],
+            [
+              0,
+              -6,
+              42,
+              -5
+            ],
+            [
+              0,
+              -7,
+              42,
+              -6
+            ],
+            [
+              0,
+              -8,
+              42,
+              -7
+            ],
+            [
+              0,
+              -9,
+              42,
+              -8
+            ],
+            [
+              0,
+              -10,
+              42,
+              -9
+            ],
+            [
+              0,
+              -11,
+              42,
+              -10
+            ],
+            [
+              0,
+              -12,
+              42,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              42,
+              72,
+              96,
+              73
+            ],
+            [
+              42,
+              73,
+              96,
+              74
+            ],
+            [
+              42,
+              74,
+              96,
+              75
+            ],
+            [
+              42,
+              75,
+              96,
+              76
+            ],
+            [
+              42,
+              76,
+              96,
+              77
+            ],
+            [
+              42,
+              77,
+              96,
+              78
+            ],
+            [
+              42,
+              78,
+              96,
+              79
+            ],
+            [
+              42,
+              79,
+              96,
+              80
+            ],
+            [
+              42,
+              80,
+              96,
+              81
+            ],
+            [
+              42,
+              81,
+              96,
+              82
+            ],
+            [
+              42,
+              82,
+              96,
+              83
+            ],
+            [
+              42,
+              83,
+              96,
+              84
+            ],
+            [
+              42,
+              -1,
+              96,
+              0
+            ],
+            [
+              42,
+              -2,
+              96,
+              -1
+            ],
+            [
+              42,
+              -3,
+              96,
+              -2
+            ],
+            [
+              42,
+              -4,
+              96,
+              -3
+            ],
+            [
+              42,
+              -5,
+              96,
+              -4
+            ],
+            [
+              42,
+              -6,
+              96,
+              -5
+            ],
+            [
+              42,
+              -7,
+              96,
+              -6
+            ],
+            [
+              42,
+              -8,
+              96,
+              -7
+            ],
+            [
+              42,
+              -9,
+              96,
+              -8
+            ],
+            [
+              42,
+              -10,
+              96,
+              -9
+            ],
+            [
+              42,
+              -11,
+              96,
+              -10
+            ],
+            [
+              42,
+              -12,
+              96,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -93,11 +398,11 @@
     ],
     [
       "LEFT END",
-      "Meets Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC, 8\" Stud"
+      "Meets 8\" Stud, Cream Metal Panel MT10 - Oyster White, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
     ],
     [
       "RIGHT END",
-      "Meets 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
+      "Meets _81013 - 8\" STUD W/ 1 LAYERS 5/8\" GYP. FULL HEIGHT - THERMAL INSUL., 8\" STL STUD W/ 1 LAYER GYP. AND GFRC 2, 8\" STL STUD W/ 1 LAYER GYP. AND GFRC"
     ],
     [
       "WITHIN 1 FT",

@@ -3,7 +3,7 @@
   "mark": "SW42HR-87123",
   "dbId": 87123,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T05:59:31.458Z",
+  "savedAt": "2026-10-01T17:06:19.664Z",
   "frame": {
     "lengthIn": 418.4210784730897,
     "heightIn": 138.1579032694164,
@@ -71,7 +71,59 @@
         "Doors (2): 36\" x 84\" - 90 Min. CATWALK INNER DOOR, 36\" x 84\" - 90 Min. CATWALK OUTER DOOR; Supports (2): Support - Metal - Circular, Grand Stair Support Stringer; Lines (1): #289127; Plumbing Fixtures (1): Player Suite; Stairs (1): 7\" max riser 11\" tread; Structural Framing (1): C10X15.3; Walls (1): _34223 - 3 5/8\" STUD W/ 2 LAYER 5/8\" GYP. FULL HEIGHT - ACOUSTIC INSUL - 2 HOUR RATED"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "2ND FLOOR",
+          "y": 150.125
+        }
+      ],
+      "context": [
+        {
+          "name": "Player Suite",
+          "category": "Plumbing Fixtures",
+          "rects": [
+            [
+              92.98246188290882,
+              144.1579032694164,
+              102.28070807119971,
+              145.1579032694164
+            ],
+            [
+              88.33333878876338,
+              145.1579032694164,
+              102.28070807119971,
+              146.1579032694164
+            ],
+            [
+              88.33333878876338,
+              146.1579032694164,
+              102.28070807119971,
+              147.1579032694164
+            ],
+            [
+              88.33333878876338,
+              147.1579032694164,
+              102.28070807119971,
+              148.1579032694164
+            ],
+            [
+              88.33333878876338,
+              148.1579032694164,
+              102.28070807119971,
+              149.1579032694164
+            ],
+            [
+              88.33333878876338,
+              149.1579032694164,
+              102.28070807119971,
+              150.1579032694164
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [

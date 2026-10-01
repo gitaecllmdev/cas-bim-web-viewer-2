@@ -3,7 +3,7 @@
   "mark": "32003-270607",
   "dbId": 270607,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T05:58:58.732Z",
+  "savedAt": "2026-10-01T17:05:41.188Z",
   "frame": {
     "lengthIn": 168,
     "heightIn": 110,
@@ -69,10 +69,312 @@
       ],
       [
         "WITHIN 1 FT",
-        "Walls (4): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; Generic Models (3): CASE - 2 BAY TV CONSOLE DRESSER, Plasma 55\" Non Wall Based, CASE - 2 B AY TV WALL; Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; <Room Separation> (1): #136409; Lines (1): #270604"
+        "Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; Walls (2): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; <Room Separation> (1): #136409; Generic Models (1): CASE - 2 B AY TV WALL; Lines (1): #270604"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "3RD FLOOR",
+          "y": 0
+        },
+        {
+          "name": "4TH FLOOR",
+          "y": 120
+        }
+      ],
+      "context": [
+        {
+          "name": "TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS",
+          "category": "Ceilings",
+          "rects": [
+            [
+              0,
+              110,
+              168,
+              111
+            ],
+            [
+              0,
+              111,
+              168,
+              112
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "Lines",
+          "rects": [
+            [
+              93,
+              114,
+              99,
+              115
+            ],
+            [
+              90,
+              115,
+              99,
+              116
+            ],
+            [
+              90,
+              116,
+              102,
+              117
+            ],
+            [
+              90,
+              117,
+              102,
+              118
+            ],
+            [
+              90,
+              118,
+              102,
+              119
+            ],
+            [
+              90,
+              119,
+              102,
+              120
+            ]
+          ]
+        },
+        {
+          "name": "3'-3 x 7'-0\" 2 BAY SUITE",
+          "category": "Doors",
+          "rects": [
+            [
+              0,
+              120,
+              48,
+              121
+            ],
+            [
+              0,
+              121,
+              48,
+              122
+            ]
+          ]
+        },
+        {
+          "name": "CASE - 2 BAY TV CONSOLE DRESSER",
+          "category": "Generic Models",
+          "rects": [
+            [
+              48,
+              120,
+              51,
+              121
+            ],
+            [
+              117,
+              120,
+              120,
+              121
+            ],
+            [
+              48,
+              121,
+              51,
+              122
+            ],
+            [
+              117,
+              121,
+              120,
+              122
+            ]
+          ]
+        },
+        {
+          "name": "_31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2",
+          "category": "Walls",
+          "rects": [
+            [
+              51,
+              120,
+              117,
+              121
+            ],
+            [
+              51,
+              121,
+              117,
+              122
+            ]
+          ]
+        },
+        {
+          "name": "3'-3 x 7'-0\" 2 BAY SUITE",
+          "category": "Doors",
+          "rects": [
+            [
+              120,
+              120,
+              168,
+              121
+            ],
+            [
+              120,
+              121,
+              168,
+              122
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "Lines",
+          "rects": [
+            [
+              90,
+              -1,
+              102,
+              0
+            ],
+            [
+              90,
+              -2,
+              102,
+              -1
+            ],
+            [
+              90,
+              -3,
+              102,
+              -2
+            ],
+            [
+              90,
+              -4,
+              102,
+              -3
+            ],
+            [
+              90,
+              -5,
+              99,
+              -4
+            ],
+            [
+              93,
+              -6,
+              99,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "TYPE A - 5/8 GYP. BD. OVER 1 5/8\" STUDS",
+          "category": "Ceilings",
+          "rects": [
+            [
+              0,
+              -9,
+              168,
+              -8
+            ],
+            [
+              0,
+              -10,
+              168,
+              -9
+            ]
+          ]
+        },
+        {
+          "name": "_32003 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. FULL HEIGHT - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              -11,
+              48,
+              -10
+            ],
+            [
+              120,
+              -11,
+              168,
+              -10
+            ],
+            [
+              0,
+              -12,
+              48,
+              -11
+            ],
+            [
+              120,
+              -12,
+              168,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2",
+          "category": "Walls",
+          "rects": [
+            [
+              48,
+              -11,
+              51,
+              -10
+            ],
+            [
+              48,
+              -12,
+              51,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2",
+          "category": "Walls",
+          "rects": [
+            [
+              51,
+              -11,
+              117,
+              -10
+            ],
+            [
+              51,
+              -12,
+              117,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2",
+          "category": "Walls",
+          "rects": [
+            [
+              117,
+              -11,
+              120,
+              -10
+            ],
+            [
+              117,
+              -12,
+              120,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -105,7 +407,7 @@
     ],
     [
       "WITHIN 1 FT",
-      "Walls (4): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; Generic Models (3): CASE - 2 BAY TV CONSOLE DRESSER, Plasma 55\" Non Wall Based, CASE - 2 B AY TV WALL; Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; <Room Separation> (1): #136409; Lines (1): #270604"
+      "Doors (2): 3'-3 x 7'-0\" 2 BAY SUITE; Walls (2): _31002 - 3 5/8\" FULL HEIGHT STUD W/ 1 LAYER 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. 2; <Room Separation> (1): #136409; Generic Models (1): CASE - 2 B AY TV WALL; Lines (1): #270604"
     ]
   ],
   "view": {

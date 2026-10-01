@@ -3,7 +3,7 @@
   "mark": "32002-35422",
   "dbId": 35422,
   "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA",
-  "savedAt": "2026-10-01T01:45:08.535Z",
+  "savedAt": "2026-10-01T16:56:33.492Z",
   "frame": {
     "lengthIn": 105.99999999999999,
     "heightIn": 111.99999999999999,
@@ -55,18 +55,266 @@
       ],
       [
         "LEFT END",
-        "Free end (no wall within 1 ft)"
+        "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
       ],
       [
         "RIGHT END",
-        "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap, Soffit Wall"
+        "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Soffit Wall, _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap"
       ],
       [
         "WITHIN 1 FT",
-        "<Room Separation> (3): #137391, #137400, #137405; Doors (2): 72\" x 84\"  - PS Closet; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS"
+        "<Room Separation> (2): #137391, #137405; Doors (2): 72\" x 84\"  - PS Closet; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS"
       ]
     ],
-    "sheet": "auto"
+    "sheet": "auto",
+    "elev": {
+      "levels": [
+        {
+          "name": "8TH FLOOR",
+          "y": 0
+        },
+        {
+          "name": "9TH FLOOR",
+          "y": 120
+        }
+      ],
+      "context": [
+        {
+          "name": "Soffit Wall",
+          "category": "Walls",
+          "rects": [
+            [
+              99.94285714285714,
+              111.99999999999999,
+              106,
+              112.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              0,
+              113.99999999999999,
+              102.97142857142856,
+              114.99999999999999
+            ],
+            [
+              0,
+              114.99999999999999,
+              106,
+              115.99999999999999
+            ],
+            [
+              0,
+              115.99999999999999,
+              106,
+              116.99999999999999
+            ],
+            [
+              0,
+              116.99999999999999,
+              106,
+              117.99999999999999
+            ],
+            [
+              0,
+              117.99999999999999,
+              106,
+              118.99999999999999
+            ],
+            [
+              0,
+              118.99999999999999,
+              106,
+              119.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "_32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              119.99999999999999,
+              12.114285714285714,
+              120.99999999999999
+            ],
+            [
+              90.85714285714286,
+              119.99999999999999,
+              106,
+              120.99999999999999
+            ],
+            [
+              0,
+              120.99999999999999,
+              12.114285714285714,
+              121.99999999999999
+            ],
+            [
+              90.85714285714286,
+              120.99999999999999,
+              106,
+              121.99999999999999
+            ],
+            [
+              0,
+              121.99999999999999,
+              12.114285714285714,
+              122.99999999999999
+            ],
+            [
+              90.85714285714286,
+              121.99999999999999,
+              106,
+              122.99999999999999
+            ],
+            [
+              0,
+              122.99999999999999,
+              12.114285714285714,
+              123.99999999999999
+            ],
+            [
+              90.85714285714286,
+              122.99999999999999,
+              106,
+              123.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "72\" x 84\"  - PS Closet",
+          "category": "Doors",
+          "rects": [
+            [
+              12.114285714285714,
+              119.99999999999999,
+              90.85714285714286,
+              120.99999999999999
+            ],
+            [
+              12.114285714285714,
+              120.99999999999999,
+              90.85714285714286,
+              121.99999999999999
+            ],
+            [
+              12.114285714285714,
+              121.99999999999999,
+              90.85714285714286,
+              122.99999999999999
+            ],
+            [
+              12.114285714285714,
+              122.99999999999999,
+              90.85714285714286,
+              123.99999999999999
+            ]
+          ]
+        },
+        {
+          "name": "",
+          "category": "<Room Separation>",
+          "rects": [
+            [
+              0,
+              -1,
+              106,
+              0
+            ],
+            [
+              0,
+              -2,
+              106,
+              -1
+            ],
+            [
+              0,
+              -3,
+              106,
+              -2
+            ],
+            [
+              0,
+              -4,
+              106,
+              -3
+            ],
+            [
+              0,
+              -5,
+              106,
+              -4
+            ],
+            [
+              0,
+              -6,
+              102.97142857142856,
+              -5
+            ]
+          ]
+        },
+        {
+          "name": "Soffit Wall",
+          "category": "Walls",
+          "rects": [
+            [
+              99.94285714285714,
+              -8,
+              106,
+              -7
+            ],
+            [
+              102.97142857142856,
+              -11,
+              106,
+              -10
+            ],
+            [
+              102.97142857142856,
+              -12,
+              106,
+              -11
+            ]
+          ]
+        },
+        {
+          "name": "_32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL.",
+          "category": "Walls",
+          "rects": [
+            [
+              0,
+              -9,
+              106,
+              -8
+            ],
+            [
+              0,
+              -10,
+              106,
+              -9
+            ],
+            [
+              0,
+              -11,
+              102.97142857142856,
+              -10
+            ],
+            [
+              0,
+              -12,
+              102.97142857142856,
+              -11
+            ]
+          ]
+        }
+      ]
+    }
   },
   "conditions": [
     [
@@ -91,15 +339,15 @@
     ],
     [
       "LEFT END",
-      "Free end (no wall within 1 ft)"
+      "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL."
     ],
     [
       "RIGHT END",
-      "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap, Soffit Wall"
+      "Meets _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL., Soffit Wall, _32002 - 3 5/8\" STUD W/ 2 LAYERS 5/8\" GYP. 6\" ABV. CLG. - NO INSUL. w/ wrap"
     ],
     [
       "WITHIN 1 FT",
-      "<Room Separation> (3): #137391, #137400, #137405; Doors (2): 72\" x 84\"  - PS Closet; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS"
+      "<Room Separation> (2): #137391, #137405; Doors (2): 72\" x 84\"  - PS Closet; Ceilings (1): TYPE A - 5/8 GYP. BD. OVER 3 5/8\" STUDS"
     ]
   ],
   "view": {
