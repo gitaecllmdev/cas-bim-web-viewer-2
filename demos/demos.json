@@ -60,10 +60,10 @@
     },
     {
         "id": "04-punch",
-        "name": "4 · Field QC / Punch Viewer",
+        "name": "4 · Field QC / Punch",
         "extensionId": "Drywall.Punch",
-        "for": "Foremen and QC",
-        "summary": "Pin punch items on walls in 3D or on the plan, with type, notes and markup, and jump to any item in 3D.",
+        "for": "Foremen and QC, on an iPad",
+        "summary": "Big buttons and large text: stamp a punch item on the plan or in 3D, take photos with the iPad, set who fixes it, open / in review / closed. A daily or weekly PDF report with plans, stamps and photos, sent from the share sheet; progress colors on demand.",
         "toolbar": {
             "builtin": [],
             "tools": [
