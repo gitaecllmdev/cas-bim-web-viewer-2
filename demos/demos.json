@@ -104,5 +104,18 @@
                 "fit"
             ]
         }
+    },
+    {
+        "id": "08-panel-shipper",
+        "name": "8 · Panel Shipper",
+        "extensionId": "Drywall.PanelShipper",
+        "for": "Prefab and logistics",
+        "summary": "A concept: the framed panels in delivery batches, floor by floor in build order (framing dates from the schedule), loaded on 48 ft flatbeds. The truck and its stacks in 3D beside the floor plan with the truck's panels highlighted; find a panel, open its shop drawing.",
+        "toolbar": {
+            "builtin": [],
+            "tools": [
+                "fit"
+            ]
+        }
     }
 ]
