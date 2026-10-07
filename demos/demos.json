@@ -110,10 +110,24 @@
         "name": "8 · Panel Shipper",
         "extensionId": "Drywall.PanelShipper",
         "for": "Prefab and logistics",
-        "summary": "A concept: the framed panels in delivery batches, floor by floor in build order (framing dates from the schedule), loaded on 48 ft flatbeds. The truck and its stacks in 3D beside the floor plan with the truck's panels highlighted; find a panel, open its shop drawing.",
+        "summary": "A concept: one floor's framed panels packed on as few trucks as they go, what each truck carries against its trailer, and the order to load it. Change the plan by drag and drop; the truck beside the floor plan in each truck's color.",
         "toolbar": {
             "builtin": [],
             "tools": [
+                "fit"
+            ]
+        }
+    },
+    {
+        "id": "09-panel-tracker",
+        "name": "9 · Panel Tracker",
+        "extensionId": "Drywall.PanelTracker",
+        "for": "Prefab, shipping and the field",
+        "summary": "Each prefab panel from BIM review to framing complete: scan its QR code, type its mark or click its wall to record a step. The walls in 3D and on the plan in the color of their step, late panels flagged, the list to Excel, QR labels, and an exchange file for Revit.",
+        "toolbar": {
+            "builtin": [],
+            "tools": [
+                "showall",
                 "fit"
             ]
         }
