@@ -1,7 +1,7 @@
 [
     {
         "id": "07-explorer",
-        "name": "7 · APS Viewer Capabilities",
+        "name": "0 · APS Viewer Capabilities",
         "extensionId": "Drywall.Explorer",
         "for": "Everyone: what the APS viewer does, in 3D and 2D",
         "summary": "Find and isolate walls, framing, doors or MEP; color by any property; cut, explode, walk and measure; the plan beside the model with areas and markups; saved views, screenshots and the full capability list.",
@@ -106,6 +106,20 @@
         }
     },
     {
+        "id": "09-panel-tracker",
+        "name": "7 · Panel Tracker",
+        "extensionId": "Drywall.PanelTracker",
+        "for": "Prefab, shipping and the field",
+        "summary": "Each prefab panel from BIM review to framing complete: scan its QR code, type its mark or click its wall to record a step. The walls in 3D and on the plan in the color of their step, late panels flagged, the list to Excel, QR labels, and an exchange file for Revit.",
+        "toolbar": {
+            "builtin": [],
+            "tools": [
+                "showall",
+                "fit"
+            ]
+        }
+    },
+    {
         "id": "08-panel-shipper",
         "name": "8 · Panel Shipper",
         "extensionId": "Drywall.PanelShipper",
@@ -114,20 +128,6 @@
         "toolbar": {
             "builtin": [],
             "tools": [
-                "fit"
-            ]
-        }
-    },
-    {
-        "id": "09-panel-tracker",
-        "name": "9 · Panel Tracker",
-        "extensionId": "Drywall.PanelTracker",
-        "for": "Prefab, shipping and the field",
-        "summary": "Each prefab panel from BIM review to framing complete: scan its QR code, type its mark or click its wall to record a step. The walls in 3D and on the plan in the color of their step, late panels flagged, the list to Excel, QR labels, and an exchange file for Revit.",
-        "toolbar": {
-            "builtin": [],
-            "tools": [
-                "showall",
                 "fit"
             ]
         }
