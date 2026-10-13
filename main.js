@@ -6,6 +6,7 @@ import { CONFIG } from './config.js';
 import { Views } from './views.js';
 import { TOOLS_EXTENSION_ID } from './tools.js';
 import { countVisit } from './hits.js';
+import { demoEntry } from './demo-entry.mjs';
 
 countVisit(); // the home page's view counter (hits.js)
 
@@ -22,6 +23,7 @@ let panel = document.getElementById('panel'); // a fresh one for each demo switc
 const demos = await fetchJson('demos/demos.json');
 const demoId = new URLSearchParams(location.search).get('demo');
 const demo = demos.find(d => d.id === demoId) || demos[0];
+let activeDemo = demo, activeEntry = demoEntry(demo, location.hash.substring(1), CONFIG.progressBaseline);
 
 demoSelect.innerHTML = demos.map(d => `<option value="${d.id}" ${d === demo ? 'selected' : ''}>${d.name}</option>`).join('');
 demoSelect.onchange = () => {
@@ -48,8 +50,8 @@ if (offline) {
     onModelReady(viewer, (model) => views.setModel(model).catch(err => console.error(err)));
     if (demo) {
         try {
-            await import(`./demos/${demo.id}/extension.js`);
-            await viewer.loadExtension(demo.extensionId, { panel, views });
+            await import(activeEntry.module);
+            await viewer.loadExtension(activeEntry.extensionId, { panel, views });
         } catch (err) {
             showNotification(`Demo <em>${demo.name}</em> failed to load. See the browser console.`);
             console.error(err);
@@ -72,15 +74,18 @@ function setupDemoSwitch(viewer, views, first) {
         if (!current || JSON.stringify(next.toolbar) !== JSON.stringify(current.toolbar)) { location.href = linkTo(next); return; }
         switching = true;
         try {
-            viewer.unloadExtension(current.extensionId);
+            viewer.unloadExtension(activeEntry.extensionId);
             // A fresh panel element: nothing the last demo left listening on it reaches the next one.
             const fresh = panel.cloneNode(false);
             panel.replaceWith(fresh);
             panel = fresh;
             history.replaceState(null, '', linkTo(next));
             demoSelect.value = next.id;
-            await import(`./demos/${next.id}/extension.js`);
-            await viewer.loadExtension(next.extensionId, { panel, views });
+            const entry = demoEntry(next, location.hash.substring(1), CONFIG.progressBaseline);
+            await import(entry.module);
+            await viewer.loadExtension(entry.extensionId, { panel, views });
+            activeDemo = next;
+            activeEntry = entry;
             current = next;
         } catch (err) {
             console.error(err);
@@ -110,6 +115,12 @@ async function setupModelSelection(selectedUrn) {
 async function onModelSelected(urn) {
     clearTimeout(window.onModelSelectedTimeout);
     location.hash = urn;
+    // Changing models can cross the Wilton-only schedule boundary. A reload also
+    // clears the old extension's listeners without mixing the two implementations.
+    if (activeDemo.id === '03-progress' && demoEntry(activeDemo, urn, CONFIG.progressBaseline).module !== activeEntry.module) {
+        location.reload();
+        return;
+    }
     try {
         const status = CONFIG.mode === 'static' ? { status: 'success' } : await fetchJson(`api/models/${urn}/status`);
         switch (status.status) {
