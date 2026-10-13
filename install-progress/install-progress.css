@@ -43,3 +43,7 @@
 
 .install-footer>div{display:flex;flex-direction:column;gap:3px;min-width:0}.install-footer .footer-status{flex-direction:row;align-items:center;gap:14px;flex-wrap:wrap}.install-footer{font-size:9px;padding:7px 16px;min-height:42px;overflow:visible}.install-app [data-layout]{display:inline-flex;align-items:center;gap:4px}
 @media(max-width:780px){.install-footer{align-items:flex-start;gap:6px;flex-wrap:wrap}.install-footer .footer-status{width:100%;justify-content:space-between}.install-app [data-layout] .dashboard-icon{width:12px;height:12px;min-width:12px}.install-app [data-layout]{padding:5px;gap:3px}}
+/* Keep each pane in its grid slot when Model or Schedule hides its neighbor. */
+.install-app #main>.model-card{grid-area:1/1}
+.install-app #main>.workspace-divider-region{grid-area:1/2}
+.install-app #main>.dashboard-side{grid-area:1/3}

@@ -1,1 +1,1 @@
-export const CONFIG={mode:'static',tokenUrl:"https://cas-bim-token.karthikeya-civ.workers.dev",publicUrl:"https://gitaecllmdev.github.io/cas-bim-web-viewer-2/install-progress/",stateUrl:'',hitsUrl:'',build:"3c7d05d26f9a"};
+export const CONFIG={mode:'static',tokenUrl:"https://cas-bim-token.karthikeya-civ.workers.dev",publicUrl:"https://gitaecllmdev.github.io/cas-bim-web-viewer-2/install-progress/",stateUrl:'',hitsUrl:'',build:"d8f0922f60f3"};
