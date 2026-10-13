@@ -60,7 +60,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.stages = {}; // externalId -> stage name (walls without an entry are "Not started")
         this.selected = [];
         const params = new URLSearchParams(location.search);
-        this.tab = TABS[params.get('tab')] ? params.get('tab') : 'stages';
+        this.tab = TABS[params.get('tab')] ? params.get('tab') : 'gantt';
         this.colorMode = 'actual';
         // Schedule views: only the walls linked to the schedule, the floors apart (views.setLevelsApart), all floor plans.
         this.linkedOnly = false;
@@ -495,7 +495,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     setTab(tab) {
         this.tab = tab;
         const params = new URLSearchParams(location.search);
-        if (tab === 'stages') params.delete('tab'); else params.set('tab', tab);
+        if (tab === 'gantt') params.delete('tab'); else params.set('tab', tab);
         history.replaceState(null, '', `${location.pathname}?${params}`);
         this.panel.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
         const search = this.panel.querySelector('[data-search]');
