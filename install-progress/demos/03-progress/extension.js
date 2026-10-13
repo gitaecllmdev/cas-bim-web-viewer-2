@@ -76,7 +76,13 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.resizer.observe(this.panel);
         this.stops = [
             onModelReady(this.viewer, (model) => this.init(model)),
-            this.views.on('level', () => { if (this.walls) this.renderBody(); }),
+            this.views.on('level', () => {
+                if (!this.walls) return;
+                if (this.options.standalone && this.selectedAct && this.activity(this.selectedAct)?.level !== this.views.level?.name) {
+                    this.clearFocus();this.refresh();
+                }
+                this.renderBody();
+            }),
             onDockChange(() => { if (this.walls) this.render(); }), // the Gantt's width and its ⤢ button follow the dock
             // Levels and their elevations arrive after the walls: redraw so floors list bottom to top.
             this.views.on('ready', () => { if (this.walls) { this.linkedCache = null; this.renderBody(); } }),
@@ -1119,12 +1125,39 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.renderBody();
     }
 
+    // Serialize floor/plan loading; a newer selection or manual level change wins.
+    focusScheduleLevel(name) {
+        if (!this.views.levels.some(l => l.name === name)) return;
+        const version = this.scheduleFocusVersion = (this.scheduleFocusVersion || 0) + 1;
+        this.views.cancelSelectionFollow();
+        const selectionVersion = this.views.selectionFollowVersion;
+        const current = () => version === this.scheduleFocusVersion && selectionVersion === this.views.selectionFollowVersion;
+        this.scheduleFocusQueue = (this.scheduleFocusQueue || Promise.resolve()).then(async () => {
+            if (!current()) return;
+            this.views.setLayout('split', { open: false });
+            if (this.views.apart) { await this.views.setLevelsApart(null); this.apartOn = false; }
+            if (!current()) return;
+            if (this.allPlans.isOpen) this.allPlans.close();
+            this.views.showAll();
+            this.isolatedBySchedule = false;
+            await this.views.setLevel(name, { fit: 'now' });
+            if (!current()) return;
+            this.refresh();this.renderBody();
+            document.dispatchEvent(new CustomEvent('dashboard-focus'));
+        }).catch(err => this.message(`Floor context needs a retry: ${err.message || err}`, 'warn'));
+        return this.scheduleFocusQueue;
+    }
+
     selectActivity(id) {
+        this.scheduleFocusVersion = (this.scheduleFocusVersion || 0) + 1;
         if(this.playbackMode)this.endPlayback();
         this.selectedAct = this.selectedAct === id ? null : id;
         this.reveal = !!this.selectedAct;
         const a = this.focusActivity();
-        if (a) {
+        if (this.options.standalone) {
+            const selected = this.selectedAct && this.activity(this.selectedAct);
+            if (selected?.level) this.focusScheduleLevel(selected.level);
+        } else if (a) {
             const ids = this.wallsOf(a).map(w => w.dbId);
             // With the floors apart every floor stays in view, colored by the activity's stage (refresh).
             if (!this.views.apart) { this.views.isolate(ids); this.isolatedBySchedule = true; }
@@ -1139,6 +1172,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     clearFocus() {
+        this.scheduleFocusVersion = (this.scheduleFocusVersion || 0) + 1;
         if (!this.selectedAct) return;
         this.selectedAct = null;
         if (this.isolatedBySchedule) { this.showDefault(); this.isolatedBySchedule = false; }
@@ -1152,6 +1186,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const level = this.views.level?.name;
         const rows = ganttRows(this.visibleActivities(this.gantt.show), this.schedule, { collapsed: this.keywordHits() ? new Set() : this.gantt.collapsed });
         const html = ganttHtml({
+            floorGroups: this.options.standalone,
             formatDay:d=>this.fmtDay(d),rows, span: this.span, scale: this.gantt.scale, cal: this.cal, dataDate: this.schedule.project.dataDate, today: localToday(),
             cursor: this.colorMode === 'actual' ? null : this.cursor, selectedId: this.selectedAct, linkMode: this.gantt.links, links: this.schedule.links,
             colorOf: (a) => this.colorOf(a), modelOf: (a) => this.modelOf(a), cmpOf: (a) => compare(this.modelOf(a), a.pct),
@@ -1184,7 +1219,13 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const g = body.querySelector('[data-gantt]');
         g.onclick = (e) => {
             const w = e.target.closest('[data-wbs]');
-            if (w) { const id = w.dataset.wbs; this.gantt.collapsed.has(id) ? this.gantt.collapsed.delete(id) : this.gantt.collapsed.add(id); this.renderBody(); return; }
+            if (w) {
+                if (this.options.standalone && w.dataset.groupLevel && !e.target.closest('[data-toggle-wbs]')) {
+                    if (this.playbackMode) this.endPlayback();
+                    this.clearFocus();this.focusScheduleLevel(w.dataset.groupLevel);return;
+                }
+                const id = w.dataset.wbs; this.gantt.collapsed.has(id) ? this.gantt.collapsed.delete(id) : this.gantt.collapsed.add(id); this.renderBody(); return;
+            }
             const r = e.target.closest('[data-act]');
             if (r) this.selectActivity(r.dataset.act);
         };

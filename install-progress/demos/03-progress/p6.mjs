@@ -510,8 +510,10 @@ export function ganttRows(linked, schedule, { keep = () => true, collapsed = new
             if (!items.length) continue;
             const starts = items.map(a => a.start).sort(), ends = items.map(a => a.finish).sort();
             const weight = (a) => Math.max(1, a.dur || 0), total = items.reduce((s, a) => s + weight(a), 0);
+            const levels = new Set(items.map(a => a.level).filter(Boolean));
             rows.push({
                 kind: 'wbs', id: w.id, name: w.name, code: w.code, depth, start: starts[0], finish: ends.at(-1), count: items.length, collapsed: collapsed.has(w.id),
+                level: levels.size === 1 ? [...levels][0] : null,
                 complete: items.every(a => a.status === 'complete'), active: items.some(a => a.status === 'active'),
                 pct: items.some(a => a.pct == null) ? null : Math.round(items.reduce((s, a) => s + a.pct * weight(a), 0) / total),
             });

@@ -60,9 +60,12 @@ export function ganttHtml(g) {
     const rows = g.rows.map((r) => {
         if (r.kind === 'wbs') {
             const a = x(r.start), b = x(r.finish) + ppd;
+            const floor = g.floorGroups && r.level;
+            const toggle = floor ? `<button class="pg-tw" data-toggle-wbs aria-expanded="${!r.collapsed}" aria-label="${r.collapsed ? 'Expand' : 'Collapse'} ${escapeHtml(r.name)}">${r.collapsed ? '▸' : '▾'}</button>` : `<b class="pg-tw">${r.collapsed ? '▸' : '▾'}</b>`;
+            const name = floor ? `<button data-focus-level="${escapeHtml(floor)}" title="Section 3D and open the plan for ${escapeHtml(floor)}">${escapeHtml(r.name)}</button>` : escapeHtml(r.name);
             const state = r.complete ? '<span class="pg-done" title="Every activity in this group is complete">✓ complete</span>' : r.active ? '<span class="pg-wip" title="Work in progress">in progress</span>' : '';
-            return `<div class="pg-g-row wbs${r.complete ? ' done' : ''}" data-wbs="${escapeHtml(r.id)}" title="${r.collapsed ? 'Click to open' : 'Click to fold'}">
-                <div class="pg-g-cells"><span class="pg-g-name" style="padding-left:${r.depth * 12}px"><b class="pg-tw">${r.collapsed ? '▸' : '▾'}</b>${escapeHtml(r.name)} <span class="muted">(${r.count})</span> ${state}</span>
+            return `<div class="pg-g-row wbs${r.complete ? ' done' : ''}" data-wbs="${escapeHtml(r.id)}" ${floor ? `data-group-level="${escapeHtml(floor)}"` : ''} title="${floor ? `Show ${escapeHtml(floor)} in 3D and plan; use the arrow to fold` : r.collapsed ? 'Click to open' : 'Click to fold'}">
+                <div class="pg-g-cells"><span class="pg-g-name" style="padding-left:${r.depth * 12}px">${toggle}${name} <span class="muted">(${r.count})</span> ${state}</span>
                     <span class="c-date">${displayDay(r.start)}</span><span class="c-date">${displayDay(r.finish)}</span><span class="c-dur"></span><span class="num">${pctText(r.pct)}</span><span></span></div>
                 <div class="pg-g-track"><b class="pg-sum" style="left:${a}px;width:${Math.max(2, b - a)}px"></b></div></div>`;
         }

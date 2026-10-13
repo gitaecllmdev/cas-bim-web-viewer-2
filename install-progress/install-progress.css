@@ -49,6 +49,10 @@
 .install-app #main>.dashboard-side{grid-area:1/3}
 
 /* Model, plan and schedule lead; project summaries follow the workspace. */
+.install-app .pg-g-row.wbs button{border:0;background:transparent;color:inherit;font:inherit;padding:0;text-align:left;border-radius:2px}
+.install-app .pg-g-row.wbs [data-focus-level]{font-weight:600}
+.install-app .pg-g-row.wbs [data-focus-level]:hover{text-decoration:underline}
+.install-app .pg-g-row.wbs [data-toggle-wbs]{padding:0 3px;margin-right:2px}
 .install-app{height:auto;min-height:100dvh}
 #header.install-header{min-height:50px;padding:6px 18px;gap:12px}
 .brand-logo{width:38px;height:36px;padding:2px}
