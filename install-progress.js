@@ -2,8 +2,11 @@ import {initViewer,loadModel} from './viewer.js';
 import {Views} from './views.js';
 import {fetchJson,onModelReady,escapeHtml} from './helpers.js';
 import {CONFIG} from './config.js';
-import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp,PLAYBACK_COLORS} from './project-dashboard.mjs';
+import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp,modelStatusLegend} from './project-dashboard.mjs';
 const $=id=>document.getElementById(id);
+function renderModelStatusLegend(summary={}){
+    $('model-legend').innerHTML=modelStatusLegend(summary).map(({color,label})=>`<span><i style="background:${color}"></i>${escapeHtml(label)}</span>`).join('');
+}
 const sourceLabel=id=>({revit:'Model',schedule:'Schedule',cost:'Cost',labour:'Labour'})[id];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
 const variance=n=>(n>0?'+':'')+money(n);
@@ -25,7 +28,7 @@ divider.onpointerup=finishResize;divider.onlostpointercapture=finishResize;divid
 divider.ondblclick=()=>resizeWorkspace(.42,true);
 divider.onkeydown=e=>{const values={ArrowLeft:share-(e.shiftKey?.05:.02),ArrowRight:share+(e.shiftKey?.05:.02),Home:0,End:1,Enter:.42};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
 document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.onclick=()=>setWorkspaceMode(b.dataset.workspaceMode));
-new ResizeObserver(()=>resizeWorkspace()).observe(main);setWorkspaceMode(mode,false);
+new ResizeObserver(()=>resizeWorkspace()).observe(main);setWorkspaceMode(mode,false);renderModelStatusLegend();
 function renderSources(){
     $('source-statuses').innerHTML=INTEGRATIONS.map(s=>{const saved=links[s.id],at=s.id==='schedule'?summary?.dataDate:saved?.at|| (['cost','labour'].includes(s.id)?'2026-10-12':'');const fresh=sourceFreshness(at);let text=s.id==='revit'?(summary?'Demo link current · '+bimSnapshot.revision+' · '+dashboardTimestamp(bimSnapshot.updatedAt):'Loading viewer'):s.id==='schedule'?(summary?(fresh.state==='unknown'?'Data date unknown':'Checked '+dashboardDate(at)):'Waiting for schedule'):s.id==='labour'?'Sample labour plan':'Sample cost plan';let state=s.id==='revit'?(summary?'current':'unknown'):fresh.state;if(saved?.mode==='setup'){text='Setup saved · sync not enabled';state='unknown';}else if(fresh.state==='stale')text=fresh.label+' · '+dashboardDate(at);return `<button data-source-step="${s.id}" title="Open ${escapeHtml(s.name)} data source"><i class="source-dot ${state}"></i><b>${sourceLabel(s.id)}</b><span>${escapeHtml(text)}</span>${s.id==='revit'&&summary?'<span class="demo-badge">Demo data</span>':''}</button>`;}).join('');
     document.querySelectorAll('[data-source-step]').forEach(b=>b.onclick=()=>openConnect(b.dataset.sourceStep));
@@ -117,7 +120,7 @@ document.addEventListener('progress-summary',e=>{
     for(const [id,value] of [['finish-status',m.finishStatus],['finish-value',dashboardDate(m.finish)],['finish-change',delta(m.changes?.finish,true)],['progress-status',m.progressStatus],['progress-value',m.gap==null?'Not linked':(m.gap>=0?'+':'')+m.gap+' pts'],['progress-change',delta(m.changes?.progress,true)],['cost-status','Over budget'],['cost-value','+'+m.costs.variancePct.toFixed(1)+'%'],['cost-change','+$45,000 since last week (demo comparison)'],['decision-status',m.pending?'Review needed':'Reviewed'],['decision-value',m.pending],['decision-change',delta(m.changes?.decisions,true)]])$(id).textContent=value;
     $('finish-demo').hidden=!s.demo;$('progress-demo').hidden=!s.demo;$('decision-demo').hidden=!s.demo;
     for(const [name,state] of [['finish',m.finishStatus==='Unknown'?'neutral':m.finishStatus==='At risk'?'red':'green'],['progress',m.gap<-10?'red':m.gap==null?'neutral':'green'],['cost','red'],['decisions',m.pending?'amber':'green']])document.querySelector(`[data-headline="${name}"]`).dataset.status=state;
-    $('model-legend').innerHTML=s.playback?Object.entries(PLAYBACK_COLORS).map(([stage,color])=>`<span><i style="background:${color}"></i>${stage}</span>`).join(''):(s.colorMode==='compare'?[['green','On or ahead of plan'],['red','Behind plan'],['neutral','Not started']]:[['neutral','Not started'],['amber','In progress'],['green','Finished'],['red','Behind selected activity']]).map(([color,label])=>`<span><i class="${color}"></i>${label}</span>`).join('');
+    renderModelStatusLegend(s);
     renderSources();renderDrill();
 });
 renderSources();decorateControls();

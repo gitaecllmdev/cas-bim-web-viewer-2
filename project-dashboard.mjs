@@ -1,5 +1,15 @@
-// Playback colors identify construction stages; dashboard status colors retain their usual meaning.
-export const PLAYBACK_COLORS=Object.freeze({Framed:'#bd8728',Boarded:'#467ba2',Taped:'#8b6ca3',Finished:'#287d63'});
+// One construction-status palette for field progress, schedule, model and playback.
+// Not started retains the model's normal appearance; its legend uses neutral grey.
+export const INSTALL_COLORS=Object.freeze({'Not started':null,Framed:'#bd8728',Boarded:'#467ba2',Taped:'#8b6ca3',Finished:'#287d63'});
+export const NEUTRAL_STATUS_COLOR='#cfd5dc';
+export const PLAYBACK_COLORS=Object.freeze(Object.fromEntries(Object.entries(INSTALL_COLORS).filter(([,color])=>color)));
+export const COMPARISON_COLORS=Object.freeze({behind:{color:'#bd493f',label:'Behind plan'},even:{color:'#287d63',label:'On plan'},ahead:{color:'#467ba2',label:'Ahead of plan'}});
+export function modelStatusLegend({colorMode='actual',playback=false,focusStage=null}={}){
+    if(playback)return Object.entries(PLAYBACK_COLORS).map(([label,color])=>({label,color}));
+    if(colorMode==='compare')return[...Object.values(COMPARISON_COLORS).map(({label,color})=>({label,color})),...(!focusStage?[{label:'Not started',color:NEUTRAL_STATUS_COLOR}]:[])];
+    if(colorMode==='planned'&&INSTALL_COLORS[focusStage])return[{label:focusStage+' planned',color:INSTALL_COLORS[focusStage]}];
+    return Object.entries(INSTALL_COLORS).map(([label,color])=>({label,color:color||NEUTRAL_STATUS_COLOR}));
+}
 // Display preferences and illustrative cost data. Never changes model/schedule quantities.
 export const DEMO_COSTS=Object.freeze({budget:3600000,committed:2840000,spent:1420000,forecast:3720000});
 export const DEMO_BIM=Object.freeze({packages:50,shopIssued:46,prefabReady:39,materialDelivered:34,revision:'R07',phase:'Interior fit-out'});

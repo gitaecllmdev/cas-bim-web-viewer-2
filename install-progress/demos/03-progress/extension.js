@@ -18,7 +18,7 @@ import { AllPlans } from './all-plans.js';
 import { parseKeywords, matchRows, keywordCounts, remember } from '../../p6-keywords.mjs'; // the P6 Converter's keyword search
 import { DemoToolbar } from '../../toolbar.js';
 import {demoStagesFromSchedule,hotelDemoSchedule,lookaheadWeeks,DEMO_DATE} from './presentation.mjs';
-import {dashboardDate,dashboardMetrics,labourSummary,activityInsight,dashboardIcon,DEMO_BIM,PLAYBACK_COLORS} from '../../project-dashboard.mjs';
+import {dashboardDate,dashboardMetrics,labourSummary,activityInsight,dashboardIcon,DEMO_BIM,PLAYBACK_COLORS,INSTALL_COLORS,COMPARISON_COLORS,NEUTRAL_STATUS_COLOR,modelStatusLegend} from '../../project-dashboard.mjs';
 
 // Base64 for the source PDF kept with a schedule (state is JSON).
 const toBase64 = (bytes) => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(s); };
@@ -32,20 +32,13 @@ const EXTENSION_ID = 'Drywall.Progress';
 const SAMPLE = { url: 'samples/schedule/snowdon-drywall-p6.xer', file: 'snowdon-drywall-p6.xer' };
 const NOT_SET = 'Not set';
 // "Not started" walls keep their normal look (no color).
-const STAGES = [
-    { name: 'Not started', color: null },
-    { name: 'Framed', color: '#bd8728' },
-    { name: 'Boarded', color: '#bd8728' },
-    { name: 'Taped', color: '#bd8728' },
-    { name: 'Finished', color: '#287d63' },
-];
+const STAGES = Object.entries(INSTALL_COLORS).map(([name,color])=>({name,color}));
 const FINISHED = 'Finished';
 const TABS = { stages: 'Stages', gantt: 'Gantt', calendar: 'Calendar' };
 const COLOR_MODES = { actual: 'Colors: installed', planned: 'Colors: planned on date (4D)', compare: 'Colors: installed vs plan' };
-const COMPARE = { behind: { color: '#d62728', label: 'Behind the plan' }, even: { color: '#59a14f', label: 'On plan' }, ahead: { color: '#287d63', label: 'Ahead of the plan' } };
+const COMPARE = COMPARISON_COLORS;
 const OTHER = '#8c96a0'; // wall work not linked to an install stage (layout, inspections), milestones
 const NOT_WALL = '#cfd5dc'; // MEP and other trades: greyed, never linked to walls
-const NOT_YET = '#bd493f'; // a picked activity's walls not at its stage yet (soft coral: stands out against the faded model)
 const SHOW = { all: 'All activities', walls: 'Wall work only', active: 'In progress', open: 'Not complete', linked: 'Linked to walls', behind: 'Model behind P6', critical: 'Critical (float ≤ 0)' };
 // WBS groups: finished ones folded (the default, so the work in progress is near the top), all open, or all folded.
 const FOLD = { done: 'Fold finished groups', none: 'Open all groups', all: 'Fold all groups' };
@@ -691,9 +684,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         if (!el) return;
         const focus = this.focusActivity();
         if (focus) {
-            const st = STAGES.find(x => x.name === focus.stage);
-            el.innerHTML = `<span class="tk-key"><span class="swatch" style="background:${st?.color || OTHER}"></span>${focus.walls ? `Its ${focus.walls.length} walls (${escapeHtml(focus.level)})` : `${escapeHtml(focus.level)} walls`} ${escapeHtml(focus.stage || '')} or later</span>
-                ${st ? `<span class="tk-key"><span class="swatch" style="background:${NOT_YET}"></span>not yet</span>` : ''}`;
+            el.innerHTML = modelStatusLegend({colorMode:this.colorMode,playback:this.playbackMode,focusStage:focus.stage}).map(({label,color})=>`<span class="tk-key"><span class="swatch" style="background:${color}"></span>${escapeHtml(label)}</span>`).join('')
+                + `<span class="muted">${escapeHtml(focus.level)} activity walls</span>`;
         } else if(this.playbackMode){
             el.innerHTML=STAGES.filter(s=>s.color).map(s=>`<span class="tk-key"><span class="swatch" style="background:${PLAYBACK_COLORS[s.name]}"></span>${s.name}</span>`).join('')+'<span class="muted">Walls appear at activity start · Installed restores the full model</span>';
         } else if (this.colorMode === 'compare') {
@@ -831,7 +823,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             <div class="row"><button data-select-level ${level ? '' : 'disabled'}>Select all walls on ${level ? escapeHtml(level) : 'the level'}</button>
                 ${level ? '' : '<span class="muted">Pick a level in the header first.</span>'}</div>
             <p data-selection class="muted"></p>
-            <div class="row">${STAGES.map(s => `<button data-stage="${s.name}" disabled>${s.color ? `<span class="swatch" style="background:${s.color}"></span>` : ''}${s.name}</button>`).join('')}</div>
+            <div class="row">${STAGES.map(s => `<button data-stage="${s.name}" disabled><span class="swatch" style="background:${s.color || NEUTRAL_STATUS_COLOR}"></span>${s.name}</button>`).join('')}</div>
             <h3>Stage legend</h3><table><tbody data-legend></tbody></table>
             <h3>Progress by level <span class="muted">(click a level to view it; % = Finished ÷ all walls)</span></h3>
             <table><thead><tr><th>Level</th><th style="width:28%">Stages</th><th class="num">Finished</th><th>Set level</th></tr></thead><tbody data-levels></tbody></table>
@@ -928,12 +920,17 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             const ids=[...planned.keys()].map(w=>w.dbId);
             this.views.setPlaybackWalls(ids);this.allPlans.setVisibleWalls(ids);
         } else if (focus) {
-            // A selected activity: its level's walls at its stage (or later) in the stage's color, the rest grey.
+            // Selection limits the walls; the chosen mode still determines their status colors.
             colors.clear();
             const k = STAGE_NAMES.indexOf(focus.stage), st = STAGES[k];
             // With the floors apart, every floor the schedule links to shows that stage, like the floor labels.
             const shown = this.views.apart && st?.color && !focus.demoWalls ? this.walls.filter(w => linkedLevelNames(this.linked).has(w.level)) : this.wallsOf(focus);
-            if (st?.color) for (const w of shown) colors.set(w.dbId, this.stageIndex(w) >= k ? st.color : NOT_YET);
+            if (st?.color) for (const w of shown) {
+                const actual = this.stageIndex(w);
+                const color = this.colorMode === 'planned' ? st.color : this.colorMode === 'compare'
+                    ? COMPARE[actual < k ? 'behind' : actual > k ? 'ahead' : 'even'].color : STAGES[actual]?.color;
+                if (color) colors.set(w.dbId, color);
+            }
         } else if (this.schedule && this.colorMode !== 'actual') {
             colors.clear();
             // The plan says how many walls of a level should be at a stage, not which: the walls furthest along are
@@ -952,20 +949,20 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             this.compareCounts = c;
         }
         this.views.setColors(colors);
-        if(this.options.standalone)document.dispatchEvent(new CustomEvent('progress-summary',{detail:{walls:this.walls.length,finished:counts[FINISHED],counts,levels:this.levels.filter(l=>l!==NOT_SET).length,activities:this.schedule?.activities.length||0,attention:this.linked.filter(a=>compare(this.modelOf(a),a.pct)?.state==='behind').length,asOf:this.asOf,dataDate:this.schedule?.project.dataDate,demo:!!(this.schedule?.source.sample||this.schedule?.source.demo),colorMode:this.colorMode,playback:!!this.playbackMode,dashboard:this.dashboardState()}}));
+        if(this.options.standalone)document.dispatchEvent(new CustomEvent('progress-summary',{detail:{walls:this.walls.length,finished:counts[FINISHED],counts,levels:this.levels.filter(l=>l!==NOT_SET).length,activities:this.schedule?.activities.length||0,attention:this.linked.filter(a=>compare(this.modelOf(a),a.pct)?.state==='behind').length,asOf:this.asOf,dataDate:this.schedule?.project.dataDate,demo:!!(this.schedule?.source.sample||this.schedule?.source.demo),colorMode:this.colorMode,playback:!!this.playbackMode,focusStage:focus?.stage||null,dashboard:this.dashboardState()}}));
         if (this.allPlans.isOpen) this.allPlans.setColors(colors);
         if (this.views.apart) this.updateFloorLabels(planned);
         this.renderColorLegend();
         const legend = this.panel.querySelector('[data-legend]');
         if (!legend) return; // the Stages tab isn't showing
         legend.innerHTML = STAGES.map(s =>
-            `<tr><td><span class="swatch" style="background:${s.color || 'transparent'}"></span>${s.name}</td><td class="num">${counts[s.name]}</td></tr>`).join('');
+            `<tr><td><span class="swatch" style="background:${s.color || NEUTRAL_STATUS_COLOR}"></span>${s.name}</td><td class="num">${counts[s.name]}</td></tr>`).join('');
         const pct = (done, total) => total ? Math.round((done / total) * 100) : 0;
         const rows = [...perLevel.entries()].map(([level, r]) => ({ level, ...r }));
         rows.push({ level: 'All levels', total: this.walls.length, done: counts[FINISHED], stages: counts, overall: true });
         const current = this.views.level?.name;
         // A bar split by stage (Not started = the empty part of the bar).
-        const stack = (r) => `<div class="stack" title="${STAGES.map(st => `${st.name}: ${r.stages[st.name]}`).join(', ')}">${STAGES.filter(st => st.color && r.stages[st.name])
+        const stack = (r) => `<div class="stack" style="background:${NEUTRAL_STATUS_COLOR}" title="${STAGES.map(st => `${st.name}: ${r.stages[st.name]}`).join(', ')}">${STAGES.filter(st => st.color && r.stages[st.name])
             .map(st => `<span style="width:${(r.stages[st.name] / r.total) * 100}%;background:${st.color}"></span>`).join('')}</div>`;
         const picker = `<option value="">Set all to…</option>${STAGES.map(st => `<option>${st.name}</option>`).join('')}`;
         const table = this.panel.querySelector('[data-levels]');
