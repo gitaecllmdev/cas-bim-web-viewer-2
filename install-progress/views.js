@@ -9,7 +9,7 @@
 // Document / BubbleNode (search for 2D viewables; levelName comes from the Revit manifest):
 //   https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Document/
 import { PlanPop } from './plan-pop.mjs';
-import { frameMove, PICK, SET, selectionFloor } from './frame-move.mjs';
+import { frameMove, PICK, SET, selectionFloor, contextFrame } from './frame-move.mjs';
 import { toThemingColor, getLevels, loadPropertyMap, findWalls, findCategory, findIgnored, setBuildingCenter, getBulkProperties, getObjectTree, propValue, escapeHtml, fetchJson, loadState, saveState, markCopiesOf, unmarkCopiesOf } from './helpers.js';
 
 const LAYOUTS = ['3d', 'split', '2d'];
@@ -464,9 +464,10 @@ export class Views {
 
     // Opt-in dashboard behavior: floor/plan context follows selection independently of camera zoom.
     // Existing SDK select/getSelection, SELECTION_CHANGED_EVENT and isLoadDone APIs (references above).
-    setSelectionFollow(on) { this.selectionFollow=!!on;this.cancelSelectionFollow(); }
+    setSelectionFollow(on, { contextZoom = false } = {}) { this.selectionFollow=!!on;this.contextZoom=!!contextZoom;this.cancelSelectionFollow(); }
 
     cancelSelectionFollow() {
+        this.cancelContextGeometry?.();
         clearTimeout(this.selectionFollowTimer);
         this.selectionFollowVersion=(this.selectionFollowVersion||0)+1;
         this.pickToken=(this.pickToken||0)+1;
@@ -506,8 +507,12 @@ export class Views {
             if(token!==this.selectionFollowVersion)return;
             this.copySelection(this.viewer2d,ids);
             this.emit('selectioncontext',{ids:[...ids],level,plan:plan?.name()||''});
-            const framing=this.syncing;this.syncing=true;
-            try { this.showSet(this.wallsByLevel.get(level)); } finally { this.syncing=framing; }
+            if (this.contextZoom) await this.matchSelectionContext(ids, source, token);
+            else {
+                const framing=this.syncing;this.syncing=true;
+                try { this.showSet(this.wallsByLevel.get(level)); } finally { this.syncing=framing; }
+            }
+            if(token!==this.selectionFollowVersion)return;
             this.copySelection(this.viewer3d,ids);
             this.copySelection(this.viewer2d,ids);
         };
@@ -516,6 +521,57 @@ export class Views {
                 if(token===this.selectionFollowVersion)this.setSheetStatus(`Selection context needs a retry (${err.message}).`,'error');
             });
         },60);
+    }
+
+    async matchSelectionContext(ids, source, token) {
+        const viewer = this.viewer2d, model = this.model2d;
+        if (!model || !ids.length) return;
+        if (!model.isLoadDone()) {
+            const loaded = await new Promise(resolve => {
+                const finish = ok => { clearTimeout(timer);viewer.removeEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, ready);this.cancelContextGeometry=null;resolve(ok); };
+                const ready = e => { if (e.model === model) finish(true); };
+                const timer = setTimeout(() => finish(false), 30000);
+                this.cancelContextGeometry = () => finish(false);
+                viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, ready);
+                if (model.isLoadDone()) finish(true);
+            });
+            if (!loaded) return;
+        }
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        if (token !== this.selectionFollowVersion || this.model2d !== model || !this.contextZoom) return;
+        this.resize();
+        const floorIds = this.wallsByLevel.get(this.level?.name);
+        if (!floorIds?.length) return;
+        const measure = (v, m) => {
+            const nav=v.navigation,from=nav.getPosition().clone(),to=nav.getTarget().clone();
+            let center,selectionEye,floorEye;
+            try {
+                v.fitToView(ids,m,true);center=nav.getTarget().clone();selectionEye=nav.getEyeVector().length();
+                v.fitToView(floorIds,m,true);floorEye=nav.getEyeVector().length();
+            } finally { nav.setView(from,to); }
+            const seen=m.is2d()?from.distanceTo(to):from.distanceTo(center),point=v.worldToClient(center),width=v.container.clientWidth,height=v.container.clientHeight;
+            const ahead=m.is2d()||center.clone().sub(from).dot(to.clone().sub(from))>0;
+            const onScreen=ahead&&point&&point.x>width*.06&&point.x<width*.94&&point.y>height*.06&&point.y<height*.94;
+            return {v,m,nav,from,to,center,selectionEye,floorEye,sourceShare:selectionEye/seen,onScreen,width,height};
+        };
+        const syncing=this.syncing;this.syncing=true;
+        try {
+            const three=measure(this.viewer3d,this.viewer3d.model),plan=measure(viewer,model);
+            const origin=source===viewer?plan:three,peer=source===viewer?three:plan;
+            const frame = state => {
+                const context=contextFrame({...state,sourceShare:origin.sourceShare});
+                if (!context || !state.width || !state.height) return;
+                const {nav,from,to,center,m,width,height}=state,shape=m.is2d()?new THREE.Vector3(width/height,1,1):new THREE.Vector3(1,1,1);
+                nav.fitBounds(true,new THREE.Box3(center.clone().sub(shape),center.clone().add(shape)));
+                const trial=nav.getEyeVector().length();nav.setView(from,to);
+                if (!(trial>0)) return;
+                const half=shape.multiplyScalar(context.eye/trial);if(m.is2d())half.z=1;
+                nav.fitBounds(false,new THREE.Box3(center.clone().sub(half),center.clone().add(half)));
+            };
+            // Keep a useful source camera; move the counterpart to the same selection with broader surroundings.
+            if (!origin.onScreen) frame(origin);
+            frame(peer);
+        } finally { this.syncing=syncing; }
     }
 
     // Show objects (one picked wall, or a filtered set) without losing the view the user has (frame-move.mjs): measure how

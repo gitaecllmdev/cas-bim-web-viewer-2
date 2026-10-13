@@ -17,6 +17,15 @@ export function frameMove({ share, onScreen }, { min = 0.05, max = Infinity, tar
 export const PICK = { min: 0.03, minPx: 16, target: 0.1 };
 export const SET = { min: 0.33, max: 1.6, target: 0.85 };
 
+// Match a selected area's apparent size across different projections, with room context.
+// Eye distances are measured separately by each viewer; never copy 3D coordinates to a sheet.
+export function contextFrame({ selectionEye, floorEye, sourceShare }) {
+    if (![selectionEye, floorEye].every(n => Number.isFinite(n) && n > 0)) return null;
+    const requestedShare = Number.isFinite(sourceShare) && sourceShare > 0 ? Math.min(.25, Math.max(.1, sourceShare)) : .15;
+    const eye = Math.max(floorEye * .25, Math.min(floorEye * 1.05, selectionEye / requestedShare));
+    return { eye, requestedShare, share: selectionEye / eye };
+}
+
 // Only follow one unambiguous wall floor; mixed-floor selections keep their context.
 export function selectionFloor(ids, levelById) {
     const levels=new Set(ids.map(id=>levelById.get(id)).filter(Boolean));

@@ -14,6 +14,9 @@ let bimSnapshot=demoBimSnapshot();
 let tracker,views,tools,summary,share=.42,resizeFrame,links={},linkKey='',integration='revit',mode='both';
 try{const saved=localStorage.getItem('cas-project-dashboard:split');if(saved!==null)share=clampSplit(Number(saved));}catch{}
 const main=$('main'),divider=$('workspace-divider');
+try{$('selection-context-zoom').checked=localStorage.getItem('cas-project-dashboard:selection-context-zoom')!=='off';}catch{}
+$('selection-context-zoom').onchange=e=>{views?.setSelectionFollow(true,{contextZoom:e.target.checked});try{localStorage.setItem('cas-project-dashboard:selection-context-zoom',e.target.checked?'on':'off');}catch{}};
+
 function resizeWorkspace(value=share,save=false){
     const width=main.clientWidth-40;share=clampSplit(value,width);main.style.setProperty('--model-width',`${Math.round(width*share)}px`);
     divider.setAttribute('aria-valuenow',Math.round(share*100));divider.setAttribute('aria-valuetext',`${Math.round(share*100)}% model, ${Math.round((1-share)*100)}% schedule`);
@@ -133,7 +136,7 @@ async function start(){
     linkKey='cas-project-dashboard:links:'+model.urn;
     try{const saved=JSON.parse(localStorage.getItem(linkKey)||'{}');for(const source of INTEGRATIONS)if(saved[source.id]&&Number.isFinite(Date.parse(saved[source.id].at)))links[source.id]={at:saved[source.id].at,system:source.id==='labour'&&saved[source.id].system==='Internal labour tool'?source.name:String(saved[source.id].system||source.name),mode:saved[source.id].mode==='setup'?'setup':'demo',project:String(saved[source.id].project||'')};}catch{}
     const access=await fetch(CONFIG.tokenUrl,{cache:'no-store'});if(!access.ok)throw Error(`Model access service returned ${access.status}. Retry when the connection is available.`);
-    location.hash=model.urn;const viewer=await initViewer($('preview'));views=new Views(viewer);views.setSelectionFollow(true);views.on('selectioncontext',context=>{const el=$('selection-context');el.hidden=!context.ids.length;el.textContent=context.level?`${context.ids.length} wall${context.ids.length===1?'':'s'} selected · ${context.level} · Whole floor context · ${context.plan}`:'Selection spans levels or has no wall-level mapping';setWorkspaceMode('both');if(context.level&&tracker){tracker.selectedAct=null;tracker.linkedOnly=false;tracker.isolatedBySchedule=false;tracker.isolatedStage=null;tracker.refresh();tracker.renderBody();}renderDrill();});
+    location.hash=model.urn;const viewer=await initViewer($('preview'));views=new Views(viewer);views.setSelectionFollow(true,{contextZoom:$('selection-context-zoom').checked});views.on('selectioncontext',context=>{const el=$('selection-context');el.hidden=!context.ids.length;el.textContent=context.level?`${context.ids.length} wall${context.ids.length===1?'':'s'} selected · ${context.level} · Whole floor context · ${context.plan}`:'Selection spans levels or has no wall-level mapping';setWorkspaceMode('both');if(context.level&&tracker){tracker.selectedAct=null;tracker.linkedOnly=false;tracker.isolatedBySchedule=false;tracker.isolatedStage=null;tracker.refresh();tracker.renderBody();}renderDrill();});
     tools=await viewer.loadExtension(TOOLS_EXTENSION_ID,{views,is3d:true,toolbar:{builtin:[],tools:['showall','fit']}});views.use2d(TOOLS_EXTENSION_ID,{views,is3d:false,toolbar:{builtin:[],tools:['showall','fit']}});
     mountViewControls();
     onModelReady(viewer,m=>views.setModel(m).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));

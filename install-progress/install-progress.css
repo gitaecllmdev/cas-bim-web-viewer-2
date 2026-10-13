@@ -53,6 +53,9 @@
 .install-app .pg-g-row.wbs [data-focus-level]{font-weight:600}
 .install-app .pg-g-row.wbs [data-focus-level]:hover{text-decoration:underline}
 .install-app .pg-g-row.wbs [data-toggle-wbs]{padding:0 3px;margin-right:2px}
+.selection-zoom-option{display:flex;align-items:center;gap:6px;font-size:11px;padding:7px 3px;color:var(--ink);white-space:nowrap}
+.selection-zoom-option input{accent-color:var(--accent)}
+@media(max-width:780px){.install-app .model-review>div{left:0;right:auto;max-width:calc(100vw - 48px)}.selection-zoom-option{white-space:normal}}
 .install-app{height:auto;min-height:100dvh}
 #header.install-header{min-height:50px;padding:6px 18px;gap:12px}
 .brand-logo{width:38px;height:36px;padding:2px}
