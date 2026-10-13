@@ -1,5 +1,5 @@
 # CAS Project Schedule Dashboard
 
-Standalone Wilton Hotel workspace, with a flexible model/dashboard divider, management summary, Field, Timeline, Calendar and three-week Lookahead. Demo cost and labour plans, with Revit/cost/internal labour-tool setup previews, use sample records only; no external system sync. Schedule and field stages are synthetic and linked to actual model levels. Browser-local edits; read-only model. No other tools are included.
+Standalone Wilton Hotel workspace opening with 3D, a floor plan and Gantt schedule. Wall selection follows the floor and its saved master plan, sections the whole level and retains the wall highlight. Flexible model/dashboard divider, management summary, floor progress, Calendar and three-week Lookahead. Clearly tagged sample BIM package milestones/revision, cost and labour plans, with Revit/cost/internal labour-tool setup previews, use sample records only; no external system sync. Schedule and field stages are synthetic and linked to actual model levels. Browser-local edits; read-only model. No other tools are included. Internal demonstration only; all rights reserved by Component Assembly Systems, Inc. Visit analytics is deferred.
 
 GitHub Pages: deploy main branch, root folder. Uses the existing server-held read-only APS token service. No credentials, client schedule or server write routes are packaged.
