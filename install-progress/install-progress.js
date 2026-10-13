@@ -84,7 +84,7 @@ function renderIntegration(){
     if($('connection-file'))$('connection-file').onclick=()=>tracker?.panel.querySelector('[data-upload]').click();
     if($('integration-unlink'))$('integration-unlink').onclick=()=>{delete links[integration];saveLinks();renderIntegration();$('integration-feedback').textContent='Source setup removed.';};
 }
-function openConnect(step='revit'){setWorkspaceMode('both');integration=INTEGRATIONS.some(s=>s.id===step)?step:'revit';$('panel').hidden=true;$('connect-page').hidden=false;renderIntegration();$('connect-page').scrollTop=0;}
+function openConnect(step='revit'){setWorkspaceMode('both');integration=INTEGRATIONS.some(s=>s.id===step)?step:'revit';$('panel').hidden=true;$('connect-page').hidden=false;renderIntegration();$('connect-page').scrollTop=0;main.scrollIntoView({block:'start'});}
 function closeConnect(){ $('connect-page').hidden=true;$('panel').hidden=false;tracker?.setTab('management');renderDrill();}
 $('integrations-open').onclick=()=>openConnect();$('sources-connect').onclick=()=>openConnect();document.addEventListener('dashboard-integrations',e=>openConnect(e.detail?.step||'cost'));
 $('integrations-close').onclick=closeConnect;
@@ -104,7 +104,7 @@ function mountViewControls(){
 }
 document.addEventListener('dashboard-focus',showActivityContext);
 window.addEventListener('pagehide',()=>tracker?.endPlayback());
-document.querySelectorAll('[data-headline]').forEach(b=>b.onclick=()=>{if(!tracker)return;setWorkspaceMode('both');$('connect-page').hidden=true;$('panel').hidden=false;const key=b.dataset.headline;if(key==='cost')openConnect('cost');else{tracker.setTab(key==='finish'?'gantt':key==='progress'?'stages':'management');if(key==='decisions')$('panel').querySelector('.decisions-week')?.scrollIntoView({block:'start'});}renderDrill();});
+document.querySelectorAll('[data-headline]').forEach(b=>b.onclick=()=>{if(!tracker)return;setWorkspaceMode('both');$('connect-page').hidden=true;$('panel').hidden=false;const key=b.dataset.headline;if(key==='cost')openConnect('cost');else{tracker.setTab(key==='finish'?'gantt':key==='progress'?'stages':'management');if(key==='decisions')$('panel').querySelector('.decisions-week')?.scrollIntoView({block:'start'});}main.scrollIntoView({block:'start'});renderDrill();});
 document.querySelectorAll('[data-review]').forEach(b=>b.onclick=async()=>{if(!tools)return;const action=b.dataset.review;if(action==='shot')tools.screenshot('3d');else if(action==='top')tools.look([0,0,1]);else if(action==='iso')tools.look([1,-1,.8]);else{tracker?.clearFocus();await views.setLevel(null);views.showAll();tools.look([1,-1,.8]);views.fitShown();tracker?.refresh();tracker?.renderBody();}const detail=b.closest('details');if(detail)detail.open=false;});
 $('help').onclick=()=>$('briefing').showModal();
 $('present').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{$('save-notice').textContent='Use the browser full-screen command to present.';}};
