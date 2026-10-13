@@ -407,8 +407,8 @@ export function relatedWallActivities(selectedWalls, activities) {
     const floors = new Set(walls.map(w => w.level));
     if (floors.size !== 1) return [];
     const level = [...floors][0], selected = new Set(walls.map(w => w.dbId));
-    return activities.filter(a => a.scope === 'wall' && a.level === level && STAGE_NAMES.slice(1).includes(a.stage)).flatMap(a => {
-        const count = a.walls ? new Set(a.walls.map(w => w?.dbId).filter(id => selected.has(id))).size : walls.length;
+    return activities.filter(a => a.scope === 'wall' && STAGE_NAMES.slice(1).includes(a.stage)).flatMap(a => {
+        const count = a.walls ? new Set(a.walls.map(w => w?.dbId).filter(id => selected.has(id))).size : a.level === level ? walls.length : 0;
         return count ? [{ activity: a, count, basis: a.demoWalls ? 'Demo wall set' : a.walls ? 'Assigned wall set' : 'Whole floor + install stage' }] : [];
     }).sort((x, y) => STAGE_NAMES.indexOf(x.activity.stage) - STAGE_NAMES.indexOf(y.activity.stage) || (x.activity.start || '').localeCompare(y.activity.start || '') || x.activity.id.localeCompare(y.activity.id));
 }
