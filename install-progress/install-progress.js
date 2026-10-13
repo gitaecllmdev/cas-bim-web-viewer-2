@@ -91,7 +91,7 @@ $('integrations-close').onclick=closeConnect;
 $('integration-refresh').onclick=()=>{bimSnapshot=demoBimSnapshot();const at=new Date().toISOString();for(const s of INTEGRATIONS)if(links[s.id]?.mode==='demo')links[s.id].at=at;saveLinks();renderIntegration();$('integration-feedback').textContent='Sample records refreshed. No external service contacted.';};
 $('demo-reset').onclick=async()=>{if(!tracker||!confirm('Start over with demo data? Current field stages, schedule and reviewed decisions will be replaced.'))return;$('demo-reset').disabled=true;try{await tracker.resetDemo();tracker.reviewed={};tracker.saveReviewed();links=Object.fromEntries(INTEGRATIONS.map(s=>[s.id,{at:new Date().toISOString(),system:s.name,mode:'demo'}]));saveLinks();tracker.render();renderIntegration();$('integration-feedback').textContent='Demo data restored.';}finally{$('demo-reset').disabled=false;}};
 async function backOverview(){closeConnect();tracker?.clearFocus();setWorkspaceMode('both');await views?.setLevel(null);tracker?.refresh();renderDrill();}
-function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act||tab&&tab!=='management');$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab&&tab!=='management'?({stages:'Progress by floor',gantt:'Schedule',calendar:'Schedule',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
+function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act||tab&&tab!=='management');$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab&&tab!=='management'?({stages:'Progress by floor',gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
 $('back-overview').onclick=backOverview;document.addEventListener('dashboard-context',e=>{renderDrill(e.detail);decorateControls();});
 function showActivityContext(){setWorkspaceMode('both');views?.setLayout('split');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker?.panel,details=panel?.querySelector('.pg-details');if(details){const head=panel.querySelector('.pg-head');panel.scrollTop+=details.getBoundingClientRect().top-panel.getBoundingClientRect().top-(head?.offsetHeight||0)-12;}}
 function mountViewControls(){
@@ -127,7 +127,7 @@ renderSources();decorateControls();
 async function start(){
     if(!window.Autodesk?.Viewing?.GuiViewer3D)throw Error('The Autodesk Viewer could not load. Check your internet connection to the Autodesk services, then retry.');
     const [{TOOLS_EXTENSION_ID}]=await Promise.all([import('./tools.js'),import('./demos/03-progress/extension.js')]);
-    const params=new URLSearchParams(location.search);params.set('layout','split');history.replaceState(null,'',location.pathname+'?'+params+location.hash);
+    const params=new URLSearchParams(location.search);params.set('layout','split');params.set('tab','gantt');history.replaceState(null,'',location.pathname+'?'+params+location.hash);
     const models=await fetchJson('samples/urns.json'),model=models.find(m=>/WILTON/i.test(m.file||'')||m.progressDemo==='hotel')||models.find(m=>m.sampleSchedule);if(!model)throw Error('The demonstration model is unavailable.');
     const hotel=/WILTON/i.test(model.file||'')||model.progressDemo==='hotel';$('project-name').textContent=(hotel?'Wilton Hotel':model.name.replace(/ \(Arch\)$/,''))+' (Demo)';
     linkKey='cas-project-dashboard:links:'+model.urn;

@@ -423,7 +423,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     saveReviewed(){if(this.reviewKey)try{localStorage.setItem(this.reviewKey,JSON.stringify(this.reviewed));}catch{}}
 
     render() {
-        const nav=this.options.standalone?{management:'Overview',stages:'Progress by floor',gantt:'Schedule',lookahead:'Next 3 weeks'}:this.tabs;
+        const nav=this.options.standalone?{management:'Overview',stages:'Progress by floor',gantt:'P6 Gantt',lookahead:'Next 3 weeks'}:this.tabs;
         const s = this.schedule;
         const d = s?.source.demo;
         this.panel.innerHTML = `<div class="demo-panel pg ${this.tab==='management'?'management':''}">

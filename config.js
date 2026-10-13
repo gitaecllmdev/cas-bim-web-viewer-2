@@ -5,6 +5,6 @@ export const CONFIG = {
     publicUrl: "https://gitaecllmdev.github.io/cas-bim-web-viewer-2/",
     stateUrl: "",
     progressBaseline: {"urn":"dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bnBkemdlcXpibTdidmM0Mmxzc2gycjIyYW5vM216YXZ4dmN4MHdqOXl5aXdsY2d1LWRyeXdhbGwtZGVtb3MvMjMwMDktV0lMVE9OLVBIQVNFLTJCLUhPVEVMLVRPV0VSLVYyMl9ERU1PLnJ2dA","source":"9b07f8a","date":"2026-10-11"},
-    build: "mv6wfk7b", // added to the site's JSON requests (helpers.js fetchJson): new data on the first visit after a publish
+    build: "mv6zc298", // added to the site's JSON requests (helpers.js fetchJson): new data on the first visit after a publish
     hitsUrl: "https://cas-bim-token.karthikeya-civ.workers.dev/hits?site=v2",
 };
