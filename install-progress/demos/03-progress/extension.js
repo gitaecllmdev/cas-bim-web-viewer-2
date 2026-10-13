@@ -11,7 +11,7 @@ import { scheduleRows } from '../common/p6-pdf.mjs';
 import {
     STAGE_NAMES, demoShift, assignDemoLevels, linkedLevelNames, levelPercents, topStage, parseDateText, decodeText, parseXer, scheduleFromXer, scheduleFromRows, parseCsv, calendarOf, linkActivities, matchLevel, matchStage,
     stageCounts, modelProgress, compare, expectedPct, finishVariance, plannedStages, playbackStages, scheduleSpan, ganttRows, completeGroups, fmtDay as compactDay, addDays, dayMs, monthName,
-    randomWallLinks, wallProgress, demoTarget,
+    randomWallLinks, wallProgress, demoTarget, activityLinkState, relatedWallActivities,
 } from './p6.mjs';
 import { ganttHtml, calendarHtml, SCALES, ganttX } from './schedule-views.js';
 import { AllPlans } from './all-plans.js';
@@ -54,6 +54,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.panel.classList.add('wide'); // room for the per-level stage pickers
         this.stages = {};this.reviewed={};this.reviewKey=''; // externalId -> stage name (walls without an entry are "Not started")
         this.selected = [];
+        this.modelSelectionIds = [];
         const params = new URLSearchParams(location.search);
         this.tabs=this.options.standalone?{management:'Overview',stages:'Progress by floor',gantt:'Timeline',calendar:'Calendar',lookahead:'Next 3 weeks'}:TABS;
         this.tab = this.tabs[params.get('tab')] ? params.get('tab') : this.options.standalone?'gantt':'stages';
@@ -260,6 +261,10 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                     target: (a, r) => demoTarget(a, r, { dataDate, cal }),
                 });
                 for (const a of this.linkedCache) {
+                    // Reviewed mappings take precedence over illustrative wall picking.
+                    const map = this.schedule.map, demoLevels = this.schedule.source.demo.levelAssignments || {};
+                    if (this.options.standalone && (Object.keys(map.activities?.[a.id] || {}).length || Object.hasOwn(map.stages, a.stageKey) ||
+                        Object.hasOwn(map.levels, a.locationKey) && map.levels[a.locationKey] !== demoLevels[a.locationKey])) continue;
                     const l = links.get(a.id);
                     if (!l) continue;
                     a.levelHow = `demo: ${l.dbIds.length} walls picked to match its progress${a.level && a.level !== l.level ? ` (was ${a.level})` : ''}`;
@@ -462,6 +467,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                     <button class="pg-btn" data-kw-walls hidden title="Show the walls of every matching wall activity">Walls of all</button>
                     <details class="pg-keybox pg-s-hist"><summary class="pg-btn" title="Keywords used before, and suggestions">History</summary><div class="pg-keypop pg-histpop" data-kw-history></div></details>
                 </div>` : ''}
+                ${this.options.standalone ? '<div class="pg-related" data-related-work hidden></div>' : ''}
                 <div data-links hidden></div>
                 <p class="pg-msg" data-msg hidden></p>
             </div>
@@ -763,6 +769,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     renderBody() {
         const body = this.panel.querySelector('[data-body]');
         if (!body) return;
+        this.renderRelated();
         const wide = this.tab !== 'stages' && !document.body.classList.contains('dock-bottom');
         if (this.panel.classList.contains('xwide') !== wide) { this.panel.classList.toggle('xwide', wide); requestAnimationFrame(() => this.views.resize()); }
         if (this.tab !== 'stages' && !this.schedule) {
@@ -1148,6 +1155,43 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         return this.scheduleFocusQueue;
     }
 
+    setModelSelection(context) {
+        this.modelSelectionIds = context.level ? context.ids.filter(id => this.byDbId?.has(id)) : [];
+        this.renderRelated();
+    }
+
+    renderRelated() {
+        const el = this.panel.querySelector('[data-related-work]');
+        if (!el) return;
+        const walls = this.modelSelectionIds.map(id => this.byDbId?.get(id)).filter(w => w && w.level === this.views.level?.name);
+        el.hidden = !walls.length;
+        if (el.hidden) return;
+        const related = relatedWallActivities(walls, this.linked);
+        el.innerHTML = `<span><b>Related P6 work</b> · ${walls.length} selected · ${escapeHtml(walls[0].level)}</span><div>${related.map(({activity:a,count,basis}) => `<button data-related-act="${escapeHtml(a.id)}" title="${escapeHtml(a.name)} · ${count} selected wall(s) · ${basis} · ${activityLinkState(a,this.levels).label}">${escapeHtml(a.stage)} <b>${escapeHtml(a.id)}</b></button>`).join('') || '<span class="muted">No linked activity. Review Activity links.</span>'}</div><small>Open a task to see its link basis and wall scope.</small>`;
+        el.querySelectorAll('[data-related-act]').forEach(b => b.onclick = () => this.openScheduleActivity(b.dataset.relatedAct));
+    }
+
+    async openScheduleActivity(id, {review = false} = {}) {
+        if (!this.activity(id)) return;
+        const version = this.linkOpenVersion = (this.linkOpenVersion || 0) + 1;
+        this.kw.active = []; this.kw.typed = '';
+        this.gantt.show = 'all'; this.gantt.collapsed = new Set();
+        this.selectedAct = null;
+        const level = this.activity(id).level;
+        if (this.views.level && this.views.level.name !== level) await this.views.setLevel(null);
+        if (version !== this.linkOpenVersion) return;
+        const links = this.panel.querySelector('[data-links]');
+        if (links) links.hidden = true;
+        this.panel.querySelector('[data-links-toggle]')?.classList.remove('active');
+        this.setTab('gantt'); this.selectActivity(id);
+        await this.scheduleFocusQueue;
+        if (version !== this.linkOpenVersion || this.selectedAct !== id) return;
+        if (review) {
+            const settings = this.panel.querySelector('.activity-mapping');
+            if (settings) { settings.open = true; settings.querySelector('[data-own="level"]')?.focus(); }
+        }
+    }
+
     selectActivity(id) {
         this.scheduleFocusVersion = (this.scheduleFocusVersion || 0) + 1;
         if(this.playbackMode)this.endPlayback();
@@ -1359,6 +1403,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const ms = a.type === 'start' || a.type === 'finish';
         const status = a.status === 'complete' ? '<span class="tk-src ok">Complete</span>' : a.status === 'active' ? '<span class="tk-src manual">In progress</span>' : '<span class="tk-src">Not started</span>';
         const own = this.schedule.map.activities?.[a.id] || {};
+        const linkState = activityLinkState(a, this.levels);
         const levelOptions = `<option value="__auto">Auto${own.level === undefined ? `: ${escapeHtml(a.level || 'none')}` : ''}</option>${this.levels.map(l => `<option ${own.level === l ? 'selected' : ''}>${escapeHtml(l)}</option>`).join('')}<option value="" ${own.level === '' ? 'selected' : ''}>Not in the model</option>`;
         const stageOptions = `<option value="__auto">Auto${own.stage === undefined ? `: ${escapeHtml(a.stage || 'none')}` : ''}</option>${STAGE_NAMES.slice(1).map(s => `<option ${own.stage === s ? 'selected' : ''}>${s}</option>`).join('')}<option value="" ${own.stage === '' ? 'selected' : ''}>No stage</option>`;
         const linkFacts=`                ${ms ? '' : `<dt>Scope</dt><dd><select data-own="scope"><option value="__auto">Auto: ${a.scope === 'other' ? 'not wall work' : 'wall work'}</option><option value="wall" ${own.scope === 'wall' ? 'selected' : ''}>Wall work</option><option value="other" ${own.scope === 'other' ? 'selected' : ''}>Not wall work</option></select><span class="muted pg-how">${escapeHtml(a.scopeHow || '')}</span></dd>`}
@@ -1372,6 +1417,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 ${m ? `<span class="pg-cmp ${c.state}" title="Model: ${m.done} of ${m.total} walls ${escapeHtml(a.stage)} or later">model ${m.pct}%</span>` : ''}
                 ${a.level && a.scope !== 'other' ? '<span class="pg-d-acts"><button class="pg-btn" data-show-level title="Cut the model at this level and open its plan">Level</button><button class="pg-btn" data-select-walls title="Select these walls, then set their stage on the Stages tab">Select walls</button></span>' : ''}</div>
             ${this.options.standalone?`<section class="activity-insight" data-state="${insight.state}" aria-label="Activity explanation"><h4>${escapeHtml(insight.title)}</h4><p>${escapeHtml(insight.summary)}</p><div><b>Suggested check</b><span>${escapeHtml(insight.action)}</span></div><small>Field record ${this.fmtDay(this.asOf||dd)} · Schedule data date ${this.fmtDay(dd)}. This comparison does not establish the cause.</small></section>`:''}
+            ${this.options.standalone ? `<p class="pg-link-basis"><b>${escapeHtml(linkState.label)}</b> · ${escapeHtml(linkState.basis)}<br>${linkState.kind === 'context' || linkState.kind === 'unlinked' ? 'No resolved wall assignment.' : a.demoWalls ? 'Demo wall set; not a source P6 assignment.' : a.walls ? 'Assigned wall set.' : 'Whole floor + install stage; not an individual wall assignment.'}</p>` : ''}
             <dl class="pg-d-facts">
                 <dt>Dates</dt><dd>${this.fmtDay(a.start)}${a.actualStart ? ' A' : ''} → ${this.fmtDay(a.finish)}${a.actualFinish ? ' A' : ''}${ms ? '' : ` · ${Math.round(a.dur)} d${a.status === 'active' ? `, ${Math.round(a.rem)} left` : ''}`}</dd>
                 <dt>Planned</dt><dd>${this.fmtDay(a.plannedStart)} → ${this.fmtDay(a.plannedFinish)} · ${v > 0 ? `<span class="warn">${v} d late</span>` : v < 0 ? `${-v} d early` : 'on time'}</dd>
@@ -1421,7 +1467,11 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 ${STAGE_NAMES.slice(1).map(s => `<option ${set === s ? 'selected' : ''}>${s}</option>`).join('')}<option value="" ${set === '' ? 'selected' : ''}>No stage</option></select>`;
         };
         const linked = this.linked.filter(a => a.level && a.stage).length, own = Object.keys(map.activities || {}).length;
+        const states = this.linked.map(a => ({a, state: activityLinkState(a,this.levels)}));
+        const filter = this.linkReviewFilter || 'review';
+        const review = this.options.standalone ? `<header class="pg-review-head"><b>Model / P6 link review</b><label>Show <select data-link-review-filter><option value="review" ${filter === 'review' ? 'selected' : ''}>Needs review</option><option value="unlinked" ${filter === 'unlinked' ? 'selected' : ''}>Unlinked</option><option value="all" ${filter === 'all' ? 'selected' : ''}>All activities</option></select></label></header><div class="pg-link-counts">${[['mapped','Mapped'],['suggested','Check link'],['demo','Demo assignment'],['unlinked','Unlinked'],['context','Schedule only']].map(([kind,label]) => `<span>${label} <b>${states.filter(x => x.state.kind === kind).length}</b></span>`).join('')}</div><p class="muted">Mapped describes the link source, not approval. Floor / stage matches do not establish individual wall assignments.</p><div class="pg-link-review"><table><thead><tr><th>Activity</th><th>Floor / stage</th><th>Link basis</th><th></th></tr></thead><tbody>${states.filter(x => filter === 'all' || filter === 'unlinked' && x.state.kind === 'unlinked' || filter === 'review' && ['suggested','demo','unlinked'].includes(x.state.kind)).map(({a,state}) => `<tr><td><b>${escapeHtml(a.id)}</b><span>${escapeHtml(a.name)}</span></td><td>${escapeHtml(a.level || 'No floor')}<span>${escapeHtml(a.stage || 'No stage')}</span></td><td><b>${escapeHtml(state.label)}</b><span>${escapeHtml(state.basis)}</span></td><td><button data-review-act="${escapeHtml(a.id)}" aria-label="Review ${escapeHtml(a.id)} link">Review</button></td></tr>`).join('') || '<tr><td colspan="4">No activities in this filter.</td></tr>'}</tbody></table></div><details class="pg-bulk-links"><summary>Bulk location and stage mappings</summary>` : '';
         el.innerHTML = `<div class="tk-settings pg-links">
+            ${review}
             <div><b>Link the schedule to the model.</b> <span class="muted">A wall activity needs a level (from a Location/Level activity code, the WBS or the name) and an install stage
                 (an Install Stage code, or words in the name: frame, board/hang, tape/mud, finish/sand/punch). ${linked} of ${this.linked.length} activities are linked to walls.</span></div>
             <table><thead><tr><th>P6 location</th><th class="num">Activities</th><th>Model level</th></tr></thead><tbody>
@@ -1429,7 +1479,10 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             <table><thead><tr><th>P6 stage</th><th class="num">Activities</th><th>Install stage</th></tr></thead><tbody>
                 ${stageKeys.map(([k, n]) => `<tr><td>${escapeHtml(k)}</td><td class="num">${n}</td><td>${stageSelect(k)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No stage codes: stages come from the activity names.</td></tr>'}</tbody></table>
             ${own ? `<div>${own} activities set one by one. <button data-clear-own>Clear those</button></div>` : ''}
+            ${this.options.standalone ? '</details>' : ''}
         </div>`;
+        el.querySelector('[data-link-review-filter]')?.addEventListener('change', e => { this.linkReviewFilter = e.target.value; this.renderLinks(); this.fitGantt(); });
+        el.querySelectorAll('[data-review-act]').forEach(b => b.onclick = () => this.openScheduleActivity(b.dataset.reviewAct, {review:true}));
         const update = (kind, key, value) => {
             if (value === '__auto') delete map[kind][key]; else map[kind][key] = value;
             this.linksChanged();
@@ -1441,6 +1494,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     linksChanged() {
+        const mappingOpen = this.panel.querySelector('.activity-mapping')?.open;
         this.linkedCache = null;
         this.saveSchedule();
         const focus = this.focusActivity();
@@ -1449,6 +1503,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.renderInfo();
         this.renderLinks();
         this.renderBody();
+        if (mappingOpen) { const settings = this.panel.querySelector('.activity-mapping'); if (settings) settings.open = true; }
     }
 
     exportCsv() {

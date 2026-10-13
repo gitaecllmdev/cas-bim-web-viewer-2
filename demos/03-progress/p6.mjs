@@ -387,6 +387,32 @@ export function linkActivities(schedule, levelNames) {
     });
 }
 
+// A usable link is not a claim that one model element has an explicit P6 assignment.
+export function activityLinkState(activity, levelNames) {
+    if (activity.scope !== 'wall') return { kind: 'context', label: 'Schedule only', basis: 'Not installation-stage wall work' };
+    const missing = [];
+    if (!activity.level || !levelNames.includes(activity.level)) missing.push('Model floor missing');
+    if (!STAGE_NAMES.slice(1).includes(activity.stage)) missing.push('Install stage missing');
+    if (missing.length) return { kind: 'unlinked', label: 'Unlinked', basis: missing.join(' · ') };
+    const how = [activity.levelHow || '', activity.stageHow || ''];
+    if (activity.demoWalls || how.some(s => /^demo/i.test(s))) return { kind: 'demo', label: 'Demo assignment', basis: 'Illustrative model assignment' };
+    const explicit = s => /^activity code |^set on this activity$|^link table /i.test(s);
+    if (how.every(explicit)) return { kind: 'mapped', label: 'Mapped', basis: how.every(s => /^activity code /i.test(s)) ? 'P6 activity codes' : 'Saved mapping / activity override' };
+    return { kind: 'suggested', label: 'Check link', basis: how.filter(Boolean).join(' · ') || 'Link basis not recorded' };
+}
+
+// Reverse lookup uses the resolved floor/stage or actual assigned wall set, never a display-name guess.
+export function relatedWallActivities(selectedWalls, activities) {
+    const walls = [...new Map(selectedWalls.filter(w => w?.level).map(w => [w.dbId, w])).values()];
+    const floors = new Set(walls.map(w => w.level));
+    if (floors.size !== 1) return [];
+    const level = [...floors][0], selected = new Set(walls.map(w => w.dbId));
+    return activities.filter(a => a.scope === 'wall' && a.level === level && STAGE_NAMES.slice(1).includes(a.stage)).flatMap(a => {
+        const count = a.walls ? new Set(a.walls.map(w => w?.dbId).filter(id => selected.has(id))).size : walls.length;
+        return count ? [{ activity: a, count, basis: a.demoWalls ? 'Demo wall set' : a.walls ? 'Assigned wall set' : 'Whole floor + install stage' }] : [];
+    }).sort((x, y) => STAGE_NAMES.indexOf(x.activity.stage) - STAGE_NAMES.indexOf(y.activity.stage) || (x.activity.start || '').localeCompare(y.activity.start || '') || x.activity.id.localeCompare(y.activity.id));
+}
+
 // --- Progress --------------------------------------------------------------------------------------------------------
 
 // Walls on a level at a stage or later: counts[level] = [walls at stage index >= 0, >= 1, ...].
