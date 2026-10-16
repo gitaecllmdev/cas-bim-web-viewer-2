@@ -194,11 +194,11 @@ function renderPlannedLf(s){
     let el=$('plan-progress');const lf=s.lf;
     if(!lf?.total){el?.remove();return;}
     if(!el){el=document.createElement('section');el.id='plan-progress';el.setAttribute('aria-label','Planned wall length by the shown date');document.querySelector('.model-card .model-bar').after(el);}
-    const color=new Map((s.stages||[]).map(x=>[x.name,x.color])),W=260,H=58,c=lf.curve,n=Math.max(1,c.length-1);
+    const color=new Map((s.stages||[]).map(x=>[x.name,x.color])),W=200,H=36,c=lf.curve,n=Math.max(1,c.length-1);
     const x=i=>(i/n)*W,y=p=>H-2-(p/100)*(H-6),line=k=>c.map((p,i)=>`${x(i).toFixed(1)},${y(k?p.stages.find(r=>r.stage===k)?.pct||0:p.pct).toFixed(1)}`).join(' ');
     const span=Date.parse(lf.to)-Date.parse(lf.from),at=span>0?Math.max(0,Math.min(1,(Date.parse(s.cursor)-Date.parse(lf.from))/span)):0;
-    el.innerHTML=`<div class="pp-head"><b>Planned by ${escapeHtml(dashboardDate(s.cursor))}</b><strong>${lf.pct}%</strong><span>${lf.planned.toLocaleString()} of ${lf.total.toLocaleString()} LF of wall</span><small>Per schedule · not field-verified</small></div>
-        <div class="pp-stages">${lf.stages.map(r=>`<div class="pp-stage" title="${escapeHtml(r.stage)}: ${r.planned.toLocaleString()} of ${r.total.toLocaleString()} LF planned by ${escapeHtml(dashboardDate(s.cursor))}"><span><i style="background:${color.get(r.stage)||'#8c96a0'}"></i>${escapeHtml(r.stage)}</span><div class="pp-bar"><i style="width:${r.pct}%;background:${color.get(r.stage)||'#8c96a0'}"></i></div><b>${r.pct}%</b><small>${r.planned.toLocaleString()} / ${r.total.toLocaleString()} LF</small></div>`).join('')}</div>
+    el.innerHTML=`<div class="pp-head" title="Per schedule (working days elapsed in each activity), not field-verified"><strong>${lf.pct}%</strong><span><b>Planned by ${escapeHtml(dashboardDate(s.cursor))}</b><small>${lf.planned.toLocaleString()} / ${lf.total.toLocaleString()} LF of wall · per schedule</small></span></div>
+        <div class="pp-stages">${lf.stages.map(r=>`<div class="pp-stage" title="${escapeHtml(r.stage)}: ${r.planned.toLocaleString()} of ${r.total.toLocaleString()} LF planned by ${escapeHtml(dashboardDate(s.cursor))}"><span><i style="background:${color.get(r.stage)||'#8c96a0'}"></i>${escapeHtml(r.stage)}</span><b>${r.pct}%</b><div class="pp-bar"><i style="width:${r.pct}%;background:${color.get(r.stage)||'#8c96a0'}"></i></div></div>`).join('')}</div>
         <svg class="pp-curve" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Planned percent of wall length over the schedule; click to move the date">
             <line x1="0" x2="${W}" y1="${y(50)}" y2="${y(50)}" class="pp-grid"/><line x1="0" x2="${W}" y1="${y(100)}" y2="${y(100)}" class="pp-grid"/>
             ${lf.stages.map(r=>`<polyline points="${line(r.stage)}" style="stroke:${color.get(r.stage)||'#8c96a0'}"/>`).join('')}<polyline points="${line(null)}" class="pp-all"/>

@@ -564,7 +564,8 @@ export function scheduleStageNames(linked) {
 }
 
 // Distinct, colour-blind-friendly defaults by stage order; saved choices (schedule.map.colors) win.
-export const STAGE_PALETTE = ['#e08a2c', '#2f7ebc', '#7a5cc2', '#2a9d8f', '#c4566b', '#8a9a2b', '#3e5c76', '#b5651d'];
+// The three main stages read orange -> blue -> green in schedule order; further stages get other distinct hues.
+export const STAGE_PALETTE = ['#e08a2c', '#2f7ebc', '#2e9e5b', '#7a5cc2', '#c4566b', '#2a9d8f', '#8a9a2b', '#3e5c76'];
 export const GHOST_COLOR = '#dde3ea'; // light enough to read as ghosted in 3D, still visible as a line on a white sheet
 export function stageColors(names, saved = {}) {
     return new Map(names.map((name, i) => [name, /^#[0-9a-f]{6}$/i.test(saved?.[name] || '') ? saved[name] : STAGE_PALETTE[i % STAGE_PALETTE.length]]));
