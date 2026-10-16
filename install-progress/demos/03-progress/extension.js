@@ -92,7 +92,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 // A floor change drops the picked activity of another floor (Floors apart shows every floor: it keeps it).
                 if (this.options.standalone && !this.apartOn && this.selectedAct && this.activity(this.selectedAct)?.level !== this.views.level?.name) {
                     this.clearFocus();this.refresh();
-                }
+                } else if (this.options.standalone) this.refresh(); // the planned LF follows the level
                 this.renderBody();
             }),
             onDockChange(() => { if (this.walls) this.render(); }), // the Gantt's width and its ⤢ button follow the dock
@@ -1176,16 +1176,20 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
     // Planned wall length (LF) by the shown date, per stage, and the planned curve over the schedule (weekly). Lengths
     // and the curve are worked out once per schedule / link change (the linked list is rebuilt then).
+    // With a level chosen, only that level's walls count (an assigned wall set counts its walls on that level).
     plannedLf() {
         if (!this.schedule || !this.walls) return null;
-        const linked = this.linked, names = this.stageNames || [];
-        if (this.lfCache?.linked !== linked) {
-            const lengths = activityLengths(this.walls, linked), from = projectStart(this.schedule.activities) || this.span[0];
+        const linked = this.linked, names = this.stageNames || [], level = this.views.level?.name || null;
+        if (this.lfCache?.linked !== linked) this.lfCache = { linked, byLevel: new Map() };
+        if (!this.lfCache.byLevel.has(level)) {
+            const walls = level ? this.walls.filter(w => w.level === level) : this.walls;
+            const acts = level ? linked.map(a => (a.walls ? { ...a, walls: a.walls.filter(w => w.level === level) } : a)) : linked;
+            const lengths = activityLengths(walls, acts), from = projectStart(this.schedule.activities) || this.span[0];
             const to = linked.map(a => a.finish).filter(Boolean).sort().at(-1) || this.span[1];
-            this.lfCache = { linked, lengths, from, to, curve: plannedCurve(linked, lengths, from, to, this.cal, names) };
+            this.lfCache.byLevel.set(level, { acts, lengths, from, to, curve: plannedCurve(acts, lengths, from, to, this.cal, names) });
         }
-        const { lengths, from, to, curve } = this.lfCache;
-        return { ...plannedLengths(linked, lengths, this.cursor, this.cal, names), from, to, curve };
+        const { acts, lengths, from, to, curve } = this.lfCache.byLevel.get(level);
+        return { ...plannedLengths(acts, lengths, this.cursor, this.cal, names), from, to, curve, level };
     }
 
     refreshSchedule() {

@@ -213,7 +213,7 @@
 }
 @media(max-width:700px){.arrange-toggle{display:none}}
 /* The color legend over the 3D view: click a stage to hide or show it */
-.install-app #preview>#model-legend{position:absolute;z-index:12;top:8px;left:8px;max-width:calc(100% - 16px);display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px;background:#ffffffee;border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 8px #16304c14;font-size:11px}
+.install-app #preview>#model-legend{position:absolute;z-index:12;bottom:8px;left:8px;max-width:calc(100% - 16px);display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px;background:#ffffffee;border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 8px #16304c14;font-size:11px}
 .install-app #preview>#model-legend>b{width:100%;font-size:10px;color:#5b7083;font-weight:600}
 .install-app #model-legend .legend-chip{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:14px;background:white;padding-left:3px}
 .install-app #model-legend .legend-chip.off{opacity:.5}
@@ -290,4 +290,4 @@
 .install-app #preview>#model-legend>b{width:auto;margin-right:4px}
 .install-app .view-context-controls button{width:auto;height:28px;padding:0 9px;font-size:11px}
 .install-app .view-context-controls button[aria-pressed=true]{background:#e1ecee;color:#164d59;border-color:#bfd4d9}
-@media(max-width:700px){.install-app #preview>#model-legend{flex-wrap:nowrap;overflow-x:auto;top:4px;left:4px;max-width:calc(100% - 8px);padding:3px 4px;scrollbar-width:none}.install-app #preview>#model-legend>b,.install-app #model-legend .legend-ghost{display:none}.install-app #model-legend button{white-space:nowrap;padding:2px 6px 2px 3px;font-size:10px}}
+@media(max-width:700px){.install-app #preview>#model-legend{flex-wrap:nowrap;overflow-x:auto;bottom:4px;left:4px;max-width:calc(100% - 8px);padding:3px 4px;scrollbar-width:none}.install-app #preview>#model-legend>b,.install-app #model-legend .legend-ghost{display:none}.install-app #model-legend button{white-space:nowrap;padding:2px 6px 2px 3px;font-size:10px}}

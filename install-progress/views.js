@@ -407,7 +407,7 @@ export class Views {
                 const candidates = is3d ? state.nodes : [...this.wallLevel.keys()];
                 hidden = new Set(candidates.filter(id => !allowed.has(id)));
             }
-            const keepHidden = new Set([...this.hidden,...(is3d ? this.ignored || [] : []),...(is3d && this.level ? this.ceilings || [] : [])]);
+            const keepHidden = new Set([...this.hidden,...(is3d ? this.ignored || [] : []),...(is3d && this.level ? [...(this.ceilings || []), ...(this.slabsAbove || [])] : [])]);
             const show = [...state.hidden].filter(id => !hidden.has(id) && !keepHidden.has(id));
             // Showing a composite can reveal its children; reapply the mask after that operation.
             const hide = show.some(id=>tree.getChildCount(id)>0) ? [...hidden] : [...hidden].filter(id => !state.hidden.has(id));
@@ -441,12 +441,23 @@ export class Views {
     async applyCeilings() {
         const model = this.viewer3d.model;
         if (!model) return;
-        if (this.ceilingsOf !== model) { this.ceilingsOf = model; this.ceilingsTask = findCategory(model, 'Revit Ceilings').catch(() => []); }
-        const ceilings=await this.ceilingsTask;
+        if (this.ceilingsOf !== model) {
+            this.ceilingsOf = model; this.slabBounds = null;
+            this.ceilingsTask = findCategory(model, 'Revit Ceilings').catch(() => []);
+            this.slabsTask = Promise.all(['Revit Floors', 'Revit Roofs'].map(c => findCategory(model, c).catch(() => []))).then(r => r.flat());
+        }
+        const [ceilings, slabs] = await Promise.all([this.ceilingsTask, this.slabsTask]);
         if (this.viewer3d.model !== model || this.ceilingsOf !== model) return;
-        this.ceilings=ceilings;
-        if (!ceilings.length) return;
-        if (this.level) this.viewer3d.hide(this.ceilings, model); else this.viewer3d.show(this.ceilings, model);
+        this.ceilings = ceilings;
+        if (ceilings.length) { if (this.level) this.viewer3d.hide(ceilings, model); else this.viewer3d.show(ceilings, model); }
+        // The slab (or roof) over the shown level: hidden, so the level's walls show whole without being roofed over.
+        this.slabBounds ??= new Map(slabs.map(id => [id, this.boundsOf(model, [id])]).filter(([, b]) => b));
+        const before = this.slabsAbove || [];
+        const ext = this.level && this.levelExtent(this.level.name);
+        this.slabsAbove = ext ? [...this.slabBounds].filter(([, b]) => b.min.z > this.level.bottom + 2 && b.min.z < ext.box.max.z + 0.25).map(([id]) => id) : [];
+        const back = before.filter(id => !this.slabsAbove.includes(id) && !this.hidden.includes(id));
+        if (back.length) this.viewer3d.show(back, model);
+        if (this.slabsAbove.length) this.viewer3d.hide(this.slabsAbove, model);
     }
 
     select(ids) {
@@ -795,14 +806,18 @@ export class Views {
         const section = this.viewer3d.getExtension('Autodesk.Section') || await this.viewer3d.loadExtension('Autodesk.Section');
         if(this.selectionFollow&&level!==this.level)return;
         if (!level || !model) { const syncing=this.syncing;if(this.selectionFollow)this.syncing=true;try { section.deactivate(false); } finally { this.syncing=syncing; }return; }
-        const ext = this.levelExtent(level.name), b = this.building;
-        // Before the geometry is in (nothing to measure yet): around the building, as wide as its framing distance.
-        const c = ext?.center || b?.center, r = ext ? ext.radius * 1.04 + 1 : b ? b.radius * 1.5 : 0;
-        const world = model.getBoundingBox();
-        const min = c ? new THREE.Vector3(c.x - r, c.y - r, 0) : world.min, max = c ? new THREE.Vector3(c.x + r, c.y + r, 0) : world.max;
-        const top = Math.max(level.bottom + 4, level.top - 1.4);
+        // The level's own walls, whole: their measured extents with a margin, from the level line to the top of the
+        // tallest one (the slab above is hidden instead of cutting the walls under it: applyCeilings).
+        const ext = this.levelExtent(level.name), b = this.building, m = 2;
+        let box;
+        if (ext?.box) box = new THREE.Box3(new THREE.Vector3(ext.box.min.x - m, ext.box.min.y - m, level.bottom), new THREE.Vector3(ext.box.max.x + m, ext.box.max.y + m, Math.max(level.bottom + 4, ext.box.max.z + 0.25)));
+        else {
+            // Before the geometry is in (nothing to measure yet): around the building, as wide as its framing distance.
+            const world = model.getBoundingBox(), c = b?.center, r = b ? b.radius * 1.5 : 0;
+            box = new THREE.Box3(c ? new THREE.Vector3(c.x - r, c.y - r, level.bottom) : world.min.clone().setZ(level.bottom), c ? new THREE.Vector3(c.x + r, c.y + r, level.top) : world.max.clone().setZ(level.top));
+        }
         const syncing=this.syncing;if(this.selectionFollow)this.syncing=true;
-        try { section.setSectionBox(new THREE.Box3(new THREE.Vector3(min.x, min.y, level.bottom), new THREE.Vector3(max.x, max.y, top))); }
+        try { section.setSectionBox(box); }
         finally { this.syncing=syncing; }
     }
 
@@ -817,15 +832,22 @@ export class Views {
         if (!this.extents.has(model)) this.extents.set(model, new Map());
         const known = this.extents.get(model);
         if (known.has(name)) return known.get(name);
-        const nav = this.viewer3d.navigation, from = nav.getPosition().clone(), to = nav.getTarget().clone();
-        this.viewer3d.fitToView(walls, model, true);
-        const center = nav.getTarget().clone(), eye = nav.getEyeVector().length();
-        nav.fitBounds(true, new THREE.Box3(center.clone().subScalar(1), center.clone().addScalar(1)));
-        const unit = nav.getEyeVector().length();
-        nav.setView(from, to);
-        const ext = { center, radius: Math.sqrt(3) * (eye / unit) };
+        // Measured, not estimated from a camera fit (that depended on the view's proportions and cut long floors short).
+        const box = this.boundsOf(model, walls);
+        if (!box) return null;
+        const ext = { box, center: box.getCenter(new THREE.Vector3()), radius: Math.hypot(box.max.x - box.min.x, box.max.y - box.min.y) / 2 };
         known.set(name, ext);
         return ext;
+    }
+
+    // The world bounds of elements, from their fragments. InstanceTree.enumNodeFragments, Model.getFragmentList and
+    // FragmentList.getWorldBounds: https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Model/
+    boundsOf(model, ids) {
+        const tree = model.getInstanceTree?.(), frags = model.getFragmentList?.();
+        if (!tree || !frags) return null;
+        const box = new THREE.Box3(), one = new THREE.Box3();
+        for (const id of ids) tree.enumNodeFragments(id, (f) => { frags.getWorldBounds(f, one); box.union(one); }, true);
+        return box.isEmpty() ? null : box;
     }
 
     // What the view shows, framed in 3D: with a level cut, that level's walls (those isolated, if any are there);
