@@ -185,3 +185,42 @@
 .hover-props i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .model-stage-legend i.neutral{background:#dde3ea}
 @media(max-width:600px){.pg-timeline{flex-wrap:wrap}.pg-timeline input[type=range]{order:5;flex-basis:100%}}
+/* Layout switch: Info below (model on top, schedule and data full width under it) / Side by side */
+.arrange-toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:white}
+.install-app .arrange-toggle button{border:0;border-radius:0;padding:6px 10px;font-size:11px;background:white;color:#5b7083}
+.install-app .arrange-toggle button[aria-pressed=true]{background:#173e52;color:white}
+@media(min-width:701px){
+.install-app #main[data-arrange=below][data-workspace-mode]{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:var(--model-height,40vh) 40px max(520px,calc(100dvh - 150px - var(--model-height,40vh)))}
+.install-app #main[data-arrange=below][data-workspace-mode=model]{grid-template-rows:calc(100dvh - 170px) 40px 0}
+.install-app #main[data-arrange=below][data-workspace-mode=schedule]{grid-template-rows:0 40px calc(100dvh - 170px)}
+.install-app #main[data-arrange=below]>.model-card{grid-area:1/1}
+.install-app #main[data-arrange=below]>.workspace-divider-region{grid-area:2/1;flex-direction:row;align-items:center;padding:4px 0}
+.install-app #main[data-arrange=below]>.dashboard-side{grid-area:3/1}
+.install-app #main[data-arrange=below] .workspace-modes{flex-direction:row;width:auto}
+.install-app #main[data-arrange=below] #workspace-divider{cursor:row-resize;min-height:0;height:32px;width:auto;flex:1}
+.install-app #main[data-arrange=below] #workspace-divider>span{width:32px;height:4px}
+}
+@media(max-width:700px){.arrange-toggle{display:none}}
+/* The color legend over the 3D view: click a stage to hide or show it */
+.install-app #preview>#model-legend{position:absolute;z-index:12;top:8px;left:8px;max-width:calc(100% - 16px);display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px;background:#ffffffee;border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 8px #16304c14;font-size:11px}
+.install-app #preview>#model-legend>b{width:100%;font-size:10px;color:#5b7083;font-weight:600}
+.install-app #model-legend .legend-chip{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:14px;background:white;padding-left:3px}
+.install-app #model-legend .legend-chip.off{opacity:.5}
+.install-app #model-legend .legend-chip.off button{text-decoration:line-through}
+.install-app #model-legend input[type=color]{width:16px;height:16px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;flex:none}
+.install-app #model-legend button{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 4px;border:0;border-radius:14px;font-size:11px;background:transparent}
+.install-app #model-legend button[data-legend-all]{border:1px solid var(--line);background:white}
+#apart-gap{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#5b7083}#apart-gap[hidden]{display:none}#apart-gap input{width:80px}
+.install-app #model-legend button[aria-pressed=false]{opacity:.5;text-decoration:line-through}
+.install-app #model-legend button i,.install-app #model-legend .legend-ghost i{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
+.install-app #model-legend button small{color:var(--muted);font-variant-numeric:tabular-nums}
+.install-app #model-legend .legend-ghost{display:inline-flex;align-items:center;gap:5px;color:#5b7083;padding:0 4px}
+.install-app #model-legend .legend-ghost i{background:#dde3ea;border:1px solid #c5ced8}
+.install-app #model-legend button[data-legend-all]{font-weight:600}
+/* Labeled 3D view buttons, in the model card's toolbar */
+.install-app .model-bar>.view-context-controls{position:static;max-width:none;padding:0;background:none;border:0;box-shadow:none;display:flex;flex-wrap:wrap;gap:4px}
+.install-app #preview>#model-legend{padding:4px 6px;gap:3px;max-width:min(560px,calc(100% - 16px))}
+.install-app #preview>#model-legend>b{width:auto;margin-right:4px}
+.install-app .view-context-controls button{width:auto;height:28px;padding:0 9px;font-size:11px}
+.install-app .view-context-controls button[aria-pressed=true]{background:#e1ecee;color:#164d59;border-color:#bfd4d9}
+@media(max-width:700px){.install-app #preview>#model-legend{flex-wrap:nowrap;overflow-x:auto;top:4px;left:4px;max-width:calc(100% - 8px);padding:3px 4px;scrollbar-width:none}.install-app #preview>#model-legend>b,.install-app #model-legend .legend-ghost{display:none}.install-app #model-legend button{white-space:nowrap;padding:2px 6px 2px 3px;font-size:10px}}

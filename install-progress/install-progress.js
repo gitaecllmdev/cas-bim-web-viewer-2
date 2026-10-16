@@ -6,9 +6,17 @@ import {CONFIG} from './config.js';
 import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp} from './project-dashboard.mjs';
 const $=id=>document.getElementById(id);
 // The schedule's own stages and their colors (shown ones), then the ghosted rest.
+// The color legend over the 3D view: the schedule's stages with their wall counts on the shown date. Click a stage to
+// hide or show it on the model (as the Stages legend in the schedule does); Show all brings every stage back.
 function renderModelStatusLegend(summary={}){
-    const stages=(summary.stages||[]).filter(s=>!s.hidden);
-    $('model-legend').innerHTML=stages.map(({color,name})=>`<span><i style="background:${color}"></i>${escapeHtml(name)}</span>`).join('')+'<span><i class="neutral"></i>Not started / other trades</span>';
+    const stages=summary.stages||[],el=$('model-legend');
+    el.innerHTML=stages.length?`<b>Colors on ${escapeHtml(dashboardDate(summary.cursor))}</b>${stages.map(({color,name,hidden,count},i)=>`<span class="legend-chip${hidden?' off':''}"><input type="color" data-legend-color="${i}" value="${color}" aria-label="Color for ${escapeHtml(name)}" title="Change the color"><button data-legend-stage="${i}" aria-pressed="${!hidden}" title="${hidden?'Show':'Hide'} ${escapeHtml(name)} on the model"><span>${escapeHtml(name)}</span><small>${(count||0).toLocaleString()}</small></button></span>`).join('')}<span class="legend-ghost"><i></i>Not started / other trades</span>${stages.some(s=>s.hidden)?'<button data-legend-all>Show all</button>':''}`:'<span class="legend-ghost"><i></i>Loading schedule…</span>';
+    el.querySelectorAll('[data-legend-stage]').forEach(b=>b.onclick=()=>{const s=stages[+b.dataset.legendStage];tracker?.setStageHidden(s.name,!s.hidden);});
+    el.querySelector('[data-legend-all]')?.addEventListener('click',()=>tracker?.setStageHidden(null,false));
+    el.querySelectorAll('[data-legend-color]').forEach(c=>c.onchange=()=>tracker?.setStageColor(stages[+c.dataset.legendColor].name,c.value));
+    const gap=$('apart-gap');if(gap)gap.hidden=!tracker?.apartOn;
+    document.querySelectorAll('[data-model-view="apart"]').forEach(b=>b.setAttribute('aria-pressed',!!tracker?.apartOn));
+    document.querySelectorAll('[data-model-view="plans"]').forEach(b=>b.setAttribute('aria-pressed',!!tracker?.allPlans?.isOpen));
 }
 const sourceLabel=id=>({revit:'Model',schedule:'Schedule',cost:'Cost',labour:'Labour'})[id];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
@@ -16,24 +24,31 @@ const variance=n=>(n>0?'+':'')+money(n);
 let bimSnapshot=demoBimSnapshot();
 let tracker,views,tools,summary,share=.34,resizeFrame,links={},linkKey='',integration='revit',mode='both';
 try{const saved=localStorage.getItem('cas-project-dashboard:split');if(saved!==null)share=clampSplit(Number(saved));}catch{}
+// Layout: 'below' (model on top, schedule and data full width under it; the default) or 'side' (side by side).
+let arrange='below',rowShare=.42;
+try{arrange=localStorage.getItem('cas-project-dashboard:arrange')==='side'?'side':'below';const rows=localStorage.getItem('cas-project-dashboard:rows');if(rows!==null)rowShare=clampSplit(Number(rows));}catch{}
 const main=$('main'),divider=$('workspace-divider');
 try{$('selection-context-zoom').checked=localStorage.getItem('cas-project-dashboard:selection-context-zoom')!=='off';}catch{}
 $('selection-context-zoom').onchange=e=>{views?.setSelectionFollow(true,{contextZoom:e.target.checked});try{localStorage.setItem('cas-project-dashboard:selection-context-zoom',e.target.checked?'on':'off');}catch{}};
 
-function resizeWorkspace(value=share,save=false){
-    const width=main.clientWidth-40;share=clampSplit(value,width);main.style.setProperty('--model-width',`${Math.round(width*share)}px`);
-    divider.setAttribute('aria-valuenow',Math.round(share*100));divider.setAttribute('aria-valuetext',`${Math.round(share*100)}% model, ${Math.round((1-share)*100)}% schedule`);
-    if(save)try{localStorage.setItem('cas-project-dashboard:split',String(share));}catch{}
+function resizeWorkspace(value,save=false){
+    const below=arrange==='below',size=(below?innerHeight-108:main.clientWidth)-40,v=clampSplit(value??(below?rowShare:share),size);
+    if(below){rowShare=v;main.style.setProperty('--model-height',`${Math.round(size*v)}px`);}else{share=v;main.style.setProperty('--model-width',`${Math.round(size*v)}px`);}
+    divider.setAttribute('aria-valuenow',Math.round(v*100));divider.setAttribute('aria-valuetext',`${Math.round(v*100)}% model, ${Math.round((1-v)*100)}% schedule`);
+    if(save)try{localStorage.setItem(below?'cas-project-dashboard:rows':'cas-project-dashboard:split',String(v));}catch{}
     cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>views?.resize());
 }
 function setWorkspaceMode(value,save=true){mode=value;main.dataset.workspaceMode=mode;document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.workspaceMode===mode));if(save)try{localStorage.setItem('cas-project-dashboard:mode',mode);}catch{}resizeWorkspace();}
 divider.onpointerdown=e=>{if(e.button!==0||mode!=='both')return;divider.setPointerCapture(e.pointerId);document.body.classList.add('workspace-resizing');e.preventDefault();};
-divider.onpointermove=e=>{if(divider.hasPointerCapture(e.pointerId))resizeWorkspace((e.clientX-main.getBoundingClientRect().left)/(main.clientWidth-40));};
+divider.onpointermove=e=>{if(!divider.hasPointerCapture(e.pointerId))return;const r=main.getBoundingClientRect();resizeWorkspace(arrange==='below'?(e.clientY-r.top)/(innerHeight-148):(e.clientX-r.left)/(main.clientWidth-40));};
 const finishResize=()=>{document.body.classList.remove('workspace-resizing');resizeWorkspace(share,true);};
 divider.onpointerup=finishResize;divider.onlostpointercapture=finishResize;divider.onpointercancel=finishResize;
-divider.ondblclick=()=>resizeWorkspace(.34,true);
-divider.onkeydown=e=>{const values={ArrowLeft:share-(e.shiftKey?.05:.02),ArrowRight:share+(e.shiftKey?.05:.02),Home:0,End:1,Enter:.34};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
+divider.ondblclick=()=>resizeWorkspace(arrange==='below'?.42:.34,true);
+divider.onkeydown=e=>{const v=arrange==='below'?rowShare:share,step=e.shiftKey?.05:.02,values=arrange==='below'?{ArrowUp:v-step,ArrowDown:v+step,Home:0,End:1,Enter:.42}:{ArrowLeft:v-step,ArrowRight:v+step,Home:0,End:1,Enter:.34};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
 document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.onclick=()=>setWorkspaceMode(b.dataset.workspaceMode));
+function setArrange(value,save=true){arrange=value==='side'?'side':'below';main.dataset.arrange=arrange;divider.setAttribute('aria-orientation',arrange==='below'?'horizontal':'vertical');document.querySelectorAll('[data-arrange]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.arrange===arrange));if(save)try{localStorage.setItem('cas-project-dashboard:arrange',arrange);}catch{}resizeWorkspace();requestAnimationFrame(()=>{views?.resize();tracker?.fitGantt();});}
+document.querySelectorAll('[data-arrange]').forEach(b=>b.onclick=()=>setArrange(b.dataset.arrange));
+setArrange(arrange,false);
 new ResizeObserver(()=>resizeWorkspace()).observe(main);setWorkspaceMode(mode,false);renderModelStatusLegend();
 function renderSources(){
     $('source-statuses').innerHTML=INTEGRATIONS.map(s=>{const saved=links[s.id],at=s.id==='schedule'?summary?.dataDate:saved?.at|| (['cost','labour'].includes(s.id)?'2026-10-12':'');const fresh=sourceFreshness(at);let text=s.id==='revit'?(summary?'Demo link current · '+bimSnapshot.revision+' · '+dashboardTimestamp(bimSnapshot.updatedAt):'Loading viewer'):s.id==='schedule'?(summary?(fresh.state==='unknown'?'Data date unknown':'Checked '+dashboardDate(at)):'Waiting for schedule'):s.id==='labour'?'Sample labour plan':'Sample cost plan';let state=s.id==='revit'?(summary?'current':'unknown'):fresh.state;if(saved?.mode==='setup'){text='Setup saved · sync not enabled';state='unknown';}else if(fresh.state==='stale')text=fresh.label+' · '+dashboardDate(at);return `<button data-source-step="${s.id}" title="Open ${escapeHtml(s.name)} data source"><i class="source-dot ${state}"></i><b>${sourceLabel(s.id)}</b><span>${escapeHtml(text)}</span>${s.id==='revit'&&summary?'<span class="demo-badge">Demo data</span>':''}</button>`;}).join('');
@@ -129,9 +144,14 @@ function mountHoverProperties(){
 }
 function mountViewControls(){
     const bar=document.createElement('div');bar.className='view-context-controls';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','3D view controls');
-    bar.innerHTML=`<button data-view-command="iso" title="Isometric view" aria-label="Isometric view">${dashboardIcon('model')}</button><button data-view-command="top" title="Top view" aria-label="Top view">${dashboardIcon('drawings')}</button><button data-view-command="fit" title="Fit the current floor or building" aria-label="Fit shown model">${dashboardIcon('present')}</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
-    $('preview').append(bar);
+    bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
+    // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
+    document.querySelector('.model-bar .layout').after(bar);
     bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);});
+    bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
+    bar.querySelector('#apart-gap input').onchange=e=>tracker?.setApartGap(Number(e.target.value));
+    // The color legend rides on the 3D view (top left).
+    $('preview').append($('model-legend'));
     // The Viewer's own Properties and Model browser panels (built-in extensions), opened from here.
     bar.querySelectorAll('[data-view-panel]').forEach(b=>b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);if(b.dataset.viewPanel==='browser')builtinPanel('Autodesk.ModelStructure',on);else builtinPanel('Autodesk.PropertiesManager',on&&views.viewer3d.getSelection().length>0);});
     bar.addEventListener('pointerdown',e=>e.stopPropagation());bar.addEventListener('keydown',e=>e.stopPropagation());
@@ -169,7 +189,9 @@ async function start(){
     location.hash=model.urn;const viewer=await initViewer($('preview'));views=new Views(viewer);views.setSelectionFollow(true,{contextZoom:$('selection-context-zoom').checked});views.on('selectioncontext',context=>{const el=$('selection-context');el.dataset.level=context.level||'';el.hidden=!context.ids.length;el.textContent=context.level?`${context.ids.length} wall${context.ids.length===1?'':'s'} selected · ${context.level} · Whole floor context · ${context.plan}`:'Selection spans levels or has no wall-level mapping';setWorkspaceMode('both');if(context.level&&tracker){tracker.selectedAct=null;tracker.linkedOnly=false;tracker.isolatedBySchedule=false;tracker.isolatedStage=null;tracker.refresh();tracker.renderBody();}tracker?.setModelSelection(context);renderDrill();});
     tools=await viewer.loadExtension(TOOLS_EXTENSION_ID,{views,is3d:true,toolbar:{builtin:[],tools:['showall','fit']}});views.use2d(TOOLS_EXTENSION_ID,{views,is3d:false,toolbar:{builtin:[],tools:['showall','fit']}});
     mountViewControls();
-    onModelReady(viewer,m=>views.setModel(m).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
+    // The model opens looking straight down (top view), fitted, once its floors are known.
+    let topDone=false;
+    onModelReady(viewer,m=>views.setModel(m).then(()=>{if(topDone)return;topDone=true;tools?.look([0,0,1]);views.fitShown();}).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
     tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel});
     mountHoverProperties();
     // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.

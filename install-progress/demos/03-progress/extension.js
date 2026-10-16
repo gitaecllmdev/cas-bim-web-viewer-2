@@ -574,14 +574,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 <button class="pg-btn" data-cursor-start title="The project's first activity start">Start</button>
                 <input type="range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
                 <b data-cursor-label class="pg-cursor-label"></b>
-                <button class="pg-btn" data-cursor-dd title="The schedule's data date">Data date</button></div>
-                <div class="pg-stage-legend" data-color-legend></div>
-                <span class="pg-views" title="Model views">
-                <button class="pg-btn ${this.apartOn ? 'active' : ''}" data-view="apart" title="Floors apart: every floor at once in 3D, each lifted over the one below, with the schedule's share per floor">Floors apart</button>
-                <label class="pg-gap" ${this.apartOn ? '' : 'hidden'} title="Space between the floors">Gap <input type="range" data-apart-gap min="0.5" max="3" step="0.25" value="${this.views.apartGapScale || 1}"></label>
-                <button class="pg-btn ${this.allPlans.isOpen ? 'active' : ''}" data-view="plans" title="All floor plans at once, beside the schedule, colored as it plays">All plans</button></span>`;
-            el.querySelectorAll('[data-view]').forEach(b => b.onclick = () => ({ apart: () => this.setApart(!this.apartOn), plans: () => this.setAllPlans(!this.allPlans.isOpen) })[b.dataset.view]());
-            el.querySelector('[data-apart-gap]').onchange = (e) => this.setApartGap(Number(e.target.value));
+                <button class="pg-btn" data-cursor-dd title="The schedule's data date">Data date</button></div>`;
             el.querySelector('[data-cursor]').oninput = (e) => this.setCursor(addDays(this.span[0], Number(e.target.value)));
             el.querySelector('[data-play]').onclick = () => (this.playTimer ? this.stopPlay() : this.play());
             el.querySelector('[data-cursor-start]').onclick = () => this.setCursor(projectStart(this.schedule.activities) || this.span[0], { move: true });
@@ -734,6 +727,10 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.panel.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', !!on[b.dataset.view]));
         const gap = this.panel.querySelector('.pg-gap');
         if (gap) gap.hidden = !this.apartOn;
+        // Schedule viewer: the same views as buttons on the 3D view (install-progress.js).
+        document.querySelectorAll('[data-model-view]').forEach(b => b.setAttribute('aria-pressed', !!on[b.dataset.modelView]));
+        const gap3d = document.getElementById('apart-gap');
+        if (gap3d) gap3d.hidden = !this.apartOn;
     }
 
     // The 4D date. Moving it shows the plan on that day (from "Installed", it switches to "Planned on the date").
@@ -797,19 +794,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                     <small>${(counts.get(name) || 0).toLocaleString()}</small></span>`).join('')}
                 <span class="pg-stage-chip ghost"><i style="background:${GHOST_COLOR}"></i>Not started / other trades</span>
                 ${focus ? `<span class="muted">Showing ${escapeHtml(focus.id)} only</span>` : ''}`;
-            el.querySelectorAll('[data-stage-show]').forEach(c => c.onchange = () => {
-                const name = this.stageNames[+c.dataset.stageShow];
-                this.hiddenStages ??= new Set();
-                if (c.checked) this.hiddenStages.delete(name); else this.hiddenStages.add(name);
-                this.refresh();
-            });
-            el.querySelectorAll('[data-stage-color]').forEach(c => c.onchange = () => {
-                const name = this.stageNames[+c.dataset.stageColor];
-                (this.schedule.map.colors ??= {})[name] = c.value;
-                this.stageColorMap.set(name, c.value);
-                this.saveSchedule();
-                this.refresh(); this.renderBody();
-            });
+            el.querySelectorAll('[data-stage-show]').forEach(c => c.onchange = () => this.setStageHidden(this.stageNames[+c.dataset.stageShow], !c.checked));
+            el.querySelectorAll('[data-stage-color]').forEach(c => c.onchange = () => this.setStageColor(this.stageNames[+c.dataset.stageColor], c.value));
             return;
         }
         if (focus) {
@@ -1121,6 +1107,21 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const filters = this.gantt.filters;
         return (a) => (!focus || a.id === focus.id) && !off.has(a.stage) && (!hits || hits.ids.has(a.id)) && (!filters.size || passes(a, filters, this.colValue));
     }
+    // A stage's color, saved with the schedule (the model, the Gantt and the legends follow).
+    setStageColor(name, color) {
+        if (!this.schedule || !/^#[0-9a-f]{6}$/i.test(color)) return;
+        (this.schedule.map.colors ??= {})[name] = color;
+        this.stageColorMap.set(name, color);
+        this.saveSchedule();
+        this.refresh(); this.renderBody();
+    }
+
+    // Hide or show one stage on the model (name null: show every stage again).
+    setStageHidden(name, hidden) {
+        this.hiddenStages ??= new Set();
+        if (name == null) this.hiddenStages.clear(); else if (hidden) this.hiddenStages.add(name); else this.hiddenStages.delete(name);
+        this.refresh();
+    }
     reachedWalls() {
         return this.schedule ? scheduleWallsAt(this.walls, this.linked, this.cursor, { keep: this.scheduleKeep() }) : new Map();
     }
@@ -1141,7 +1142,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         document.dispatchEvent(new CustomEvent('progress-summary', { detail: {
             walls: total, levels: this.levels.filter(l => l !== NOT_SET).length, activities: this.schedule?.activities.length || 0,
             dataDate: this.schedule?.project.dataDate, cursor: this.cursor, demo: !!(this.schedule?.source.sample || this.schedule?.source.demo),
-            stages: (this.stageNames || []).map(name => ({ name, color: this.stageColorMap.get(name), hidden: !!this.hiddenStages?.has(name) })),
+            stages: (this.stageNames || []).map(name => ({ name, color: this.stageColorMap.get(name), hidden: !!this.hiddenStages?.has(name), count: [...reached.values()].filter(a => a.stage === name).length })),
             reachedPct: total ? Math.round((100 * hit) / total) : 0, floors: share, finish: this.schedule ? this.linked.map(a => a.finish).filter(Boolean).sort().at(-1) : null,
             start: this.schedule ? projectStart(this.schedule.activities) : null, schedule: true,
         } }));
@@ -1710,7 +1711,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const a = this.selectedAct && this.activity(this.selectedAct);
         if (!el) return;
         if (!a) {
-            el.innerHTML = el.closest('.pg-main.side') ? '<div class="pg-details empty"><b>No activity picked</b><span class="muted">Click a bar or a row to see its walls in the model, its dates, progress and links.</span></div>' : '';
+            el.innerHTML = el.closest('.pg-main.side') && !this.options.standalone ? '<div class="pg-details empty"><b>No activity picked</b><span class="muted">Click a bar or a row to see its walls in the model, its dates, progress and links.</span></div>' : '';
             return;
         }
         const m = this.options.standalone ? null : this.modelOf(a), c = compare(m, a.pct), v = finishVariance(a, this.cal), insight=activityInsight(a,m);
