@@ -228,39 +228,51 @@
 .install-app #model-legend .legend-ghost{display:inline-flex;align-items:center;gap:5px;color:#5b7083;padding:0 4px}
 .install-app #model-legend .legend-ghost i{background:#dde3ea;border:1px solid #c5ced8}
 .install-app #model-legend button[data-legend-all]{font-weight:600}
-/* Planned wall length (LF) by the shown date, above the model: one condensed row */
-#plan-progress{display:grid;grid-template-columns:auto minmax(0,1fr) 200px;grid-template-rows:auto auto;column-gap:16px;align-items:center;padding:5px 12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc)}
-#plan-progress .pp-head{grid-row:1/3;display:flex;align-items:center;gap:8px;line-height:1.2}
+/* Planned wall length (LF) by the shown date, above the model: one condensed row, the weekly histogram at the right */
+#plan-progress{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(220px,300px);column-gap:18px;align-items:center;padding:6px 12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc)}
+#plan-progress .pp-head{display:flex;align-items:center;gap:8px;line-height:1.2}
 #plan-progress .pp-head strong{font-size:20px;font-weight:700;color:#13293d;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
 #plan-progress .pp-head span{display:grid}
 #plan-progress .pp-head b{font-size:11px;color:#253c50;font-weight:600}
 #plan-progress .pp-head small{font-size:9.5px;color:#7c8a99}
-#plan-progress .pp-stages{grid-row:1/3;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px 14px;min-width:0}
+#plan-progress .pp-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px 14px;min-width:0}
 #plan-progress .pp-stage{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 4px;column-gap:6px;row-gap:3px;align-items:center;font-size:10.5px;color:#3e5568}
 #plan-progress .pp-stage span{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #plan-progress .pp-stage span i{width:7px;height:7px;border-radius:50%;flex:none}
 #plan-progress .pp-stage b{font-weight:600;color:#13293d;font-variant-numeric:tabular-nums}
 #plan-progress .pp-bar{grid-column:1/-1;height:4px;border-radius:4px;background:#e6ecf1;overflow:hidden}
 #plan-progress .pp-bar i{display:block;height:100%;border-radius:4px;transition:width .2s}
-#plan-progress .pp-curve{width:200px;height:28px;cursor:pointer;overflow:visible}
-#plan-progress .pp-curve polyline{fill:none;stroke-width:1.5;vector-effect:non-scaling-stroke}
-#plan-progress .pp-curve .pp-all{stroke:#13293d;stroke-dasharray:3 2}
-#plan-progress .pp-curve .pp-grid{stroke:#e8edf2;vector-effect:non-scaling-stroke}
-#plan-progress .pp-curve .pp-now{stroke:#c2410c;stroke-width:1.5;vector-effect:non-scaling-stroke}
-#plan-progress .pp-axis{display:flex;justify-content:space-between;font-size:8px;color:#9aa7b4;grid-column:3}
-@media(max-width:1000px){#plan-progress{grid-template-columns:auto minmax(0,1fr)}#plan-progress .pp-curve,#plan-progress .pp-axis{display:none}}
-@media(max-width:600px){#plan-progress{grid-template-columns:1fr;row-gap:4px}#plan-progress .pp-head,#plan-progress .pp-stages{grid-row:auto}}
-/* Timeline slider: a zoomed date / week bubble over the handle while sliding, month ticks under it */
-.pg-slider{position:relative;flex:1;min-width:140px;display:flex;flex-direction:column;padding-bottom:12px}
-.pg-slider input[type=range]{width:100%;margin:0}
-.pg-slider-ticks{position:absolute;left:8px;right:8px;bottom:0;height:12px;pointer-events:none}
-.pg-slider-ticks span{position:absolute;top:0;transform:translateX(-50%);font-size:9px;line-height:12px;color:#7c8a99;white-space:nowrap;border-left:1px solid #c5d0da;padding-left:2px}
-.pg-slider-tip{position:absolute;bottom:calc(100% + 2px);transform:translateX(-50%) scale(.85);transform-origin:50% 100%;opacity:0;pointer-events:none;z-index:20;display:grid;gap:1px;padding:6px 10px;border-radius:8px;background:#13293d;color:white;text-align:center;white-space:nowrap;box-shadow:0 6px 18px #0b1b2a44;transition:opacity .15s,transform .15s}
-.pg-slider-tip::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#13293d}
-.pg-slider-tip b{font-size:15px;letter-spacing:-.2px}
-.pg-slider-tip span{font-size:11px;color:#bcd0e0}
-.pg-slider.sliding .pg-slider-tip,.pg-slider:hover .pg-slider-tip{opacity:1;transform:translateX(-50%) scale(1)}
-.pg-slider:not(.sliding):hover .pg-slider-tip{opacity:.9}
+#plan-progress .pp-hist{margin:0;min-width:0;display:grid;gap:2px;padding:4px 8px 5px;border:1px solid #e3e9ef;border-radius:8px;background:white}
+#plan-progress .pp-hist figcaption{display:flex;justify-content:space-between;gap:6px;font-size:9px;color:#7c8a99;white-space:nowrap}
+#plan-progress .pp-hist figcaption b{color:#3e5568;font-weight:600}
+#plan-progress .pp-hist svg{width:100%;height:42px;display:block;cursor:pointer}
+#plan-progress .pp-wk.later rect{opacity:.35}
+#plan-progress .pp-wk.now rect{stroke:#13293d;stroke-width:.6;vector-effect:non-scaling-stroke}
+#plan-progress .pp-cum{fill:none;stroke:#13293d;stroke-width:1.2;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+#plan-progress .pp-now{stroke:#c2410c;stroke-width:1.6;vector-effect:non-scaling-stroke}
+@media(max-width:1000px){#plan-progress{grid-template-columns:auto minmax(0,1fr)}#plan-progress .pp-hist{display:none}}
+@media(max-width:600px){#plan-progress{grid-template-columns:1fr;row-gap:4px}}
+/* Timeline slider: an editor-style track (week ticks, month labels, filled to the playhead) and a glass date bubble */
+.pg-slider{position:relative;flex:1;min-width:140px;display:flex;flex-direction:column;padding-bottom:13px;--fill:0%}
+.pg-range{-webkit-appearance:none;appearance:none;width:100%;height:28px;margin:0;background:transparent;cursor:pointer}
+.pg-range::-webkit-slider-runnable-track{height:10px;border-radius:6px;background:linear-gradient(90deg,#2f7ebc 0,#5aa8ec var(--fill),#e3e9ef var(--fill));box-shadow:inset 0 1px 2px #0b1b2a22}
+.pg-range::-moz-range-track{height:10px;border-radius:6px;background:#e3e9ef;box-shadow:inset 0 1px 2px #0b1b2a22}
+.pg-range::-moz-range-progress{height:10px;border-radius:6px;background:linear-gradient(90deg,#2f7ebc,#5aa8ec)}
+.pg-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:28px;margin-top:-9px;border-radius:5px;background:linear-gradient(180deg,#6fb6f2,#2f7ebc 60%,#256aa3);border:2px solid #ffffffe6;box-shadow:0 3px 10px #0f28465c,0 0 0 1px #2f7ebc55;transition:transform .15s,box-shadow .15s}
+.pg-range::-moz-range-thumb{width:14px;height:26px;border-radius:5px;background:linear-gradient(180deg,#6fb6f2,#2f7ebc 60%,#256aa3);border:2px solid #ffffffe6;box-shadow:0 3px 10px #0f28465c}
+.pg-slider.sliding .pg-range::-webkit-slider-thumb,.pg-range:active::-webkit-slider-thumb{transform:scale(1.15);box-shadow:0 4px 16px #2f7ebc80,0 0 0 4px #2f7ebc2e}
+.pg-slider.sliding .pg-range::-moz-range-thumb{transform:scale(1.15)}
+.pg-slider-ticks{position:absolute;left:8px;right:8px;bottom:0;height:13px;pointer-events:none}
+.pg-slider-ticks span{position:absolute;top:0;transform:translateX(-1px);font-size:9px;line-height:13px;color:#5b7083;font-weight:600;white-space:nowrap;border-left:1.5px solid #9fb0bf;padding-left:3px}
+.pg-slider-ticks i{position:absolute;top:0;width:1px;height:5px;background:#b7c4d0}
+.pg-slider-tip{position:absolute;bottom:calc(100% + 6px);transform:translateX(-50%) translateY(4px) scale(.9);transform-origin:50% 100%;opacity:0;pointer-events:none;z-index:20;display:grid;gap:2px;padding:7px 14px 8px;border-radius:14px;
+  background:linear-gradient(160deg,#fffffff0,#eaf3fbe6);-webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);border:1px solid #ffffffd9;
+  box-shadow:0 10px 30px #0b1b2a33,inset 0 1px 0 #fff,inset 0 -1px 0 #2f7ebc22;color:#13293d;text-align:center;white-space:nowrap;transition:opacity .15s,transform .18s}
+.pg-slider-tip::after{content:'';position:absolute;left:50%;top:100%;margin-left:-7px;border:7px solid transparent;border-top-color:#e4eef8e6}
+.pg-slider-tip b{font-size:17px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.pg-slider-tip span{font-size:11px;color:#3e6176}
+.pg-slider.sliding .pg-slider-tip{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.pg-slider:not(.sliding):hover .pg-slider-tip{opacity:.95;transform:translateX(-50%) translateY(0) scale(.94)}
 /* Floors apart / All plans loading: a progress card over the model; the model controls wait */
 .model-card.views-busy .model-bar,.model-card.views-busy #views{pointer-events:none}
 .model-card.views-busy #views{filter:saturate(.6) opacity(.7)}

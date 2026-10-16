@@ -89,7 +89,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             onModelReady(this.viewer, (model) => this.init(model)),
             this.views.on('level', () => {
                 if (!this.walls) return;
-                if (this.options.standalone && this.selectedAct && this.activity(this.selectedAct)?.level !== this.views.level?.name) {
+                // A floor change drops the picked activity of another floor (Floors apart shows every floor: it keeps it).
+                if (this.options.standalone && !this.apartOn && this.selectedAct && this.activity(this.selectedAct)?.level !== this.views.level?.name) {
                     this.clearFocus();this.refresh();
                 }
                 this.renderBody();
@@ -574,7 +575,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             el.innerHTML = `<div class="pg-timeline"><button class="pg-btn" data-play title="Play the schedule on the model from this date">Play</button>
                 <button class="pg-btn" data-cursor-start title="The project's first activity start">Start</button>
                 <div class="pg-slider" data-slider><output class="pg-slider-tip" data-slider-tip></output>
-                    <input type="range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
+                    <input type="range" class="pg-range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
                     <div class="pg-slider-ticks" aria-hidden="true">${this.sliderTicks()}</div></div>
                 <b data-cursor-label class="pg-cursor-label"></b>
                 <button class="pg-btn" data-cursor-dd title="The schedule's data date">Data date</button></div>`;
@@ -692,22 +693,25 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         if (!this.walls) return;
         this.apartOn = on;
         this.updateViewButtons();
-        // Schedule viewer: the floor stack gets the whole model card (3D only) while it is on, then the layout returns.
-        if (this.options.standalone && on && this.views.layout !== '3d') { this.layoutBeforeApart = this.views.layout; this.views.setLayout('3d'); }
+        // The layout (3D, 3D + Plan, Plan) and the open sheet stay as they are; the floor shown before comes back after.
         if (!on) {
             this.viewsLoading(null); await this.views.setLevelsApart(null); this.showDefault(); this.message('');
-            if (this.layoutBeforeApart) { this.views.setLayout(this.layoutBeforeApart); this.layoutBeforeApart = null; }
+            const back = this.levelBeforeApart; this.levelBeforeApart = null;
+            if (this.options.standalone && back && !this.apartOn) { await this.views.setLevel(back, { plan: false }); this.refresh(); this.renderBody(); }
             return;
         }
-        // Every floor, nothing filtered, so what shows is clear: no level cut (the header's Level: All levels), no picked
-        // activity, no stage shown alone, no search's walls, not only the linked walls.
-        this.selectedAct = null;
+        // Every floor, nothing filtered, so what shows is clear: no level cut (the header's Level: All levels), no stage
+        // shown alone, not only the linked walls. The schedule viewer keeps the picked activity (highlighted on its floor).
+        if (!this.options.standalone) this.selectedAct = null;
         this.isolatedBySchedule = false;
         this.isolatedStage = null;
         this.linkedOnly = false;
         this.updateViewButtons();
         this.views.showAll();
-        if (this.views.level) await this.views.setLevel(null);
+        if (this.views.level) {
+            if (this.options.standalone) this.levelBeforeApart = this.views.level.name;
+            await this.views.setLevel(null, { plan: !this.options.standalone }); // the schedule viewer keeps its sheet
+        }
         this.refresh();
         this.renderBody();
         const levels = this.views.levels.filter(l => this.views.wallsByLevel.get(l.name)?.length).map(l => l.name);
@@ -718,8 +722,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             if (i >= n) this.message(`Floors apart: ${n} floors, each lifted over the one below. Colors and the timeline apply to every floor.`);
         } });
         this.viewsLoading(null);
-        // The model card changed size (3D only): fit the stack to the new view.
-        if (this.apartOn && this.views.apart) { this.views.resize?.(); this.views.frameApart(); this.views.placeApartLabels(); }
+        // Fit the stack to the 3D view as it is now (it may have been resized while the floors loaded).
+        if (this.apartOn && this.views.apart) { this.views.frameApart(); this.views.placeApartLabels(); }
     }
 
     async setAllPlans(on) {
@@ -776,6 +780,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             const d = new Date(t), pct = (100 * (t - dayMs(this.span[0]))) / total;
             out.push(`<span style="left:${pct.toFixed(2)}%">${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]}${d.getUTCMonth() ? '' : ` ${d.getUTCFullYear()}`}</span>`);
         }
+        // A small tick every Monday, like an editor's timeline ruler.
+        for (let t = dayMs(this.span[0]); t <= dayMs(this.span[1]); t += 86400000) if (new Date(t).getUTCDay() === 1) out.push(`<i style="left:${((100 * (t - dayMs(this.span[0]))) / total).toFixed(2)}%"></i>`);
         return out.join('');
     }
     // While the slider moves (and briefly after), the bubble over its handle shows the date and its week, zoomed in.
@@ -807,6 +813,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 const w = this.weekOf(this.cursor), input = bar.querySelector('[data-cursor]'), f = (+input.value - +input.min) / Math.max(1, +input.max - +input.min);
                 tip.innerHTML = `<b>${wd} ${this.fmtDay(this.cursor)}</b><span>Week ${w.week} · ${this.fmtDay(w.from).replace(/, \d{4}$/, '')} – ${this.fmtDay(w.to)}</span>`;
                 tip.style.left = `calc(${(f * 100).toFixed(2)}% + ${(8 - f * 16).toFixed(1)}px)`;
+                bar.querySelector('[data-slider]').style.setProperty('--fill', `calc(${(f * 100).toFixed(2)}% + ${(8 - f * 16).toFixed(1)}px)`);
             }
             bar.querySelector('[data-cursor-label]').classList.toggle('muted', !this.options.standalone && this.colorMode === 'actual');
             bar.querySelector('[data-play]').textContent = this.playTimer?(this.options.standalone?'Pause':'❚❚'):(this.options.standalone?'Play':'▶');
