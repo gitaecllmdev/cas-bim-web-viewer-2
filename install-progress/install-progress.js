@@ -3,16 +3,18 @@ import {initViewer,loadModel} from './viewer.js';
 import {Views} from './views.js';
 import {fetchJson,onModelReady,escapeHtml} from './helpers.js';
 import {CONFIG} from './config.js';
-import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp,modelStatusLegend} from './project-dashboard.mjs';
+import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp} from './project-dashboard.mjs';
 const $=id=>document.getElementById(id);
+// The schedule's own stages and their colors (shown ones), then the ghosted rest.
 function renderModelStatusLegend(summary={}){
-    $('model-legend').innerHTML=modelStatusLegend(summary).map(({color,label})=>`<span><i style="background:${color}"></i>${escapeHtml(label)}</span>`).join('');
+    const stages=(summary.stages||[]).filter(s=>!s.hidden);
+    $('model-legend').innerHTML=stages.map(({color,name})=>`<span><i style="background:${color}"></i>${escapeHtml(name)}</span>`).join('')+'<span><i class="neutral"></i>Not started / other trades</span>';
 }
 const sourceLabel=id=>({revit:'Model',schedule:'Schedule',cost:'Cost',labour:'Labour'})[id];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
 const variance=n=>(n>0?'+':'')+money(n);
 let bimSnapshot=demoBimSnapshot();
-let tracker,views,tools,summary,share=.42,resizeFrame,links={},linkKey='',integration='revit',mode='both';
+let tracker,views,tools,summary,share=.34,resizeFrame,links={},linkKey='',integration='revit',mode='both';
 try{const saved=localStorage.getItem('cas-project-dashboard:split');if(saved!==null)share=clampSplit(Number(saved));}catch{}
 const main=$('main'),divider=$('workspace-divider');
 try{$('selection-context-zoom').checked=localStorage.getItem('cas-project-dashboard:selection-context-zoom')!=='off';}catch{}
@@ -29,8 +31,8 @@ divider.onpointerdown=e=>{if(e.button!==0||mode!=='both')return;divider.setPoint
 divider.onpointermove=e=>{if(divider.hasPointerCapture(e.pointerId))resizeWorkspace((e.clientX-main.getBoundingClientRect().left)/(main.clientWidth-40));};
 const finishResize=()=>{document.body.classList.remove('workspace-resizing');resizeWorkspace(share,true);};
 divider.onpointerup=finishResize;divider.onlostpointercapture=finishResize;divider.onpointercancel=finishResize;
-divider.ondblclick=()=>resizeWorkspace(.42,true);
-divider.onkeydown=e=>{const values={ArrowLeft:share-(e.shiftKey?.05:.02),ArrowRight:share+(e.shiftKey?.05:.02),Home:0,End:1,Enter:.42};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
+divider.ondblclick=()=>resizeWorkspace(.34,true);
+divider.onkeydown=e=>{const values={ArrowLeft:share-(e.shiftKey?.05:.02),ArrowRight:share+(e.shiftKey?.05:.02),Home:0,End:1,Enter:.34};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
 document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.onclick=()=>setWorkspaceMode(b.dataset.workspaceMode));
 new ResizeObserver(()=>resizeWorkspace()).observe(main);setWorkspaceMode(mode,false);renderModelStatusLegend();
 function renderSources(){
@@ -89,26 +91,55 @@ function renderIntegration(){
     if($('integration-unlink'))$('integration-unlink').onclick=()=>{delete links[integration];saveLinks();renderIntegration();$('integration-feedback').textContent='Source setup removed.';};
 }
 function openConnect(step='revit'){setWorkspaceMode('both');integration=INTEGRATIONS.some(s=>s.id===step)?step:'revit';$('panel').hidden=true;$('connect-page').hidden=false;renderIntegration();$('connect-page').scrollTop=0;main.scrollIntoView({block:'start'});}
-function closeConnect(){ $('connect-page').hidden=true;$('panel').hidden=false;tracker?.setTab('management');renderDrill();}
+function closeConnect(){ $('connect-page').hidden=true;$('panel').hidden=false;tracker?.setTab('gantt');renderDrill();}
 $('integrations-open').onclick=()=>openConnect();$('sources-connect').onclick=()=>openConnect();document.addEventListener('dashboard-integrations',e=>openConnect(e.detail?.step||'cost'));
 $('integrations-close').onclick=closeConnect;
 $('integration-refresh').onclick=()=>{bimSnapshot=demoBimSnapshot();const at=new Date().toISOString();for(const s of INTEGRATIONS)if(links[s.id]?.mode==='demo')links[s.id].at=at;saveLinks();renderIntegration();$('integration-feedback').textContent='Sample records refreshed. No external service contacted.';};
-$('demo-reset').onclick=async()=>{if(!tracker||!confirm('Start over with demo data? Current field stages, schedule and reviewed decisions will be replaced.'))return;$('demo-reset').disabled=true;try{await tracker.resetDemo();tracker.reviewed={};tracker.saveReviewed();links=Object.fromEntries(INTEGRATIONS.map(s=>[s.id,{at:new Date().toISOString(),system:s.name,mode:'demo'}]));saveLinks();tracker.render();renderIntegration();$('integration-feedback').textContent='Demo data restored.';}finally{$('demo-reset').disabled=false;}};
+$('demo-reset').onclick=async()=>{if(!tracker||!confirm('Start over with demo data? The current schedule, its links and colors will be replaced.'))return;$('demo-reset').disabled=true;try{await tracker.resetDemo();tracker.reviewed={};tracker.saveReviewed();links=Object.fromEntries(INTEGRATIONS.map(s=>[s.id,{at:new Date().toISOString(),system:s.name,mode:'demo'}]));saveLinks();tracker.render();renderIntegration();$('integration-feedback').textContent='Demo data restored.';}finally{$('demo-reset').disabled=false;}};
 async function backOverview(){closeConnect();tracker?.clearFocus();setWorkspaceMode('both');await views?.setLevel(null);tracker?.refresh();renderDrill();}
-function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act||tab&&tab!=='management');$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab&&tab!=='management'?({stages:'Progress by floor',gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
+function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act);$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab?({gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
 $('back-overview').onclick=backOverview;document.addEventListener('dashboard-context',e=>{renderDrill(e.detail);decorateControls();});
 function showActivityContext(){setWorkspaceMode('both');views?.setLayout('split');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker?.panel,details=panel?.querySelector('.pg-details');if(details){const head=panel.querySelector('.pg-head');panel.scrollTop+=details.getBoundingClientRect().top-panel.getBoundingClientRect().top-(head?.offsetHeight||0)-12;}}
+// Built-in Viewer panels: PropertiesManager (selected element's properties) and ModelStructure (model browser).
+// https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions/PropertiesManager/ and .../Extensions/ModelStructure/
+async function builtinPanel(id,on){
+    try{const ext=views.viewer3d.getExtension(id)||await views.viewer3d.loadExtension(id);if(on)ext.activate();else ext.deactivate();}
+    catch(err){$('save-notice').textContent=`${id==='Autodesk.ModelStructure'?'Model browser':'Properties'} is not available: ${err.message||err}`;}
+}
+const propsOn=()=>document.querySelector('[data-view-panel="props"]')?.getAttribute('aria-pressed')==='true';
+// Hover: quick properties of the element under the pointer, in 3D and on the sheet (Viewer3D.hitTest, Model.getProperties).
+function mountHoverProperties(){
+    const tip=document.createElement('div');tip.className='hover-props';tip.hidden=true;tip.setAttribute('role','tooltip');document.body.append(tip);
+    const names=new Map();let at=0,shown=null;
+    const viewerAt=target=>[views?.viewer3d,views?.viewer2d].find(v=>v?.model&&v.canvas===target);
+    const place=e=>{tip.style.left=Math.min(innerWidth-tip.offsetWidth-8,e.clientX+14)+'px';tip.style.top=Math.min(innerHeight-tip.offsetHeight-8,e.clientY+16)+'px';};
+    const show=(e,html)=>{tip.innerHTML=html;tip.hidden=false;place(e);};
+    document.addEventListener('pointermove',e=>{
+        const v=viewerAt(e.target);if(!v||e.buttons){tip.hidden=true;shown=null;return;}
+        if(!tip.hidden)place(e);const now=performance.now();if(now-at<90)return;at=now;
+        const r=v.canvas.getBoundingClientRect(),hit=v.hitTest(e.clientX-r.left,e.clientY-r.top,true),id=hit?.dbId;
+        if(!id){tip.hidden=true;shown=null;return;}if(id===shown)return;shown=id;
+        const wall=tracker?.byDbId?.get(id);
+        if(wall){const a=tracker.reached?.get(wall);show(e,`<b>${escapeHtml(wall.wallType||'Wall')}</b><span>${escapeHtml(wall.level||'No level')}${wall.fireRating?' · '+escapeHtml(wall.fireRating):''}</span><span>${a?`<i style="background:${tracker.colorOf(a)}"></i>${escapeHtml(a.stage)} · ${escapeHtml(a.id)}`:'Not started on '+dashboardDate(tracker.cursor)}</span>`);return;}
+        const key=v.model.id+':'+id;
+        if(names.has(key)){show(e,names.get(key));return;}
+        v.model.getProperties(id,p=>{const cat=p.properties?.find(x=>x.displayName==='Category')?.displayValue,type=p.properties?.find(x=>x.displayName==='Type Name')?.displayValue;const html=`<b>${escapeHtml(p.name||'Element')}</b>${cat||type?`<span>${escapeHtml([cat,type].filter(Boolean).join(' · '))}</span>`:''}`;names.set(key,html);if(shown===id)show(e,html);},()=>{});
+    },{passive:true});
+    document.addEventListener('pointerdown',()=>{tip.hidden=true;},{passive:true});
+}
 function mountViewControls(){
     const bar=document.createElement('div');bar.className='view-context-controls';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','3D view controls');
-    bar.innerHTML=`<button data-view-command="iso" title="Isometric view" aria-label="Isometric view">${dashboardIcon('model')}</button><button data-view-command="top" title="Top view" aria-label="Top view">${dashboardIcon('drawings')}</button><button data-view-command="fit" title="Fit the current floor or building" aria-label="Fit shown model">${dashboardIcon('present')}</button><label title="Model status colors"><span class="sr-only">Model status colors</span><select id="view-status" disabled><option value="actual">Installed</option><option value="compare">Vs plan</option><option value="planned">Schedule</option></select></label>`;
+    bar.innerHTML=`<button data-view-command="iso" title="Isometric view" aria-label="Isometric view">${dashboardIcon('model')}</button><button data-view-command="top" title="Top view" aria-label="Top view">${dashboardIcon('drawings')}</button><button data-view-command="fit" title="Fit the current floor or building" aria-label="Fit shown model">${dashboardIcon('present')}</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
     $('preview').append(bar);
     bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);});
-    bar.querySelector('select').onchange=e=>tracker?.setColorMode(e.target.value);
+    // The Viewer's own Properties and Model browser panels (built-in extensions), opened from here.
+    bar.querySelectorAll('[data-view-panel]').forEach(b=>b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);if(b.dataset.viewPanel==='browser')builtinPanel('Autodesk.ModelStructure',on);else builtinPanel('Autodesk.PropertiesManager',on&&views.viewer3d.getSelection().length>0);});
     bar.addEventListener('pointerdown',e=>e.stopPropagation());bar.addEventListener('keydown',e=>e.stopPropagation());
 }
 document.addEventListener('dashboard-focus',showActivityContext);
 window.addEventListener('pagehide',()=>tracker?.endPlayback());
-document.querySelectorAll('[data-headline]').forEach(b=>b.onclick=()=>{if(!tracker)return;setWorkspaceMode('both');$('connect-page').hidden=true;$('panel').hidden=false;const key=b.dataset.headline;if(key==='cost')openConnect('cost');else{tracker.setTab(key==='finish'?'gantt':key==='progress'?'stages':'management');if(key==='decisions')$('panel').querySelector('.decisions-week')?.scrollIntoView({block:'start'});}main.scrollIntoView({block:'start'});renderDrill();});
+// Start / finish move the timeline there; the share card goes to the Gantt.
+document.querySelectorAll('[data-headline]').forEach(b=>b.onclick=()=>{if(!tracker?.schedule||!summary)return;setWorkspaceMode('both');$('connect-page').hidden=true;$('panel').hidden=false;tracker.setTab('gantt');const key=b.dataset.headline;if(key==='start'&&summary.start)tracker.setCursor(summary.start,{move:true});else if(key==='finish'&&summary.finish)tracker.setCursor(summary.finish,{move:true});main.scrollIntoView({block:'start'});renderDrill();});
 document.querySelectorAll('[data-review]').forEach(b=>b.onclick=async()=>{if(!tools)return;const action=b.dataset.review;if(action==='shot')tools.screenshot('3d');else if(action==='top')tools.look([0,0,1]);else if(action==='iso')tools.look([1,-1,.8]);else{tracker?.clearFocus();await views.setLevel(null);views.showAll();tools.look([1,-1,.8]);views.fitShown();tracker?.refresh();tracker?.renderBody();}const detail=b.closest('details');if(detail)detail.open=false;});
 $('help').onclick=()=>$('briefing').showModal();
 mountScheduleLinkGuide({button:$('linking-guide'),dialog:$('link-guide'),canReview:()=>!!tracker?.schedule,onSources:()=>openConnect('revit'),onReview:()=>{setWorkspaceMode('both');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker.panel,links=panel.querySelector('[data-links]');links.hidden=false;panel.querySelector('[data-links-toggle]')?.classList.add('active');tracker.renderLinks();tracker.fitGantt();panel.scrollTop=0;main.scrollIntoView({block:'start'});panel.querySelector('[data-link-review-filter]')?.focus();}});
@@ -116,15 +147,12 @@ $('present').onclick=async()=>{try{if(document.fullscreenElement)await document.
 document.addEventListener('fullscreenchange',()=>{$('present').textContent=document.fullscreenElement?'Exit presentation':'Present';decorateControls();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('details[open]').forEach(d=>d.open=false);});
 document.addEventListener('progress-summary',e=>{
-    summary=e.detail;const s=summary,m=s.dashboard;if(!m)return;
-    if($('view-status')){$('view-status').disabled=false;$('view-status').value=s.colorMode;}
+    summary=e.detail;const s=summary;if(!s?.schedule)return;
     $('kpi-walls').textContent=s.walls.toLocaleString();$('kpi-levels').textContent=s.levels+' levels';$('kpi-activities').textContent=s.activities;
-    $('snapshot-date').textContent=dashboardDate(s.asOf||s.dataDate);$('model-health').textContent='Viewer ready';$('model-health').classList.add('connected');$('model-loading').hidden=true;$('demo-reset').disabled=false;
-    $('project-status').textContent=`${m.pending} decisions waiting for review. ${m.progressStatus}; cost and labour figures use demo data.`;
-    const prior='No prior-week snapshot',delta=(v,tag)=>v?`${v} since last week`+(tag?' (demo comparison)':''):prior;
-    for(const [id,value] of [['finish-status',m.finishStatus],['finish-value',dashboardDate(m.finish)],['finish-change',delta(m.changes?.finish,true)],['progress-status',m.progressStatus],['progress-value',m.gap==null?'Not linked':(m.gap>=0?'+':'')+m.gap+' pts'],['progress-change',delta(m.changes?.progress,true)],['cost-status','Over budget'],['cost-value','+'+m.costs.variancePct.toFixed(1)+'%'],['cost-change','+$45,000 since last week (demo comparison)'],['decision-status',m.pending?'Review needed':'Reviewed'],['decision-value',m.pending],['decision-change',delta(m.changes?.decisions,true)]])$(id).textContent=value;
-    $('finish-demo').hidden=!s.demo;$('progress-demo').hidden=!s.demo;$('decision-demo').hidden=!s.demo;
-    for(const [name,state] of [['finish',m.finishStatus==='Unknown'?'neutral':m.finishStatus==='At risk'?'red':'green'],['progress',m.gap<-10?'red':m.gap==null?'neutral':'green'],['cost','red'],['decisions',m.pending?'amber':'green']])document.querySelector(`[data-headline="${name}"]`).dataset.status=state;
+    $('snapshot-date').textContent=dashboardDate(s.cursor);$('model-health').textContent='Viewer ready';$('model-health').classList.add('connected');$('model-loading').hidden=true;$('demo-reset').disabled=false;
+    $('project-status').textContent=s.activities?`The model shows the schedule on ${dashboardDate(s.cursor)}: ${s.reachedPct}% of walls are in drywall or framing work started by then.`:'No schedule loaded yet.';
+    $('start-value').textContent=dashboardDate(s.start);$('finish-value').textContent=dashboardDate(s.finish);$('reached-value').textContent=s.activities?s.reachedPct+'%':'—';
+    $('reached-status').textContent='On '+dashboardDate(s.cursor);
     renderModelStatusLegend(s);
     renderSources();renderDrill();
 });
@@ -143,6 +171,9 @@ async function start(){
     mountViewControls();
     onModelReady(viewer,m=>views.setModel(m).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
     tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel});
+    mountHoverProperties();
+    // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{if(propsOn()&&viewer.getSelection().length)builtinPanel('Autodesk.PropertiesManager',true);});
     await loadModel(viewer,model.urn);
     views.on('level',()=>{if($('selection-context').dataset.level!==views.level?.name)$('selection-context').hidden=true;renderDrill();});renderSources();new ResizeObserver(()=>views.resize()).observe($('main'));
 }

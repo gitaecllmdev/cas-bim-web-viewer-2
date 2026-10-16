@@ -13,12 +13,13 @@ import {
     stageCounts, modelProgress, compare, expectedPct, finishVariance, plannedStages, playbackStages, scheduleSpan, ganttRows, completeGroups, fmtDay as compactDay, addDays, dayMs, monthName,
     randomWallLinks, wallProgress, demoTarget, activityLinkState, relatedWallActivities,
     assignElements, applyElementLinks, stageOverlaps, readElementLinkRows, previewElementLinks, elementLinkTemplate,
+    isStage, scheduleStageLinks, scheduleStageNames, stageColors, scheduleWallsAt, floorScheduleShare, projectStart, GHOST_COLOR,
 } from './p6.mjs';
 import { ganttHtml, calendarHtml, SCALES, ganttX } from './schedule-views.js';
 import { AllPlans } from './all-plans.js';
 import { parseKeywords, matchRows, keywordCounts, remember } from '../../p6-keywords.mjs'; // the P6 Converter's keyword search
 import { DemoToolbar } from '../../toolbar.js';
-import {demoStagesFromSchedule,hotelDemoSchedule,lookaheadWeeks,DEMO_DATE} from './presentation.mjs';
+import {demoStagesFromSchedule,hotelDemoSchedule,lookaheadWeeks,activityQuantities,DEMO_DATE,DEMO_VERSION} from './presentation.mjs';
 import {dashboardDate,dashboardMetrics,labourSummary,activityInsight,dashboardIcon,DEMO_BIM,PLAYBACK_COLORS,INSTALL_COLORS,COMPARISON_COLORS,NEUTRAL_STATUS_COLOR,modelStatusLegend} from '../../project-dashboard.mjs';
 
 // Base64 for the source PDF kept with a schedule (state is JSON).
@@ -47,6 +48,8 @@ const localToday = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD i
 const KW_HISTORY = 'drywall-demos:schedule-keywords'; // this browser's schedule search history
 const KW_SUGGEST = ['framing', 'layout', 'drywall', 'board', 'tape', 'finish', 'insulation', 'shaftwall', 'soffit'];
 const same = (x, y) => x.toLowerCase() === y.toLowerCase();
+// A paler version of a stage color (an activity's walls before it starts): mixed 60% with white.
+const tint = (hex) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * 0.4 + 255 * 0.6).toString(16).padStart(2, '0')).join('');
 
 class ProgressExtension extends Autodesk.Viewing.Extension {
     load() {
@@ -57,7 +60,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.selected = [];
         this.modelSelectionIds = [];
         const params = new URLSearchParams(location.search);
-        this.tabs=this.options.standalone?{management:'Overview',stages:'Progress by floor',gantt:'Timeline',calendar:'Calendar',lookahead:'Next 3 weeks'}:TABS;
+        // Standalone: a model schedule viewer (the schedule on the model by date), no field progress tracking.
+        this.tabs=this.options.standalone?{gantt:'Timeline',calendar:'Calendar',lookahead:'Next 3 weeks'}:TABS;
         this.tab = this.tabs[params.get('tab')] ? params.get('tab') : this.options.standalone?'gantt':'stages';
         this.colorMode = 'actual';
         // Schedule views: only the walls linked to the schedule, the floors apart (views.setLevelsApart), all floor plans.
@@ -65,6 +69,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.apartOn = false;
         this.allPlans = new AllPlans(this.views);
         this.gantt = { scale: 'week', show: 'all', links: 'selected', fold: 'done', collapsed: new Set() };
+        try { this.gantt.hiddenCols = new Set(JSON.parse(localStorage.getItem('cas-project-dashboard:gantt-columns') || '[]')); } catch { this.gantt.hiddenCols = new Set(); }
         this.selectedAct = null;
         this.demoMove = true;
         try { this.demoMove = localStorage.getItem('drywall-demos:schedule-demo-shift') !== 'false'; } catch {}
@@ -112,7 +117,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // --- The 3D toolbar: how the walls are colored, show only a stage, set the stage of the picked walls ------------
     // Extension.onToolbarCreated: https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Extension/
     onToolbarCreated() {
-        if (this.bar) return;
+        if (this.bar || this.options.standalone) return; // the schedule viewer has no stage-setting toolbar
         const stage = (s, i) => ({ key: `s${i}`, icon: `dw-icon-stage-${i}`, name: s.name });
         this.bar = new DemoToolbar(this.viewer, 'dw-progress', [
             { key: 'colors', icon: 'dw-icon-colors', tip: 'Color the walls: as installed, as planned on a date (4D), or installed vs plan', items:
@@ -198,10 +203,12 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             this.wallsByExternalId = new Map(this.walls.filter(w => w.externalId).map(w => [w.externalId, w]));
             this.modelNames = [entry?.name, modelKey(urn)].filter(Boolean); // what an element link spreadsheet's Model cell may say
             this.wallOrder = [...this.walls].sort((a, b) => a.dbId - b.dbId);
-            const freshDemo=this.options.standalone&&!Object.hasOwn(saved,'stages');if(freshDemo)this.asOf=DEMO_DATE;
-            if (schedule?.activities?.length) { this.useSchedule(schedule); this.loadPdf(); }
+            // The schedule viewer shows the schedule on the model; no field stages are kept or shown.
+            if (this.options.standalone) { this.stages = {}; this.asOf = null; }
+            // A browser's saved copy of an older demo schedule is replaced by the current one (its own uploads are kept).
+            const staleDemo = this.options.hotelDemo && schedule?.source?.sample && schedule.source.demoVersion !== DEMO_VERSION;
+            if (schedule?.activities?.length && !staleDemo) { this.useSchedule(schedule); this.loadPdf(); }
             else if (!schedule?.removed && this.sampleSchedule) await this.loadSample({ quiet: true }).catch(err => console.warn('Sample schedule:', err.message));
-            if(freshDemo){this.stages=this.demoStageSnapshot();await saveState(this.stateName,{stages:this.stages,asOf:this.asOf,demo:true});}
             this.render();
         } catch (err) {
             this.panel.querySelector('[data-status]').textContent = `Could not load progress: ${err.message || err}`;
@@ -233,7 +240,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.linkedCache = null;
         this.selectedAct = null;
         const asOf = this.asOf && this.span && this.asOf >= this.span[0] && this.asOf <= this.span[1] ? this.asOf : null;
-        const start = asOf || schedule.project.dataDate || localToday();
+        // The schedule viewer always opens on the project's own start, never on today's date.
+        const start = this.options.standalone ? projectStart(schedule.activities) || schedule.project.dataDate || localToday() : asOf || schedule.project.dataDate || localToday();
         this.cursor =this.span ? (start < this.span[0] ? this.span[0] : start > this.span[1] ? this.span[1] : start) : start;
         this.calMonth = this.cursor.slice(0, 7);
         this.scrolled = false;
@@ -249,6 +257,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     get linked() {
         if (!this.linkedCache) {
             this.linkedCache = this.schedule ? linkActivities(this.schedule, this.levels) : [];
+            // Schedule viewer: wall work is staged by the schedule's own names, not the tracker's stage list.
+            if (this.options.standalone && this.schedule) scheduleStageLinks(this.linkedCache, this.schedule);
             // Demo schedules (moved to this year and this project): every activity not linked to a level and a stage
             // gets a repeatable set of walls on this model (p6.mjs randomWallLinks), so each one shows something.
             // A model's own schedule moved in time (keepLinks) keeps its level links.
@@ -278,6 +288,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             }
             // Exact element assignments (map.elements, by externalId) override floor/stage and demo wall sets.
             if (this.schedule?.map?.elements && this.walls) applyElementLinks(this.linkedCache, this.schedule.map.elements, this.wallsByExternalId);
+            this.stageNames = scheduleStageNames(this.linkedCache);
+            this.stageColorMap = stageColors(this.stageNames, this.schedule?.map?.colors);
         }
         return this.linkedCache;
     }
@@ -440,7 +452,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     saveReviewed(){if(this.reviewKey)try{localStorage.setItem(this.reviewKey,JSON.stringify(this.reviewed));}catch{}}
 
     render() {
-        const nav=this.options.standalone?{management:'Overview',stages:'Progress by floor',gantt:'P6 Gantt',lookahead:'Next 3 weeks'}:this.tabs;
+        const nav=this.options.standalone?{gantt:'P6 Gantt',lookahead:'Next 3 weeks'}:this.tabs;
         const s = this.schedule;
         const d = s?.source.demo;
         this.panel.innerHTML = `<div class="demo-panel pg ${this.tab==='management'?'management':''}">
@@ -524,6 +536,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     setTab(tab) {
+        if (this.options.standalone && !this.tabs[tab]) tab = 'gantt'; // old Overview / Progress by floor links
+        if (this.options.standalone && tab === 'calendar' && this.cursor) this.calMonth = this.cursor.slice(0, 7); // the month of the shown date
         this.tab = tab;if(['gantt','calendar'].includes(tab))this.scheduleTab=tab;
         const params = new URLSearchParams(location.search);
         params.set('tab',tab);
@@ -550,6 +564,27 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const el = this.panel.querySelector('[data-colorbar]');
         if (!el || !this.span) return;
         const days = Math.round((dayMs(this.span[1]) - dayMs(this.span[0])) / 86400000);
+        if (this.options.standalone) {
+            // The timeline: play / scrub the schedule on the model. The Gantt's date scale scrubs the same date.
+            el.innerHTML = `<div class="pg-timeline"><button class="pg-btn" data-play title="Play the schedule on the model from this date">Play</button>
+                <button class="pg-btn" data-cursor-start title="The project's first activity start">Start</button>
+                <input type="range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
+                <b data-cursor-label class="pg-cursor-label"></b>
+                <button class="pg-btn" data-cursor-dd title="The schedule's data date">Data date</button></div>
+                <div class="pg-stage-legend" data-color-legend></div>
+                <span class="pg-views" title="Model views">
+                <button class="pg-btn ${this.apartOn ? 'active' : ''}" data-view="apart" title="Floors apart: every floor at once in 3D, each lifted over the one below, with the schedule's share per floor">Floors apart</button>
+                <label class="pg-gap" ${this.apartOn ? '' : 'hidden'} title="Space between the floors">Gap <input type="range" data-apart-gap min="0.5" max="3" step="0.25" value="${this.views.apartGapScale || 1}"></label>
+                <button class="pg-btn ${this.allPlans.isOpen ? 'active' : ''}" data-view="plans" title="All floor plans at once, beside the schedule, colored as it plays">All plans</button></span>`;
+            el.querySelectorAll('[data-view]').forEach(b => b.onclick = () => ({ apart: () => this.setApart(!this.apartOn), plans: () => this.setAllPlans(!this.allPlans.isOpen) })[b.dataset.view]());
+            el.querySelector('[data-apart-gap]').onchange = (e) => this.setApartGap(Number(e.target.value));
+            el.querySelector('[data-cursor]').oninput = (e) => this.setCursor(addDays(this.span[0], Number(e.target.value)));
+            el.querySelector('[data-play]').onclick = () => (this.playTimer ? this.stopPlay() : this.play());
+            el.querySelector('[data-cursor-start]').onclick = () => this.setCursor(projectStart(this.schedule.activities) || this.span[0], { move: true });
+            el.querySelector('[data-cursor-dd]').onclick = () => this.setCursor(this.schedule.project.dataDate || this.span[0], { move: true });
+            this.updateCursorUi();
+            return;
+        }
         el.innerHTML = `<select data-color-mode title="How the model is colored">${Object.entries(COLOR_MODES).map(([k, l]) => `<option value="${k}" ${k === this.colorMode ? 'selected' : ''}>${l}</option>`).join('')}</select>
             <input type="range" data-cursor min="0" max="${days}" step="1" value="${Math.round((dayMs(this.cursor) - dayMs(this.span[0])) / 86400000)}" aria-label="Date the model shows the plan for" title="Slide to see the model as planned on a day">
             <b data-cursor-label class="pg-cursor-label"></b>
@@ -597,6 +632,24 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // stage shown): that stage instead, framed / boarded / taped / finished on every floor, the picked one's floor marked.
     updateFloorLabels(planned = null) {
         const focus = this.focusActivity();
+        if (this.options.standalone) {
+            // Per floor: the share of its walls the schedule reaches by the date (per the schedule, not field progress).
+            // One stage shown (others hidden, or a picked activity): that stage's share.
+            const shown = (this.stageNames || []).filter(n => !this.hiddenStages?.has(n));
+            const stage = focus?.stage || (shown.length === 1 ? shown[0] : null);
+            const reached = this.reached || this.reachedWalls(), per = floorScheduleShare(this.walls, reached, { stage });
+            // Without one stage chosen: the stage most of the floor's walls are at on this date.
+            const latest = new Map();
+            for (const [w, a] of reached) { const m = latest.get(w.level) || latest.set(w.level, new Map()).get(w.level); m.set(a.stage, (m.get(a.stage) || 0) + 1); }
+            this.views.setApartLabels((level) => {
+                const r = per.get(level);
+                if (!r) return { title: level };
+                const most = [...(latest.get(level) || [])].sort((x, y) => y[1] - x[1])[0]?.[0];
+                const text = stage ? `${r.pct}% ${stage}` : most ? `${most} · ${r.pct}% of walls` : 'Not started';
+                return { title: level, text: `${text} (schedule)`, done: r.pct, plan: null, focus: focus?.level === level };
+            });
+            return;
+        }
         const stageName = focus?.stage || (STAGE_NAMES.includes(this.isolatedStage) && this.isolatedStage !== STAGE_NAMES[0] ? this.isolatedStage : null);
         const stage = stageName ? STAGE_NAMES.indexOf(stageName) : null;
         if (this.schedule && !planned) {
@@ -623,11 +676,22 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.updateViewButtons();
     }
 
+    setApartGap(scale) {
+        this.views.setApartGap(scale);
+        this.updateFloorLabels();
+    }
+
     async setApart(on) {
         if (!this.walls) return;
         this.apartOn = on;
         this.updateViewButtons();
-        if (!on) { await this.views.setLevelsApart(null); this.showDefault(); this.message(''); return; }
+        // Schedule viewer: the floor stack gets the whole model card (3D only) while it is on, then the layout returns.
+        if (this.options.standalone && on && this.views.layout !== '3d') { this.layoutBeforeApart = this.views.layout; this.views.setLayout('3d'); }
+        if (!on) {
+            await this.views.setLevelsApart(null); this.showDefault(); this.message('');
+            if (this.layoutBeforeApart) { this.views.setLayout(this.layoutBeforeApart); this.layoutBeforeApart = null; }
+            return;
+        }
         // Every floor, nothing filtered, so what shows is clear: no level cut (the header's Level: All levels), no picked
         // activity, no stage shown alone, no search's walls, not only the linked walls.
         this.selectedAct = null;
@@ -646,6 +710,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             if (i < n) this.message(`Floors apart: loading ${name} (${i + 1} of ${n})…`, 'warn');
             else this.message(`Floors apart: ${n} floors, each lifted over the one below. Colors and the timeline apply to every floor.`);
         } });
+        // The model card changed size (3D only): fit the stack to the new view.
+        if (this.apartOn && this.views.apart) { this.views.resize?.(); this.views.frameApart(); this.views.placeApartLabels(); }
     }
 
     async setAllPlans(on) {
@@ -662,10 +728,22 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.bar?.refresh();
         const on = { linked: this.linkedOnly, apart: this.apartOn, plans: this.allPlans.isOpen };
         this.panel.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', !!on[b.dataset.view]));
+        const gap = this.panel.querySelector('.pg-gap');
+        if (gap) gap.hidden = !this.apartOn;
     }
 
     // The 4D date. Moving it shows the plan on that day (from "Installed", it switches to "Planned on the date").
     setCursor(day, { move = false } = {}) {
+        if (this.options.standalone) {
+            // Schedule viewer: the picked activity, filters and floor stay; only the date moves.
+            this.cursor = day;
+            this.refresh();
+            if (this.tab === 'calendar' && day.slice(0, 7) !== this.calMonth) { this.calMonth = day.slice(0, 7); this.renderBody(); }
+            else if (this.tab === 'lookahead') this.renderBody();
+            else if (this.tab === 'calendar') this.renderDayList();
+            this.updateCursorUi({ move });
+            return;
+        }
         const wasActual = this.colorMode === 'actual', hadFocus = !!this.selectedAct;
         this.cursor = day;
         if (wasActual) this.colorMode = 'planned';
@@ -681,17 +759,21 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     updateCursorUi({ move = false } = {}) {
         const bar = this.panel.querySelector('[data-colorbar]');
         if (bar) {
-            bar.querySelector('[data-color-mode]').value = this.colorMode;
+            const mode = bar.querySelector('[data-color-mode]');
+            if (mode) mode.value = this.colorMode;
             bar.querySelector('[data-cursor]').value = String(Math.round((dayMs(this.cursor) - dayMs(this.span[0])) / 86400000));
             bar.querySelector('[data-cursor]').disabled = false;
             const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(dayMs(this.cursor)).getUTCDay()];
             bar.querySelector('[data-cursor-label]').textContent = `${wd} ${this.fmtDay(this.cursor)}`;
-            bar.querySelector('[data-cursor-label]').classList.toggle('muted', this.colorMode === 'actual');
+            bar.querySelector('[data-cursor-label]').classList.toggle('muted', !this.options.standalone && this.colorMode === 'actual');
             bar.querySelector('[data-play]').textContent = this.playTimer?(this.options.standalone?'Pause':'❚❚'):(this.options.standalone?'Play':'▶');
             this.renderColorLegend();
         }
         const line = this.panel.querySelector('.pg-g-bg .line.cursor');
-        if (line) line.style.left = `${ganttX(this.span, this.gantt.scale, this.cursor) + SCALES[this.gantt.scale].ppd / 2}px`;
+        const at = `${ganttX(this.span, this.gantt.scale, this.cursor) + SCALES[this.gantt.scale].ppd / 2}px`;
+        if (line) line.style.left = at;
+        const head = this.panel.querySelector('[data-playhead]');
+        if (head) { head.style.left = at; head.dataset.label = this.fmtDay(this.cursor); }
         this.panel.querySelectorAll('.pg-cal-day.sel').forEach(d => d.classList.remove('sel'));
         this.panel.querySelector(`.pg-cal-day[data-day="${this.cursor}"]`)?.classList.add('sel');
         if (move) this.scrollGanttTo(this.cursor);
@@ -701,6 +783,31 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const el = this.panel.querySelector('[data-color-legend]');
         if (!el) return;
         const focus = this.focusActivity();
+        if (this.options.standalone) {
+            // The schedule's own stages: a toggle to show or hide each on the model, and a color picker.
+            const off = this.hiddenStages || new Set(), counts = new Map();
+            for (const a of this.reached?.values() || []) counts.set(a.stage, (counts.get(a.stage) || 0) + 1);
+            el.innerHTML = `<b>Stages</b>${(this.stageNames || []).map((name, i) => `<span class="pg-stage-chip ${off.has(name) ? 'off' : ''}">
+                    <input type="color" data-stage-color="${i}" value="${this.stageColorMap.get(name)}" aria-label="Color for ${escapeHtml(name)}" title="Change the color">
+                    <label><input type="checkbox" data-stage-show="${i}" ${off.has(name) ? '' : 'checked'}>${escapeHtml(name)}</label>
+                    <small>${(counts.get(name) || 0).toLocaleString()}</small></span>`).join('')}
+                <span class="pg-stage-chip ghost"><i style="background:${GHOST_COLOR}"></i>Not started / other trades</span>
+                ${focus ? `<span class="muted">Showing ${escapeHtml(focus.id)} only</span>` : ''}`;
+            el.querySelectorAll('[data-stage-show]').forEach(c => c.onchange = () => {
+                const name = this.stageNames[+c.dataset.stageShow];
+                this.hiddenStages ??= new Set();
+                if (c.checked) this.hiddenStages.delete(name); else this.hiddenStages.add(name);
+                this.refresh();
+            });
+            el.querySelectorAll('[data-stage-color]').forEach(c => c.onchange = () => {
+                const name = this.stageNames[+c.dataset.stageColor];
+                (this.schedule.map.colors ??= {})[name] = c.value;
+                this.stageColorMap.set(name, c.value);
+                this.saveSchedule();
+                this.refresh(); this.renderBody();
+            });
+            return;
+        }
         if (focus) {
             el.innerHTML = modelStatusLegend({colorMode:this.colorMode,playback:this.playbackMode,focusStage:focus.stage}).map(({label,color})=>`<span class="tk-key"><span class="swatch" style="background:${color}"></span>${escapeHtml(label)}</span>`).join('')
                 + `<span class="muted">${escapeHtml(focus.level)} activity walls</span>`;
@@ -719,15 +826,16 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // are open), so the timeline never runs ahead of what the views show. At most one step every 280 ms.
     playbackRange() {
         const level=this.views.level?.name;
-        const acts=this.linked.filter(a=>a.scope!=='other'&&STAGE_NAMES.indexOf(a.stage)>0&&a.start&&(!level||a.level===level));
+        const acts=this.linked.filter(a=>a.scope!=='other'&&isStage(a.stage)&&a.start&&(!level||a.level===level));
         return scheduleSpan(acts.map(a=>({start:a.start,finish:a.finish||a.start})));
     }
 
     play() {
         const range=this.playbackRange();
         if(!range){this.message('No wall activities are linked to this floor. Choose another floor or All levels.','warn');return;}
-        const resume=this.playbackMode&&this.cursor<range[1];
-        this.playbackMode=true;this.colorMode='planned';
+        // The schedule viewer plays from the shown date (walls ghosted until their work starts); the tracker hides them.
+        const resume=(this.options.standalone||this.playbackMode)&&this.cursor<range[1];
+        if(!this.options.standalone)this.playbackMode=true;this.colorMode='planned';
         this.setCursor(resume&&this.cursor>=range[0]?this.cursor:range[0]);
         const run = (this.playRun = (this.playRun || 0) + 1);
         const tick = async () => {
@@ -814,9 +922,9 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     renderLookahead(body) {
-        const plan=lookaheadWeeks(this.visibleActivities('open'),this.cursor);const focus=this.selectedAct&&this.activity(this.selectedAct),outside=focus&&!plan.weeks.some(w=>w.activities.some(a=>a.id===focus.id));
-        body.innerHTML=`<div class="lookahead-head"><div><span class="eyebrow">SHORT-INTERVAL PLANNING</span><h3>Three weeks ahead</h3><p class="muted">${plan.unique} open activities · from ${this.fmtDay(this.cursor)}. Activities spanning weeks appear in each relevant week.</p></div><label>Start date <input type="date" data-lookahead-date value="${this.cursor}" min="${this.span[0]}" max="${this.span[1]}"></label></div>
-            ${outside?`<article class="decision-outlook-focus"><b>Decision to review in this outlook: ${escapeHtml(focus.name)}</b><p>Original schedule dates: ${this.fmtDay(focus.start)} – ${this.fmtDay(focus.finish)}. ${focus.pct===100?'Schedule says complete; field progress still needs review.':'The original dates fall outside these three weeks.'}</p><small>${escapeHtml(focus.id)} · original schedule dates are retained</small></article>`:''}<div class="pg-main float"><div class="lookahead-weeks">${plan.weeks.map((w,i)=>`<section class="lookahead-week"><header><span>WEEK ${i+1}</span><b>${this.fmtDay(w.start)} – ${this.fmtDay(w.finish)}</b><small>${w.activities.length} activities</small></header>${w.activities.map(a=>{const m=this.modelOf(a),c=compare(m,a.pct);return `<button class="lookahead-card ${a.id===this.selectedAct?'selected':''}" data-look-act="${escapeHtml(a.id)}" style="--stage-color:${this.colorOf(a)}"><small>${escapeHtml(a.level||'Project')} · ${escapeHtml(a.stage||'Coordination')}</small><b>${escapeHtml(a.name)}</b><span>${escapeHtml(a.id)} · ${this.fmtDay(a.start)} – ${this.fmtDay(a.finish)}</span><div><em>P6 ${a.pct??'–'}%</em><em>Model ${m?m.pct+'%':'not linked'}</em>${c?.state==='behind'?'<em class="behind">Behind plan</em>':''}</div></button>`;}).join('')||'<p class="lookahead-empty">No open activities in this week.</p>'}</section>`).join('')}</div><div class="pg-side" data-details></div></div>${plan.unscheduled?`<p class="note">${plan.unscheduled} open activities need valid start/finish dates and are not placed in a week.</p>`:''}`;
+        const plan=this.options.standalone?lookaheadWeeks(this.visibleActivities('all'),this.cursor,{all:true}):lookaheadWeeks(this.visibleActivities('open'),this.cursor);const focus=this.selectedAct&&this.activity(this.selectedAct),outside=focus&&!plan.weeks.some(w=>w.activities.some(a=>a.id===focus.id));
+        body.innerHTML=`<div class="lookahead-head"><div><span class="eyebrow">SHORT-INTERVAL PLANNING</span><h3>Three weeks ahead</h3><p class="muted">${plan.unique} ${this.options.standalone?'':'open '}activities · from ${this.fmtDay(this.cursor)}. Activities spanning weeks appear in each relevant week.</p></div><label>Start date <input type="date" data-lookahead-date value="${this.cursor}" min="${this.span[0]}" max="${this.span[1]}"></label></div>
+            ${outside?`<article class="decision-outlook-focus"><b>${this.options.standalone?'Selected activity':'Decision to review in this outlook'}: ${escapeHtml(focus.name)}</b><p>Original schedule dates: ${this.fmtDay(focus.start)} – ${this.fmtDay(focus.finish)}. ${focus.pct===100?'Schedule says complete; field progress still needs review.':'The original dates fall outside these three weeks.'}</p><small>${escapeHtml(focus.id)} · original schedule dates are retained</small></article>`:''}<div class="pg-main float"><div class="lookahead-weeks">${plan.weeks.map((w,i)=>`<section class="lookahead-week"><header><span>WEEK ${i+1}</span><b>${this.fmtDay(w.start)} – ${this.fmtDay(w.finish)}</b><small>${w.activities.length} activities</small></header>${w.activities.map(a=>{const m=this.modelOf(a),c=compare(m,a.pct);return `<button class="lookahead-card ${a.id===this.selectedAct?'selected':''}" data-look-act="${escapeHtml(a.id)}" style="--stage-color:${this.colorOf(a)}"><small>${escapeHtml(a.level||'Project')} · ${escapeHtml(a.stage||'Coordination')}</small><b>${escapeHtml(a.name)}</b><span>${escapeHtml(a.id)} · ${this.fmtDay(a.start)} – ${this.fmtDay(a.finish)}</span><div><em>P6 ${a.pct??'–'}%</em>${this.options.standalone?'':`<em>Model ${m?m.pct+'%':'not linked'}</em>${c?.state==='behind'?'<em class="behind">Behind plan</em>':''}`}</div></button>`;}).join('')||`<p class="lookahead-empty">${this.options.standalone?'No activities':'No open activities'} in this week.</p>`}</section>`).join('')}</div><div class="pg-side" data-details></div></div>${plan.unscheduled?`<p class="note">${plan.unscheduled} open activities need valid start/finish dates and are not placed in a week.</p>`:''}`;
         body.querySelector('[data-lookahead-date]').onchange=e=>{if(e.target.value)this.setCursor(e.target.value,{move:true});};
         body.querySelectorAll('[data-look-act]').forEach(b=>b.onclick=()=>this.selectActivity(b.dataset.lookAct));
         this.renderDetails(body.querySelector('[data-details]'));
@@ -833,7 +941,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.viewingOriginal=false;this.adjustedSchedule=null;
         this.kw.active=[];this.kw.typed='';this.gantt.show='all';this.colorMode='actual';
         this.views.setLevel(null);await this.loadSample({quiet:true});
-        await this.setStages(this.demoStageSnapshot(),{undo:true});await this.saveSchedule();this.render();
+        if(!this.options.standalone)await this.setStages(this.demoStageSnapshot(),{undo:true});await this.saveSchedule();this.render();
     }
 
     renderStages(body) {
@@ -918,6 +1026,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // Re-theme walls and rebuild the legend and per-level percentages (Stages tab).
     refresh() {
         if (!this.walls) return;
+        if (this.options.standalone) { this.refreshSchedule(); return; }
         this.counts = stageCounts(this.walls, w => this.stageOf(w));
         const colors = new Map();
         const counts = Object.fromEntries(STAGES.map(s => [s.name, 0]));
@@ -1000,10 +1109,44 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         });
     }
 
+    // Schedule viewer: the model on the timeline's date. Each wall takes the color of the latest wall activity started
+    // by then (scheduleWallsAt); walls not reached yet are ghosted. A picked activity, hidden stages or a search narrow
+    // which activities color the model (focus on what each user needs). Nothing here reads field progress.
+    scheduleKeep() {
+        const focus = this.focusActivity(), hits = this.keywordHits(), off = this.hiddenStages || new Set();
+        return (a) => (!focus || a.id === focus.id) && !off.has(a.stage) && (!hits || hits.ids.has(a.id));
+    }
+    reachedWalls() {
+        return this.schedule ? scheduleWallsAt(this.walls, this.linked, this.cursor, { keep: this.scheduleKeep() }) : new Map();
+    }
+    refreshSchedule() {
+        const colors = new Map(), reached = this.reachedWalls(), focus = this.focusActivity();
+        if (this.schedule) {
+            for (const w of this.walls) colors.set(w.dbId, GHOST_COLOR);
+            for (const [w, a] of reached) colors.set(w.dbId, this.stageColorMap?.get(a.stage) || OTHER);
+            // A picked activity that hasn't started by this date still shows where it will be.
+            if (focus && ![...reached.values()].some(a => a.id === focus.id)) { const pale = tint(this.stageColorMap?.get(focus.stage) || OTHER); for (const w of this.wallsOf(focus)) colors.set(w.dbId, pale); }
+        }
+        this.reached = reached;
+        this.views.setColors(colors);
+        if (this.allPlans.isOpen) this.allPlans.setColors(colors);
+        if (this.views.apart) this.updateFloorLabels();
+        this.renderColorLegend();
+        const share = floorScheduleShare(this.walls, reached), total = this.walls.length, hit = reached.size;
+        document.dispatchEvent(new CustomEvent('progress-summary', { detail: {
+            walls: total, levels: this.levels.filter(l => l !== NOT_SET).length, activities: this.schedule?.activities.length || 0,
+            dataDate: this.schedule?.project.dataDate, cursor: this.cursor, demo: !!(this.schedule?.source.sample || this.schedule?.source.demo),
+            stages: (this.stageNames || []).map(name => ({ name, color: this.stageColorMap.get(name), hidden: !!this.hiddenStages?.has(name) })),
+            reachedPct: total ? Math.round((100 * hit) / total) : 0, floors: share, finish: this.schedule ? this.linked.map(a => a.finish).filter(Boolean).sort().at(-1) : null,
+            start: this.schedule ? projectStart(this.schedule.activities) : null, schedule: true,
+        } }));
+    }
+
     // --- Activities: color, model progress, selection ---------------------------------------------------------------
 
     colorOf(a) {
         if (a.scope === 'other') return NOT_WALL;
+        if (this.options.standalone) return this.stageColorMap?.get(a.stage) || OTHER;
         return STAGES.find(s => s.name === a.stage)?.color || OTHER;
     }
     wallsOf(a) {
@@ -1175,7 +1318,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         if (el.hidden) return;
         const related = relatedWallActivities(walls, this.linked);
         // Batch / single element assignment: the selected walls (by externalId) to one wall activity at its install stage.
-        const targets = this.linked.filter(a => a.scope === 'wall' && STAGE_NAMES.slice(1).includes(a.stage))
+        const targets = this.linked.filter(a => a.scope === 'wall' && isStage(a.stage))
             .sort((x, y) => (y.level === walls[0].level) - (x.level === walls[0].level) || STAGE_NAMES.indexOf(x.stage) - STAGE_NAMES.indexOf(y.stage) || x.id.localeCompare(y.id, undefined, { numeric: true }));
         if (!targets.some(a => a.id === this.assignActId)) this.assignActId = related[0]?.activity.id || targets[0]?.id || '';
         const live = this.selectionIsLive(), ids = walls.map(w => w.externalId).filter(Boolean), elements = this.schedule?.map.elements || {};
@@ -1273,20 +1416,20 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const rows = ganttRows(this.visibleActivities(this.gantt.show), this.schedule, { collapsed: this.keywordHits() ? new Set() : this.gantt.collapsed });
         const html = ganttHtml({
             floorGroups: this.options.standalone,
-            formatDay:d=>this.fmtDay(d),rows, span: this.span, scale: this.gantt.scale, cal: this.cal, dataDate: this.schedule.project.dataDate, today: localToday(),
-            cursor: this.colorMode === 'actual' ? null : this.cursor, selectedId: this.selectedAct, linkMode: this.gantt.links, links: this.schedule.links,
+            formatDay:d=>this.fmtDay(d),rows, span: this.span, scale: this.gantt.scale, cal: this.cal, dataDate: this.schedule.project.dataDate, today: this.options.standalone ? null : localToday(),
+            cursor: this.colorMode === 'actual' && !this.options.standalone ? null : this.cursor, modelColumn: !this.options.standalone, scrub: !!this.options.standalone, selectedId: this.selectedAct, linkMode: this.gantt.links, links: this.schedule.links,
             colorOf: (a) => this.colorOf(a), modelOf: (a) => this.modelOf(a), cmpOf: (a) => compare(this.modelOf(a), a.pct),
         });
         body.innerHTML = `<div class="pg-tools">
                 <div class="tk-tabs">${Object.entries(SCALES).map(([k, s]) => `<button data-scale="${k}" class="${k === this.gantt.scale ? 'active' : ''}">${s.label}</button>`).join('')}</div>
-                <select data-show title="Which activities">${Object.entries(SHOW).map(([k, l]) => `<option value="${k}" ${k === this.gantt.show ? 'selected' : ''}>${l}</option>`).join('')}</select>
+                <select data-show title="Which activities">${Object.entries(SHOW).filter(([k]) => !this.options.standalone || !['behind', 'linked'].includes(k)).map(([k, l]) => `<option value="${k}" ${k === this.gantt.show ? 'selected' : ''}>${l}</option>`).join('')}</select>
                 <select data-linkmode title="Relationship lines">${[['selected', 'Links: selected'], ['all', 'Links: all'], ['none', 'Links: none']].map(([k, l]) => `<option value="${k}" ${k === this.gantt.links ? 'selected' : ''}>${l}</option>`).join('')}</select>
                 <select data-fold title="Fold WBS groups (click a group's row to fold or open just that one)">${Object.entries(FOLD).map(([k, l]) => `<option value="${k}" ${k === this.gantt.fold ? 'selected' : ''}>${l}</option>`).join('')}</select>
-                <button class="pg-btn" data-today title="Scroll to today">Today</button>
+                ${this.options.standalone ? `<details class="pg-keybox pg-cols"><summary class="pg-btn" title="Choose the columns">Columns</summary><div class="pg-keypop">${[['id', 'Activity ID'], ['start', 'Start'], ['finish', 'Finish'], ['dur', 'Duration'], ['pct', 'P6 %']].map(([k, l]) => `<label><input type="checkbox" data-gantt-col="${k}" ${this.gantt.hiddenCols?.has(k) ? '' : 'checked'}> ${l}</label>`).join('')}</div></details>` : ''}${this.options.standalone ? '<button class="pg-btn" data-fold-all="open" title="Open every group">Expand all</button><button class="pg-btn" data-fold-all="all" title="Fold every group">Collapse all</button><button class="pg-btn" data-today title="Scroll to the date the model shows">Shown date</button>' : '<button class="pg-btn" data-today title="Scroll to today">Today</button>'}
                 <span class="pg-level muted">${level ? `Level ${escapeHtml(level)} · <a href="#" data-all-levels>all levels</a>` : 'All levels'}</span>
                 <details class="pg-keybox"><summary class="pg-btn" title="What the bars and marks mean">Key</summary><div class="pg-keypop">
                     <span><i class="k-bl"></i>planned</span><span><i class="k-bar"></i>current</span><span><i class="k-done"></i>P6 % done</span>
-                    <span><i class="k-model"></i>model %</span><span><i class="k-crit"></i>critical</span><span><b>◆</b> milestone</span></div></details>
+                    ${this.options.standalone ? '' : '<span><i class="k-model"></i>model %</span>'}<span><i class="k-crit"></i>critical</span><span><b>◆</b> milestone</span></div></details>
             </div>
             <div class="pg-main ${this.sideDetails ? 'side' : 'float'}">
                 <div class="pg-g-scroll" data-gantt>${rows.length ? html : '<p class="muted pg-empty">No activities to show with this filter.</p>'}</div>
@@ -1294,7 +1437,21 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         body.querySelectorAll('[data-scale]').forEach(b => b.onclick = () => { this.gantt.scale = b.dataset.scale; this.scrolled = false; this.renderBody(); });
         body.querySelector('[data-show]').onchange = (e) => { this.gantt.show = e.target.value; this.renderBody(); };
         body.querySelector('[data-linkmode]').onchange = (e) => { this.gantt.links = e.target.value; this.renderBody(); };
-        body.querySelector('[data-today]').onclick = () => this.scrollGanttTo(localToday(), { always: true });
+        body.querySelector('[data-today]').onclick = () => this.scrollGanttTo(this.options.standalone ? this.cursor : localToday(), { always: true });
+        body.querySelectorAll('[data-gantt-col]').forEach(c => c.onchange = () => {
+            this.gantt.hiddenCols ??= new Set();
+            if (c.checked) this.gantt.hiddenCols.delete(c.dataset.ganttCol); else this.gantt.hiddenCols.add(c.dataset.ganttCol);
+            try { localStorage.setItem('cas-project-dashboard:gantt-columns', JSON.stringify([...this.gantt.hiddenCols])); } catch {}
+            this.fitGantt();
+        });
+        body.querySelectorAll('[data-fold-all]').forEach(b => b.onclick = () => { this.gantt.fold = b.dataset.foldAll === 'open' ? 'none' : 'all'; this.gantt.collapsed = this.foldSet(this.gantt.fold); this.renderBody(); });
+        // Scrub: the Gantt's date scale moves the model's date (video-editor style), dragging included.
+        const scrub = body.querySelector('[data-scrub]');
+        if (scrub) {
+            const dayAt = (e) => { const r = scrub.getBoundingClientRect(), n = Math.floor((e.clientX - r.left) / SCALES[this.gantt.scale].ppd); return addDays(this.span[0], Math.max(0, Math.min(Math.round((dayMs(this.span[1]) - dayMs(this.span[0])) / 86400000), n))); };
+            scrub.onpointerdown = (e) => { if (e.button !== 0) return; this.stopPlay(); scrub.setPointerCapture(e.pointerId); this.setCursor(dayAt(e)); };
+            scrub.onpointermove = (e) => { if (scrub.hasPointerCapture(e.pointerId)) { const d = dayAt(e); if (d !== this.cursor) this.setCursor(d); } };
+        }
         body.querySelector('[data-fold]').onchange = (e) => {
             this.gantt.fold = e.target.value;
             this.gantt.collapsed = this.foldSet(this.gantt.fold);
@@ -1355,6 +1512,19 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     // The chart fills the panel's height (in dock-bottom mode the panel is what's left under the viewers).
+    // Schedule viewer: the Gantt's columns the user keeps (Columns menu), narrower charts dropping the date columns.
+    applyGanttColumns(chart, compact) {
+        if (!chart) return;
+        const widths = { id: 62, name: 0, start: 84, finish: 84, dur: 34, pct: 44 }, off = this.gantt.hiddenCols || new Set();
+        const shown = Object.keys(widths).filter(k => !off.has(k) && !(compact && ['start', 'finish', 'dur'].includes(k)));
+        const name = compact ? 150 : 230;
+        chart.style.setProperty('--cols', shown.map(k => (k === 'name' ? '1fr' : `${widths[k]}px`)).join(' '));
+        chart.style.setProperty('--cells', `${name + shown.reduce((t, k) => t + widths[k], 0)}px`);
+        chart.querySelectorAll('[data-c]').forEach(c => { c.style.display = shown.includes(c.dataset.c) ? '' : 'none'; });
+        // A group's name spans the ID column too, when there is one.
+        chart.querySelectorAll('.pg-g-row.wbs [data-c="name"]').forEach(c => { c.style.gridColumn = shown.includes('id') ? '1 / 3' : '1 / 2'; });
+    }
+
     fitGantt() {
         const main = this.panel.querySelector('.pg-main');
         if (main && main.classList.contains('side') !== this.sideDetails) {
@@ -1366,6 +1536,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         if (!g) return;
         // A narrow chart drops the Start, Finish and Dur columns (the bars show the dates) to leave room for the bars.
         g.querySelector('.pg-gantt')?.classList.toggle('compact', g.clientWidth < 1150);
+        if (this.options.standalone) this.applyGanttColumns(g.querySelector('.pg-gantt'), g.clientWidth < 1150);
         const room = `${Math.max(180, this.panel.getBoundingClientRect().bottom - g.getBoundingClientRect().top - 22)}px`;
         g.style.maxHeight = room;
         const side = this.panel.querySelector('.pg-main.side .pg-side');
@@ -1380,10 +1551,10 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const level = this.views.level?.name;
         body.innerHTML = `<div class="pg-tools">
                 <button class="pg-btn" data-month="-1" aria-label="Previous month">${this.options.standalone?'Previous month':'‹'}</button><b class="pg-month">${monthName(`${this.calMonth}-01`)}</b><button class="pg-btn" data-month="1" aria-label="Next month">${this.options.standalone?'Next month':'›'}</button>
-                <button class="pg-btn" data-cal-today>Today</button><button class="pg-btn" data-cal-dd>Data date</button>
+                <button class="pg-btn" data-cal-today>${this.options.standalone ? 'Shown date' : 'Today'}</button><button class="pg-btn" data-cal-dd>Data date</button>
                 <span class="pg-level muted" title="Click a day to see the model as planned that day; click an activity for its walls">${level ? `Level ${escapeHtml(level)} · <a href="#" data-all-levels>all levels</a>` : 'All levels'}</span>
                 <details class="pg-keybox"><summary class="pg-btn" title="Colors">Key</summary><div class="pg-keypop">
-                    ${STAGES.filter(s => s.color).map(s => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')}<span><i style="background:${OTHER}"></i>other</span><span><b>◆</b> milestone</span></div></details>
+                    ${this.options.standalone ? (this.stageNames || []).map(n => `<span><i style="background:${this.stageColorMap.get(n)}"></i>${escapeHtml(n)}</span>`).join('') : STAGES.filter(s => s.color).map(s => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')}<span><i style="background:${OTHER}"></i>other</span><span><b>◆</b> milestone</span></div></details>
             </div>
             <div class="pg-main ${this.sideDetails ? 'side' : 'float'}"><div class="pg-cal-wrap">
             ${calendarHtml({formatDay:d=>this.fmtDay(d), month: this.calMonth, activities: acts, cal: this.cal, dataDate: this.schedule.project.dataDate, today: localToday(), cursor: this.cursor, selectedId: this.selectedAct, colorOf: (a) => this.colorOf(a) })}
@@ -1395,7 +1566,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             this.renderBody();
         };
         body.querySelectorAll('[data-month]').forEach(b => b.onclick = () => move(Number(b.dataset.month)));
-        body.querySelector('[data-cal-today]').onclick = () => { this.calMonth = localToday().slice(0, 7); this.renderBody(); };
+        body.querySelector('[data-cal-today]').onclick = () => { this.calMonth = (this.options.standalone ? this.cursor : localToday()).slice(0, 7); this.renderBody(); };
         body.querySelector('[data-cal-dd]').onclick = () => this.setCursor(this.schedule.project.dataDate || localToday(), { move: true });
         const all = body.querySelector('[data-all-levels]');
         if (all) all.onclick = (e) => { e.preventDefault(); this.views.setLevel(null); };
@@ -1429,6 +1600,17 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     // --- The selected activity ------------------------------------------------------------------------------------------
 
+    // What an activity covers in the model: walls, length and wall types (the model's own properties).
+    quantitiesHtml(a) {
+        if (a.scope !== 'wall' || !(a.walls || a.level)) return '';
+        const q = activityQuantities(this.wallsOf(a)), u = q.units ? ` ${escapeHtml(q.units)}` : '';
+        if (!q.count) return '<section class="activity-quantities"><b>Model quantities</b><p class="muted">No walls found for this activity in the model.</p></section>';
+        return `<section class="activity-quantities"><b>Model quantities</b> <span class="muted">${a.walls ? 'assigned walls' : `all walls on ${escapeHtml(a.level)}`}</span>
+            <p><b>${q.count.toLocaleString()}</b> walls${q.measured ? ` · <b>${q.length.toLocaleString()}${u}</b> long` : ''}${q.measured < q.count ? ` <span class="muted">(${(q.count - q.measured).toLocaleString()} without a length)</span>` : ''}</p>
+            <details><summary>${q.types.length} wall type${q.types.length === 1 ? '' : 's'}</summary><table><thead><tr><th>Wall type</th><th class="num">Walls</th><th class="num">Length${u}</th></tr></thead><tbody>
+            ${q.types.map(t => `<tr><td>${escapeHtml(t.type)}</td><td class="num">${t.count.toLocaleString()}</td><td class="num">${t.length ? t.length.toLocaleString() : '–'}</td></tr>`).join('')}</tbody></table></details></section>`;
+    }
+
     renderDetails(el) {
         const a = this.selectedAct && this.activity(this.selectedAct);
         if (!el) return;
@@ -1436,7 +1618,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             el.innerHTML = el.closest('.pg-main.side') ? '<div class="pg-details empty"><b>No activity picked</b><span class="muted">Click a bar or a row to see its walls in the model, its dates, progress and links.</span></div>' : '';
             return;
         }
-        const m = this.modelOf(a), c = compare(m, a.pct), v = finishVariance(a, this.cal), insight=activityInsight(a,m);
+        const m = this.options.standalone ? null : this.modelOf(a), c = compare(m, a.pct), v = finishVariance(a, this.cal), insight=activityInsight(a,m);
         const dd = this.schedule.project.dataDate;
         const plannedByDd = dd ? expectedPct(a, addDays(dd, -1), this.cal, { planned: true }) : null;
         const name = (id) => escapeHtml(this.activity(id)?.name || '');
@@ -1447,7 +1629,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const own = this.schedule.map.activities?.[a.id] || {};
         const linkState = activityLinkState(a, this.levels), assignedCount = this.schedule.map.elements?.[a.id]?.length || 0;
         const levelOptions = `<option value="__auto">Auto${own.level === undefined ? `: ${escapeHtml(a.level || 'none')}` : ''}</option>${this.levels.map(l => `<option ${own.level === l ? 'selected' : ''}>${escapeHtml(l)}</option>`).join('')}<option value="" ${own.level === '' ? 'selected' : ''}>Not in the model</option>`;
-        const stageOptions = `<option value="__auto">Auto${own.stage === undefined ? `: ${escapeHtml(a.stage || 'none')}` : ''}</option>${STAGE_NAMES.slice(1).map(s => `<option ${own.stage === s ? 'selected' : ''}>${s}</option>`).join('')}<option value="" ${own.stage === '' ? 'selected' : ''}>No stage</option>`;
+        const stageOptions = `<option value="__auto">Auto${own.stage === undefined ? `: ${escapeHtml(a.stage || 'none')}` : ''}</option>${(this.options.standalone ? this.stageNames || [] : STAGE_NAMES.slice(1)).map(s => `<option ${own.stage === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}<option value="" ${own.stage === '' ? 'selected' : ''}>No stage</option>`;
         const linkFacts=`                ${ms ? '' : `<dt>Scope</dt><dd><select data-own="scope"><option value="__auto">Auto: ${a.scope === 'other' ? 'not wall work' : 'wall work'}</option><option value="wall" ${own.scope === 'wall' ? 'selected' : ''}>Wall work</option><option value="other" ${own.scope === 'other' ? 'selected' : ''}>Not wall work</option></select><span class="muted pg-how">${escapeHtml(a.scopeHow || '')}</span></dd>`}
                 <dt>Level</dt><dd><select data-own="level">${levelOptions}</select><span class="muted pg-how">${escapeHtml(a.levelHow || '')}</span></dd>
                 ${ms ? '' : `<dt>Stage</dt><dd><select data-own="stage">${stageOptions}</select><span class="muted pg-how">${escapeHtml(a.stageHow || '')}</span></dd>`}
@@ -1457,13 +1639,13 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 <button class="pg-x" data-clear-act aria-label="Close activity details" title="Close and show every wall again">${this.options.standalone?dashboardIcon('close'):'✕'}</button></div>
             <div class="pg-d-tags">${status}${a.scope === 'other' ? `<span class="tk-src" title="${escapeHtml(a.scopeHow || '')}">not wall work</span>` : ''}${a.float != null && a.status !== 'complete' ? `<span class="tk-src ${a.float <= 0 ? 'bad' : ''}">float ${a.float} d${a.float <= 0 ? ' · critical' : ''}</span>` : ''}
                 ${m ? `<span class="pg-cmp ${c.state}" title="Model: ${m.done} of ${m.total} walls ${escapeHtml(a.stage)} or later">model ${m.pct}%</span>` : ''}
-                ${a.level && a.scope !== 'other' ? '<span class="pg-d-acts"><button class="pg-btn" data-show-level title="Cut the model at this level and open its plan">Level</button><button class="pg-btn" data-select-walls title="Select these walls, then set their stage on the Stages tab">Select walls</button></span>' : ''}</div>
-            ${this.options.standalone?`<section class="activity-insight" data-state="${insight.state}" aria-label="Activity explanation"><h4>${escapeHtml(insight.title)}</h4><p>${escapeHtml(insight.summary)}</p><div><b>Suggested check</b><span>${escapeHtml(insight.action)}</span></div><small>Field record ${this.fmtDay(this.asOf||dd)} · Schedule data date ${this.fmtDay(dd)}. This comparison does not establish the cause.</small></section>`:''}
+                ${a.level && a.scope !== 'other' ? '<span class="pg-d-acts"><button class="pg-btn" data-show-level title="Cut the model at this level and open its plan">Level</button><button class="pg-btn" data-select-walls title="Select the activity walls in the model and plan">Select walls</button></span>' : ''}</div>
+            ${this.options.standalone ? this.quantitiesHtml(a) : ''}
             ${this.options.standalone ? `<p class="pg-link-basis"><b>${escapeHtml(linkState.label)}</b> · ${escapeHtml(linkState.basis)}<br>${linkState.kind === 'context' || linkState.kind === 'unlinked' ? 'No resolved wall assignment.' : a.assignedWalls ? `Exact element assignment: ${a.walls.length} model element${a.walls.length === 1 ? '' : 's'} at ${escapeHtml(a.stage)}.` : a.demoWalls ? 'Demo wall set; not a source P6 assignment.' : a.walls ? 'Assigned wall set.' : 'Whole floor + install stage; not an individual wall assignment.'}</p>` : ''}
             <dl class="pg-d-facts">
                 <dt>Dates</dt><dd>${this.fmtDay(a.start)}${a.actualStart ? ' A' : ''} → ${this.fmtDay(a.finish)}${a.actualFinish ? ' A' : ''}${ms ? '' : ` · ${Math.round(a.dur)} d${a.status === 'active' ? `, ${Math.round(a.rem)} left` : ''}`}</dd>
                 <dt>Planned</dt><dd>${this.fmtDay(a.plannedStart)} → ${this.fmtDay(a.plannedFinish)} · ${v > 0 ? `<span class="warn">${v} d late</span>` : v < 0 ? `${-v} d early` : 'on time'}</dd>
-                ${ms ? '' : `<dt>Progress</dt><dd>P6 ${a.pct == null ? 'not printed' : a.pct + '%'}${plannedByDd != null ? ` <span class="muted">(plan ${plannedByDd}%)</span>` : ''} · model ${m ? `${m.pct}% <span class="muted">(${m.done}/${m.total} walls)</span>${c.state === 'behind' ? ` <span class="warn">${-c.delta} pts behind</span>` : c.state === 'ahead' ? ` <span class="muted">${c.delta} pts ahead</span>` : ''}` : '<span class="muted">not linked</span>'}</dd>`}
+                ${ms ? '' : `<dt>Progress</dt><dd>P6 ${a.pct == null ? 'not printed' : a.pct + '%'}${plannedByDd != null ? ` <span class="muted">(plan ${plannedByDd}%)</span>` : ''}${this.options.standalone ? '' : ` · model ${m ? `${m.pct}% <span class="muted">(${m.done}/${m.total} walls)</span>${c.state === 'behind' ? ` <span class="warn">${-c.delta} pts behind</span>` : c.state === 'ahead' ? ` <span class="muted">${c.delta} pts ahead</span>` : ''}` : '<span class="muted">not linked</span>'}`}</dd>`}
                 ${this.options.standalone?`<dt>Location</dt><dd>${escapeHtml(a.level||'Unlinked')}</dd><dt>Work stage</dt><dd>${escapeHtml(a.stage||'Unlinked')}</dd>`:linkFacts}
                 ${Object.keys(a.codes || {}).length ? `<dt>Codes</dt><dd>${Object.entries(a.codes).map(([k, val]) => `${escapeHtml(k)}: ${escapeHtml(val)}`).join(' · ')}</dd>` : ''}
                 ${this.pdfBytes && this.schedule.source.pdfRows?.[a.id] ? `<dt>Source</dt><dd>PDF page ${this.schedule.source.pdfRows[a.id][0]} <button class="pg-btn" data-in-pdf title="The page of the imported PDF, this activity's row highlighted">Show in the PDF</button></dd>` : ''}
@@ -1476,7 +1658,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const show = el.querySelector('[data-show-level]');
         if (show) show.onclick = () => this.views.setLevel(a.level);
         const sel = el.querySelector('[data-select-walls]');
-        if (sel) sel.onclick = () => { this.views.select(this.wallsOf(a).map(w => w.dbId)); this.setTab('stages'); };
+        if (sel) sel.onclick = () => { this.views.select(this.wallsOf(a).map(w => w.dbId)); if (!this.options.standalone) this.setTab('stages'); };
         el.querySelector('[data-clear-elements]')?.addEventListener('click', () => {
             if (this.viewingOriginal) { this.message('Viewing the original dates: switch back to the adjusted dates to change links.', 'warn'); return; }
             const map = this.schedule.map;

@@ -232,7 +232,7 @@ export class Views {
         if (this.level) await this.setLevel(null); // no section cut: every floor shows
         const floors = this.levels.filter(l => names.includes(l.name) && this.wallsByLevel.get(l.name)?.length);
         if (!floors.length) return;
-        const gap = main.getUnitString?.() === 'm' ? 7.5 : 25; // between floors, over their own height
+        const gap = (main.getUnitString?.() === 'm' ? 7.5 : 25) * (this.apartGapScale || 1); // between floors, over their own height
         markCopiesOf(main);
         this.apart = { main, gap, floors, models: new Map(), idsOf: new Map() };
         viewer.hideModel(main);
@@ -261,6 +261,20 @@ export class Views {
         }
         this.frameApart();
         onProgress(floors.length, floors.length, '');
+    }
+
+    // The space between the floors apart, as a multiple of the default; floors already shown move without reloading
+    // (Model.setPlacementTransform: https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Model/).
+    setApartGap(scale) {
+        this.apartGapScale = Math.max(0.25, Math.min(4, Number(scale) || 1));
+        const a = this.apart;
+        if (!a) return;
+        a.gap = (a.main.getUnitString?.() === 'm' ? 7.5 : 25) * this.apartGapScale;
+        a.floors.forEach((floor, i) => a.models.get(floor.name)?.setPlacementTransform?.(new THREE.Matrix4().makeTranslation(0, 0, i * a.gap)));
+        a.boxes = new Map();
+        this.viewer3d.impl?.invalidate?.(true, true, true);
+        this.frameApart();
+        this.placeApartLabels();
     }
 
     // Labels for the floors apart: labelOf(level name) -> { title, text, done, plan } (done and plan in %, plan null)

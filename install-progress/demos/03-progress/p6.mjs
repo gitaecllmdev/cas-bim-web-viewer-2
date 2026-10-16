@@ -18,6 +18,8 @@
 //     map: { levels: { location label: model level | '' }, stages: { stage label: stage | '' }, activities: { id: { level, stage } } } }
 
 export const STAGE_NAMES = ['Not started', 'Framed', 'Boarded', 'Taped', 'Finished']; // same order as the tracker
+// A usable install stage: one of the tracker's, or (schedule viewer) any stage name taken from the schedule itself.
+export const isStage = (s) => typeof s === 'string' && !!s.trim() && s !== STAGE_NAMES[0];
 
 const DAY = 86400000;
 export const dayMs = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
@@ -379,7 +381,7 @@ export function linkActivities(schedule, levelNames) {
         // Wall work only is linked to walls: an Install Stage code or a stage set by hand says so; else the name.
         const ms = a.type === 'start' || a.type === 'finish';
         const fromCode = !!(stageKey && stage) || own.stage;
-        const byName = workScope(a.name);
+        const byName = workScope(withoutLocation(a.name, [level, locationKey, l.location])); // "Ground floor" is a place, not flooring
         const scope = ms ? 'milestone' : own.scope || (fromCode ? 'wall' : byName.scope);
         const scopeHow = ms ? '' : own.scope ? 'set on this activity' : fromCode ? 'install stage' : byName.why;
         if (scope === 'other') { stage = null; stageHow = 'not wall work'; }
@@ -392,9 +394,9 @@ export function activityLinkState(activity, levelNames) {
     if (activity.scope !== 'wall') return { kind: 'context', label: 'Schedule only', basis: 'Not installation-stage wall work' };
     const missing = [];
     if (!activity.level || !levelNames.includes(activity.level)) missing.push('Model floor missing');
-    if (!STAGE_NAMES.slice(1).includes(activity.stage)) missing.push('Install stage missing');
+    if (!isStage(activity.stage)) missing.push('Install stage missing');
     if (activity.assignedWalls) {
-        if (!STAGE_NAMES.slice(1).includes(activity.stage)) return { kind: 'unlinked', label: 'Unlinked', basis: 'Install stage missing' };
+        if (!isStage(activity.stage)) return { kind: 'unlinked', label: 'Unlinked', basis: 'Install stage missing' };
         const n = activity.walls?.length || 0, gone = activity.missingElements || 0;
         if (!n) return { kind: 'unlinked', label: 'Unlinked', basis: `${gone} assigned element${gone === 1 ? '' : 's'} not in this model` };
         return { kind: 'assigned', label: 'Element assignment', basis: `${n} assigned element${n === 1 ? '' : 's'}${gone ? ` · ${gone} not in this model` : ''}` };
@@ -402,7 +404,7 @@ export function activityLinkState(activity, levelNames) {
     if (missing.length) return { kind: 'unlinked', label: 'Unlinked', basis: missing.join(' · ') };
     const how = [activity.levelHow || '', activity.stageHow || ''];
     if (activity.demoWalls || how.some(s => /^demo/i.test(s))) return { kind: 'demo', label: 'Demo assignment', basis: 'Illustrative model assignment' };
-    const explicit = s => /^activity code |^set on this activity$|^link table /i.test(s);
+    const explicit = s => /^activity code |^set on this activity$|^link table |^schedule stage /i.test(s);
     if (how.every(explicit)) return { kind: 'mapped', label: 'Mapped', basis: how.every(s => /^activity code /i.test(s)) ? 'P6 activity codes' : 'Saved mapping / activity override' };
     return { kind: 'suggested', label: 'Check link', basis: how.filter(Boolean).join(' · ') || 'Link basis not recorded' };
 }
@@ -413,7 +415,7 @@ export function relatedWallActivities(selectedWalls, activities) {
     const floors = new Set(walls.map(w => w.level));
     if (floors.size !== 1) return [];
     const level = [...floors][0], selected = new Set(walls.map(w => w.dbId));
-    return activities.filter(a => a.scope === 'wall' && STAGE_NAMES.slice(1).includes(a.stage)).flatMap(a => {
+    return activities.filter(a => a.scope === 'wall' && isStage(a.stage)).flatMap(a => {
         const count = a.walls ? new Set(a.walls.map(w => w?.dbId).filter(id => selected.has(id))).size : a.level === level ? walls.length : 0;
         return count ? [{ activity: a, count, basis: a.demoWalls ? 'Demo wall set' : a.assignedWalls ? 'Assigned elements' : a.walls ? 'Assigned wall set' : 'Whole floor + install stage' }] : [];
     }).sort((x, y) => STAGE_NAMES.indexOf(x.activity.stage) - STAGE_NAMES.indexOf(y.activity.stage) || (x.activity.start || '').localeCompare(y.activity.start || '') || x.activity.id.localeCompare(y.activity.id));
@@ -489,8 +491,8 @@ export function previewElementLinks(rows, { linked, externalIds, models = [] }) 
             : r.model && names.size && !names.has(r.model.toLowerCase()) ? `another model (${r.model})`
             : !a ? 'unknown Activity ID'
             : a.scope !== 'wall' ? 'not wall work'
-            : !STAGE_NAMES.slice(1).includes(a.stage) ? 'activity has no install stage'
-            : r.stage && matchStage(r.stage) !== a.stage ? `stage conflict (${r.stage} vs ${a.stage})`
+            : !isStage(a.stage) ? 'activity has no install stage'
+            : r.stage && r.stage.toLowerCase() !== a.stage.toLowerCase() && matchStage(r.stage) !== a.stage ? `stage conflict (${r.stage} vs ${a.stage})`
             : !r.element ? 'Element ID missing'
             : !known.has(r.element) ? 'element not in this model'
             : seen.has(`${r.activity}|${r.element}`) ? 'duplicate row' : null;
@@ -521,6 +523,80 @@ export function elementLinkTemplate({ model, linked, elements, walls, blankWalls
     const used = new Set(Object.values(elements || {}).flat());
     for (const w of blankWalls) if (w.externalId && !used.has(w.externalId)) rows.push([model, w.externalId, '', '', w.level || '', w.wallType || '']);
     return rows;
+}
+
+// --- Schedule viewer: stages and colors from the schedule itself -------------------------------------------------------
+// No built-in stage list: an activity's stage is its own stage / phase activity code when the schedule has one, else its
+// name without the floor ("Frame walls · Level 3" -> "Frame walls"), so the same work on every floor shares a color.
+
+// An activity name without its place: the given location labels, "Level 3" / "L3" / "2nd floor" / "ground floor".
+export function withoutLocation(text, places = []) {
+    let name = ` ${text || ''} `;
+    for (const t of places.filter(Boolean)) name = name.replace(new RegExp(esc(String(t)), 'ig'), ' ');
+    name = name.replace(/\b(?:level|lvl|lev|flr|floor|l)\s*-?\s*0*\d{1,3}\b/ig, ' ').replace(/\b(?:\d{1,2}(?:st|nd|rd|th)|ground|first|second|third|top)\s+floor\b/ig, ' ');
+    return name.replace(/^[\s·|,:;\-–—/]+|[\s·|,:;\-–—/]+$/g, '').replace(/\s+/g, ' ').trim();
+}
+
+export function activityGroup(activity, schedule) {
+    const l = labelsOf(activity, schedule);
+    if (l.stageLabel && String(l.stageLabel).trim()) return String(l.stageLabel).trim();
+    return withoutLocation(activity.name, [activity.level, activity.locationKey, l.location]) || String(activity.name || activity.id);
+}
+
+// Wall work gets its schedule stage (an activity's own saved stage wins); other trades and milestones get none.
+export function scheduleStageLinks(linked, schedule) {
+    const own = schedule.map?.activities || {};
+    for (const a of linked) {
+        if (a.scope !== 'wall') continue;
+        if (own[a.id]?.stage !== undefined) continue; // set on this activity (Link settings)
+        const code = labelsOf(a, schedule).stageFrom;
+        a.stage = activityGroup(a, schedule);
+        a.stageHow = code && a.stage === String(labelsOf(a, schedule).stageLabel).trim() ? code : `schedule stage (activity name)`;
+    }
+    return linked;
+}
+
+// The schedule's stages in the order their work first starts.
+export function scheduleStageNames(linked) {
+    const first = new Map();
+    for (const a of linked) if (a.scope === 'wall' && isStage(a.stage) && (!first.has(a.stage) || (a.start || '9') < first.get(a.stage))) first.set(a.stage, a.start || '9');
+    return [...first].sort((x, y) => x[1].localeCompare(y[1]) || x[0].localeCompare(y[0])).map(([name]) => name);
+}
+
+// Distinct, colour-blind-friendly defaults by stage order; saved choices (schedule.map.colors) win.
+export const STAGE_PALETTE = ['#e08a2c', '#2f7ebc', '#7a5cc2', '#2a9d8f', '#c4566b', '#8a9a2b', '#3e5c76', '#b5651d'];
+export const GHOST_COLOR = '#dde3ea'; // light enough to read as ghosted in 3D, still visible as a line on a white sheet
+export function stageColors(names, saved = {}) {
+    return new Map(names.map((name, i) => [name, /^#[0-9a-f]{6}$/i.test(saved?.[name] || '') ? saved[name] : STAGE_PALETTE[i % STAGE_PALETTE.length]]));
+}
+
+// The model on a day: each wall with the latest-starting wall activity that has started by then (its walls: an assigned
+// set, else its floor). Walls with no started activity are not in the map (shown ghosted). keep(a): only these activities.
+export function scheduleWallsAt(walls, linked, day, { keep = () => true } = {}) {
+    const known = new Map(walls.map(w => [w.dbId, w])), byLevel = new Map(), out = new Map();
+    for (const w of walls) (byLevel.get(w.level) || byLevel.set(w.level, []).get(w.level)).push(w);
+    const started = linked.filter(a => a.scope === 'wall' && isStage(a.stage) && /^\d{4}-\d{2}-\d{2}$/.test(a.start || '') && a.start <= day && keep(a))
+        .sort((a, b) => a.start.localeCompare(b.start) || String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+    for (const a of started) for (const c of a.walls ?? byLevel.get(a.level) ?? []) { const w = known.get(c.dbId); if (w) out.set(w, a); }
+    return out;
+}
+
+// Per floor: the share of its walls the schedule has reached by the day (scheduleWallsAt), in %; optionally one stage.
+export function floorScheduleShare(walls, reached, { stage = null } = {}) {
+    const out = new Map();
+    for (const w of walls) {
+        const r = out.get(w.level) || out.set(w.level, { walls: 0, reached: 0 }).get(w.level);
+        r.walls++;
+        const a = reached.get(w);
+        if (a && (!stage || a.stage === stage)) r.reached++;
+    }
+    for (const r of out.values()) r.pct = r.walls ? Math.round((100 * r.reached) / r.walls) : 0;
+    return out;
+}
+
+// The day the schedule viewer opens on: the project's first activity start.
+export function projectStart(activities) {
+    return activities.map(a => a.start).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d || '')).sort()[0] || null;
 }
 
 // --- Progress --------------------------------------------------------------------------------------------------------

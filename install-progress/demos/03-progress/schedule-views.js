@@ -65,8 +65,8 @@ export function ganttHtml(g) {
             const name = floor ? `<button data-focus-level="${escapeHtml(floor)}" title="Section 3D and open the plan for ${escapeHtml(floor)}">${escapeHtml(r.name)}</button>` : escapeHtml(r.name);
             const state = r.complete ? '<span class="pg-done" title="Every activity in this group is complete">✓ complete</span>' : r.active ? '<span class="pg-wip" title="Work in progress">in progress</span>' : '';
             return `<div class="pg-g-row wbs${r.complete ? ' done' : ''}" data-wbs="${escapeHtml(r.id)}" ${floor ? `data-group-level="${escapeHtml(floor)}"` : ''} title="${floor ? `Show ${escapeHtml(floor)} in 3D and plan; use the arrow to fold` : r.collapsed ? 'Click to open' : 'Click to fold'}">
-                <div class="pg-g-cells"><span class="pg-g-name" style="padding-left:${r.depth * 12}px">${toggle}${name} <span class="muted">(${r.count})</span> ${state}</span>
-                    <span class="c-date">${displayDay(r.start)}</span><span class="c-date">${displayDay(r.finish)}</span><span class="c-dur"></span><span class="num">${pctText(r.pct)}</span><span></span></div>
+                <div class="pg-g-cells"><span class="pg-g-name" data-c="name" style="padding-left:${r.depth * 12}px">${toggle}${name} <span class="muted">(${r.count})</span> ${state}</span>
+                    <span class="c-date" data-c="start">${displayDay(r.start)}</span><span class="c-date" data-c="finish">${displayDay(r.finish)}</span><span class="c-dur" data-c="dur"></span><span class="num" data-c="pct">${pctText(r.pct)}</span><span data-c="model"></span></div>
                 <div class="pg-g-track"><b class="pg-sum" style="left:${a}px;width:${Math.max(2, b - a)}px"></b></div></div>`;
         }
         const a = r.a, color = g.colorOf(a), m = g.modelOf(a), c = g.cmpOf(a);
@@ -82,11 +82,11 @@ export function ganttHtml(g) {
         const label = g.scale === 'day' || e - s > 70 ? '' : `<span class="pg-lbl" style="left:${(ms ? e + 4 : e + 4)}px">${escapeHtml(a.stage || '')}</span>`;
         const other = a.scope === 'other';
         return `<div class="pg-g-row act st-${a.status} ${a.id === g.selectedId ? 'sel' : ''} ${crit ? 'crit' : ''}${other ? ' other' : ''}" data-act="${escapeHtml(a.id)}" title="${escapeHtml(other ? `${tip}\nNot wall work (${a.scopeHow}): not linked to walls` : tip)}">
-            <div class="pg-g-cells"><span>${escapeHtml(a.id)}</span>
-                <span class="pg-g-name" style="padding-left:${r.depth * 12}px"><i class="swatch" style="background:${color}"></i>${escapeHtml(a.name)}</span>
-                <span class="c-date ${a.actualStart ? 'act' : ''}">${displayDay(a.start)}${a.actualStart ? ' A' : ''}</span><span class="c-date ${a.actualFinish ? 'act' : ''}">${displayDay(a.finish)}${a.actualFinish ? ' A' : ''}</span>
-                <span class="num c-dur">${ms ? '' : Math.round(a.dur)}</span><span class="num">${ms ? '' : pctText(a.pct)}</span>
-                <span class="num">${m ? `<span class="pg-cmp ${c?.state || ''}">${m.pct}%</span>` : '<span class="muted" title="Not linked to walls">–</span>'}</span></div>
+            <div class="pg-g-cells"><span data-c="id">${escapeHtml(a.id)}</span>
+                <span class="pg-g-name" data-c="name" style="padding-left:${r.depth * 12}px"><i class="swatch" style="background:${color}"></i>${escapeHtml(a.name)}</span>
+                <span class="c-date ${a.actualStart ? 'act' : ''}" data-c="start">${displayDay(a.start)}${a.actualStart ? ' A' : ''}</span><span class="c-date ${a.actualFinish ? 'act' : ''}" data-c="finish">${displayDay(a.finish)}${a.actualFinish ? ' A' : ''}</span>
+                <span class="num c-dur" data-c="dur">${ms ? '' : Math.round(a.dur)}</span><span class="num" data-c="pct">${ms ? '' : pctText(a.pct)}</span>
+                <span class="num" data-c="model">${g.modelColumn === false ? '' : m ? `<span class="pg-cmp ${c?.state || ''}">${m.pct}%</span>` : '<span class="muted" title="Not linked to walls">–</span>'}</span></div>
             <div class="pg-g-track">${planned}${bar}${label}</div></div>`;
     });
     // Relationship lines: those of the selected activity, or all of them.
@@ -108,9 +108,9 @@ export function ganttHtml(g) {
     }
     return `<div class="pg-gantt" style="--track:${W}px">
         <div class="pg-g-head">
-            <div class="pg-g-cells"><span>Activity ID</span><span>Activity name</span><span class="c-date">Start</span><span class="c-date">Finish</span><span class="num c-dur" title="Original duration, working days">Dur</span>
-                <span class="num" title="P6 % complete">P6 %</span><span class="num" title="Walls on the activity's level at its stage or later (tracked in this viewer)">Model %</span></div>
-            <div class="pg-g-scale"><div class="pg-g-top">${top.join('')}</div><div class="pg-g-bot">${bot.join('')}</div></div>
+            <div class="pg-g-cells"><span data-c="id">Activity ID</span><span data-c="name">Activity name</span><span class="c-date" data-c="start">Start</span><span class="c-date" data-c="finish">Finish</span><span class="num c-dur" data-c="dur" title="Original duration, working days">Dur</span>
+                <span class="num" data-c="pct" title="P6 % complete">P6 %</span>${g.modelColumn === false ? '<span data-c="model"></span>' : `<span class="num" data-c="model" title="Walls on the activity's level at its stage or later (tracked in this viewer)">Model %</span>`}</div>
+            <div class="pg-g-scale${g.scrub ? ' scrub' : ''}" ${g.scrub ? 'data-scrub title="Click or drag the dates to show the model on that day"' : ''}><div class="pg-g-top">${top.join('')}</div><div class="pg-g-bot">${bot.join('')}</div>${g.scrub && g.cursor ? `<b class="pg-playhead" data-playhead data-label="${escapeHtml(displayDay(g.cursor))}" style="left:${x(g.cursor) + ppd / 2}px"></b>` : ''}</div>
         </div>
         <div class="pg-g-body" style="height:${H}px">
             <div class="pg-g-bg" style="height:${H}px">${bg.join('')}</div>
