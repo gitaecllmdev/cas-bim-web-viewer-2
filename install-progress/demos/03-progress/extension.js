@@ -18,6 +18,7 @@ import {
 import { ganttHtml, calendarHtml, SCALES, ganttX } from './schedule-views.js';
 import { AllPlans } from './all-plans.js';
 import { parseKeywords, matchRows, keywordCounts, remember } from '../../p6-keywords.mjs'; // the P6 Converter's keyword search
+import { passes, distinctValues, searchValues, compareValues } from '../../p6-table.mjs'; // the P6 Converter's Excel-style column filters
 import { DemoToolbar } from '../../toolbar.js';
 import {demoStagesFromSchedule,hotelDemoSchedule,lookaheadWeeks,activityQuantities,DEMO_DATE,DEMO_VERSION} from './presentation.mjs';
 import {dashboardDate,dashboardMetrics,labourSummary,activityInsight,dashboardIcon,DEMO_BIM,PLAYBACK_COLORS,INSTALL_COLORS,COMPARISON_COLORS,NEUTRAL_STATUS_COLOR,modelStatusLegend} from '../../project-dashboard.mjs';
@@ -48,6 +49,8 @@ const localToday = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD i
 const KW_HISTORY = 'drywall-demos:schedule-keywords'; // this browser's schedule search history
 const KW_SUGGEST = ['framing', 'layout', 'drywall', 'board', 'tape', 'finish', 'insulation', 'shaftwall', 'soffit'];
 const same = (x, y) => x.toLowerCase() === y.toLowerCase();
+// The Gantt's filterable columns (Excel-style header menus).
+const COLUMN_LABELS = { id: 'Activity ID', name: 'Activity name', start: 'Start', finish: 'Finish', dur: 'Dur', pct: 'P6 %' };
 // A paler version of a stage color (an activity's walls before it starts): mixed 60% with white.
 const tint = (hex) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * 0.4 + 255 * 0.6).toString(16).padStart(2, '0')).join('');
 
@@ -68,7 +71,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.linkedOnly = false;
         this.apartOn = false;
         this.allPlans = new AllPlans(this.views);
-        this.gantt = { scale: 'week', show: 'all', links: 'selected', fold: 'done', collapsed: new Set() };
+        this.gantt = { scale: 'week', show: 'all', links: 'selected', fold: 'done', collapsed: new Set(), filters: new Map(), sort: null };
         try { this.gantt.hiddenCols = new Set(JSON.parse(localStorage.getItem('cas-project-dashboard:gantt-columns') || '[]')); } catch { this.gantt.hiddenCols = new Set(); }
         this.selectedAct = null;
         this.demoMove = true;
@@ -105,6 +108,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.viewer.removeEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT, this.onSelection);
         this.bar?.remove();
         this.allPlans.close();
+        this.closeColumnMenu();
         this.views.setApartLabels(null);
         this.views.setLevelsApart(null);
         this.views.clearColors();
@@ -1114,7 +1118,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // which activities color the model (focus on what each user needs). Nothing here reads field progress.
     scheduleKeep() {
         const focus = this.focusActivity(), hits = this.keywordHits(), off = this.hiddenStages || new Set();
-        return (a) => (!focus || a.id === focus.id) && !off.has(a.stage) && (!hits || hits.ids.has(a.id));
+        const filters = this.gantt.filters;
+        return (a) => (!focus || a.id === focus.id) && !off.has(a.stage) && (!hits || hits.ids.has(a.id)) && (!filters.size || passes(a, filters, this.colValue));
     }
     reachedWalls() {
         return this.schedule ? scheduleWallsAt(this.walls, this.linked, this.cursor, { keep: this.scheduleKeep() }) : new Map();
@@ -1160,9 +1165,10 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     // Activities on the header level (and the milestones), by the Gantt's Show filter.
     visibleActivities(show = 'all') {
-        const level = this.views.level?.name, hits = this.keywordHits();
+        const level = this.views.level?.name, hits = this.keywordHits(), filters = this.gantt.filters;
         return this.linked.filter(a => {
             if (hits && !hits.ids.has(a.id)) return false;
+            if (filters.size && !passes(a, filters, this.colValue)) return false;
             if (level && a.level !== level && !(a.type === 'start' || a.type === 'finish')) return false;
             if (show === 'walls') return a.scope !== 'other';
             if (show === 'active') return a.status === 'active';
@@ -1409,16 +1415,101 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     // --- Gantt tab -----------------------------------------------------------------------------------------------------
 
+    // --- Excel-style column filters (Gantt headers; they also slice the Calendar, lookahead and the model) ------------
+
+    // A column's value as the Gantt prints it (dates in the shown format), so filters and sorts match what users see.
+    colValue = (a, key) => key === 'id' ? a.id : key === 'name' ? a.name : key === 'start' ? this.fmtDay(a.start) : key === 'finish' ? this.fmtDay(a.finish)
+        : key === 'dur' ? (a.type === 'start' || a.type === 'finish' ? '' : String(Math.round(a.dur ?? 0))) : key === 'pct' ? (a.pct == null ? '' : `${a.pct}%`) : '';
+
+    filterChipsHtml() {
+        const f = this.gantt.filters;
+        if (!f.size && !this.gantt.sort) return '';
+        return `<div class="pg-filter-chips">${[...f].map(([k, set]) => { const v = [...set].map(x => x || '(Blanks)'); return `<span class="pg-fchip" title="${escapeHtml(v.join(', '))}"><b>${COLUMN_LABELS[k]}:</b> ${escapeHtml(v.slice(0, 2).join(', '))}${v.length > 2 ? ` +${v.length - 2}` : ''}<button data-unfilter="${k}" aria-label="Remove the ${COLUMN_LABELS[k]} filter">×</button></span>`; }).join('')}
+            ${this.gantt.sort ? `<span class="pg-fchip"><b>Sorted:</b> ${COLUMN_LABELS[this.gantt.sort.key]} ${this.gantt.sort.dir === 'desc' ? '↓' : '↑'}</span>` : ''}<button class="pg-btn" data-clear-filters>Clear filters</button></div>`;
+    }
+
+    setColumnFilter(key, set) {
+        if (set) this.gantt.filters.set(key, set); else this.gantt.filters.delete(key);
+        this.filtersChanged();
+    }
+    filtersChanged() {
+        this.closeColumnMenu();
+        this.refresh();
+        this.renderBody();
+    }
+    closeColumnMenu() {
+        this.colMenu?.remove(); this.colMenu = null;
+        document.removeEventListener('pointerdown', this.colMenuAway, true);
+    }
+
+    // The column menu, as in Excel and the P6 Converter: sort, hide (schedule viewer), a value search and the value list
+    // with counts. The list holds the values of the activities the other filters, the search and the floor show. OK keeps
+    // the checked values (while searching: the checked values the search finds, as in Excel).
+    openColumnMenu(key, button) {
+        this.closeColumnMenu();
+        const label = COLUMN_LABELS[key], level = this.views.level?.name, hits = this.keywordHits();
+        const base = this.linked.filter(a => (!hits || hits.ids.has(a.id)) && (!level || a.level === level || a.type === 'start' || a.type === 'finish') && passes(a, this.gantt.filters, this.colValue, key));
+        const values = distinctValues(base, key, this.colValue), allowed = this.gantt.filters.get(key), max = 500;
+        let pick = new Set(values.filter(v => !allowed || allowed.has(v.value)).map(v => v.value)), query = '', found = values, pickFound = null;
+        const menu = this.colMenu = document.createElement('div');
+        menu.className = 'pg-col-menu'; menu.setAttribute('role', 'dialog'); menu.setAttribute('aria-label', `${label} filter`);
+        menu.innerHTML = `<div class="pg-cm-head"><b>${label}</b><button data-cm-close aria-label="Close">×</button></div>
+            <div class="pg-cm-actions"><button data-cm-sort="asc">↑ Sort ascending</button><button data-cm-sort="desc">↓ Sort descending</button>
+                ${this.gantt.sort?.key === key ? '<button data-cm-sort="">↺ Schedule order</button>' : ''}${this.options.standalone && key !== 'name' ? '<button data-cm-hide>Hide column</button>' : ''}</div>
+            <input type="search" class="pg-cm-search" placeholder="Search" aria-label="Search ${label} values">
+            <label class="pg-cm-all"><input type="checkbox" data-cm-all> <span>(Select all)</span></label>
+            <div class="pg-cm-values" role="group" aria-label="${label} values"></div><p class="pg-cm-note"></p>
+            <div class="pg-cm-foot"><button data-cm-clear ${allowed ? '' : 'disabled'}>Clear filter</button><span></span><button data-cm-close>Cancel</button><button class="primary" data-cm-ok>OK</button></div>`;
+        document.body.append(menu);
+        const list = menu.querySelector('.pg-cm-values'), all = menu.querySelector('[data-cm-all]'), ok = menu.querySelector('[data-cm-ok]'), current = () => (query ? pickFound : pick);
+        const sync = () => { const set = current(), on = found.filter(v => set.has(v.value)).length; all.checked = on === found.length && on > 0; all.indeterminate = on > 0 && on < found.length; ok.disabled = !set.size; };
+        const draw = () => {
+            const set = current();
+            list.innerHTML = found.slice(0, max).map((v, n) => `<label><input type="checkbox" data-cm-v="${n}" ${set.has(v.value) ? 'checked' : ''}> <span class="${v.value ? '' : 'muted'}">${escapeHtml(v.value || '(Blanks)')}</span> <span class="n">${v.count}</span></label>`).join('') || '<p class="muted">No values match.</p>';
+            list.querySelectorAll('[data-cm-v]').forEach(i => i.onchange = () => { const v = found[+i.dataset.cmV].value; if (i.checked) set.add(v); else set.delete(v); sync(); });
+            menu.querySelector('.pg-cm-note').textContent = found.length > max ? `Showing ${max} of ${found.length.toLocaleString()} values. Search to find the rest.` : '';
+            menu.querySelector('.pg-cm-all span').textContent = query ? '(Select all search results)' : '(Select all)';
+            sync();
+        };
+        all.onchange = () => { const set = current(); for (const v of found) if (all.checked) set.add(v.value); else set.delete(v.value); draw(); };
+        const search = menu.querySelector('.pg-cm-search');
+        search.oninput = () => { query = search.value; found = searchValues(values, query); pickFound = new Set(found.map(v => v.value)); draw(); };
+        const apply = () => { const set = current(); this.setColumnFilter(key, !query && values.every(v => set.has(v.value)) ? null : new Set(set)); };
+        ok.onclick = apply;
+        search.onkeydown = (e) => { if (e.key === 'Enter' && !ok.disabled) apply(); };
+        menu.onkeydown = (e) => { if (e.key === 'Escape') { e.stopPropagation(); this.closeColumnMenu(); button.focus(); } };
+        menu.querySelector('[data-cm-clear]').onclick = () => this.setColumnFilter(key, null);
+        menu.querySelectorAll('[data-cm-close]').forEach(b => b.onclick = () => this.closeColumnMenu());
+        menu.querySelectorAll('[data-cm-sort]').forEach(b => b.onclick = () => { this.gantt.sort = b.dataset.cmSort ? { key, dir: b.dataset.cmSort } : null; this.filtersChanged(); });
+        menu.querySelector('[data-cm-hide]')?.addEventListener('click', () => {
+            this.gantt.hiddenCols.add(key);
+            try { localStorage.setItem('cas-project-dashboard:gantt-columns', JSON.stringify([...this.gantt.hiddenCols])); } catch {}
+            this.closeColumnMenu(); this.renderBody();
+        });
+        draw();
+        // Under the button, kept on screen.
+        const r = button.getBoundingClientRect(), w = Math.min(300, innerWidth - 16);
+        menu.style.width = `${w}px`;
+        menu.style.left = `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px`;
+        const below = innerHeight - r.bottom - 12, top = below >= 280 ? r.bottom + 4 : Math.max(8, innerHeight - Math.min(480, innerHeight - 16) - 8);
+        menu.style.top = `${top}px`; menu.style.maxHeight = `${innerHeight - top - 8}px`;
+        this.colMenuAway = (e) => { if (!menu.contains(e.target) && e.target !== button) this.closeColumnMenu(); };
+        document.addEventListener('pointerdown', this.colMenuAway, true);
+        search.focus();
+    }
+
     renderGantt(body) {
         const old = body.querySelector('[data-gantt]'), keep = old ? [old.scrollLeft, old.scrollTop] : null;
         this.counts ??= stageCounts(this.walls, w => this.stageOf(w));
         const level = this.views.level?.name;
-        const rows = ganttRows(this.visibleActivities(this.gantt.show), this.schedule, { collapsed: this.keywordHits() ? new Set() : this.gantt.collapsed });
+        const sort = this.gantt.sort, order = sort ? (x, y) => compareValues(this.colValue(x, sort.key), this.colValue(y, sort.key), sort.dir) || (x.start || '').localeCompare(y.start || '') : null;
+        const rows = ganttRows(this.visibleActivities(this.gantt.show), this.schedule, { order, collapsed: this.keywordHits() || this.gantt.filters.size ? new Set() : this.gantt.collapsed });
         const html = ganttHtml({
             floorGroups: this.options.standalone,
             formatDay:d=>this.fmtDay(d),rows, span: this.span, scale: this.gantt.scale, cal: this.cal, dataDate: this.schedule.project.dataDate, today: this.options.standalone ? null : localToday(),
             cursor: this.colorMode === 'actual' && !this.options.standalone ? null : this.cursor, modelColumn: !this.options.standalone, scrub: !!this.options.standalone, selectedId: this.selectedAct, linkMode: this.gantt.links, links: this.schedule.links,
             colorOf: (a) => this.colorOf(a), modelOf: (a) => this.modelOf(a), cmpOf: (a) => compare(this.modelOf(a), a.pct),
+            columnMenu: { filtered: new Set(this.gantt.filters.keys()), sort: this.gantt.sort },
         });
         body.innerHTML = `<div class="pg-tools">
                 <div class="tk-tabs">${Object.entries(SCALES).map(([k, s]) => `<button data-scale="${k}" class="${k === this.gantt.scale ? 'active' : ''}">${s.label}</button>`).join('')}</div>
@@ -1431,6 +1522,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                     <span><i class="k-bl"></i>planned</span><span><i class="k-bar"></i>current</span><span><i class="k-done"></i>P6 % done</span>
                     ${this.options.standalone ? '' : '<span><i class="k-model"></i>model %</span>'}<span><i class="k-crit"></i>critical</span><span><b>◆</b> milestone</span></div></details>
             </div>
+            ${this.filterChipsHtml()}
             <div class="pg-main ${this.sideDetails ? 'side' : 'float'}">
                 <div class="pg-g-scroll" data-gantt>${rows.length ? html : '<p class="muted pg-empty">No activities to show with this filter.</p>'}</div>
                 <div class="pg-side" data-details></div></div>`;
@@ -1438,6 +1530,9 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         body.querySelector('[data-show]').onchange = (e) => { this.gantt.show = e.target.value; this.renderBody(); };
         body.querySelector('[data-linkmode]').onchange = (e) => { this.gantt.links = e.target.value; this.renderBody(); };
         body.querySelector('[data-today]').onclick = () => this.scrollGanttTo(this.options.standalone ? this.cursor : localToday(), { always: true });
+        body.querySelectorAll('[data-col-menu]').forEach(b => b.onclick = (e) => { e.stopPropagation(); this.openColumnMenu(b.dataset.colMenu, b); });
+        body.querySelectorAll('[data-unfilter]').forEach(b => b.onclick = () => this.setColumnFilter(b.dataset.unfilter, null));
+        body.querySelector('[data-clear-filters]')?.addEventListener('click', () => { this.gantt.filters.clear(); this.gantt.sort = null; this.filtersChanged(); });
         body.querySelectorAll('[data-gantt-col]').forEach(c => c.onchange = () => {
             this.gantt.hiddenCols ??= new Set();
             if (c.checked) this.gantt.hiddenCols.delete(c.dataset.ganttCol); else this.gantt.hiddenCols.add(c.dataset.ganttCol);

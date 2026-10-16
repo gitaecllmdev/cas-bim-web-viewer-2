@@ -708,12 +708,13 @@ export function scheduleSpan(activities) {
 // Gantt rows: the WBS tree (only branches with activities shown), each branch's activities by start date.
 // keep(a) filters activities; collapsed = Set of WBS ids. WBS rows carry the span of what is under them, whether it
 // is all complete, and its P6 % (weighted by working days; milestones count as one day).
-export function ganttRows(linked, schedule, { keep = () => true, collapsed = new Set() } = {}) {
+// order(a, b): a column sort (activities sorted within their WBS group); by start date otherwise.
+export function ganttRows(linked, schedule, { keep = () => true, collapsed = new Set(), order = null } = {}) {
     const acts = linked.filter(keep);
     const kids = new Map(), under = new Map();
     for (const w of schedule.wbs || []) (kids.get(w.parent) || kids.set(w.parent, []).get(w.parent)).push(w);
     for (const a of acts) (under.get(a.wbs) || under.set(a.wbs, []).get(a.wbs)).push(a);
-    const byStart = (x, y) => (x.start < y.start ? -1 : x.start > y.start ? 1 : x.id.localeCompare(y.id, undefined, { numeric: true }));
+    const byStart = order || ((x, y) => (x.start < y.start ? -1 : x.start > y.start ? 1 : x.id.localeCompare(y.id, undefined, { numeric: true })));
     const rows = [];
     const all = (w) => [...(under.get(w.id) || []), ...(kids.get(w.id) || []).flatMap(all)];
     const walk = (parent, depth) => {
