@@ -393,6 +393,12 @@ export function activityLinkState(activity, levelNames) {
     const missing = [];
     if (!activity.level || !levelNames.includes(activity.level)) missing.push('Model floor missing');
     if (!STAGE_NAMES.slice(1).includes(activity.stage)) missing.push('Install stage missing');
+    if (activity.assignedWalls) {
+        if (!STAGE_NAMES.slice(1).includes(activity.stage)) return { kind: 'unlinked', label: 'Unlinked', basis: 'Install stage missing' };
+        const n = activity.walls?.length || 0, gone = activity.missingElements || 0;
+        if (!n) return { kind: 'unlinked', label: 'Unlinked', basis: `${gone} assigned element${gone === 1 ? '' : 's'} not in this model` };
+        return { kind: 'assigned', label: 'Element assignment', basis: `${n} assigned element${n === 1 ? '' : 's'}${gone ? ` · ${gone} not in this model` : ''}` };
+    }
     if (missing.length) return { kind: 'unlinked', label: 'Unlinked', basis: missing.join(' · ') };
     const how = [activity.levelHow || '', activity.stageHow || ''];
     if (activity.demoWalls || how.some(s => /^demo/i.test(s))) return { kind: 'demo', label: 'Demo assignment', basis: 'Illustrative model assignment' };
@@ -409,8 +415,112 @@ export function relatedWallActivities(selectedWalls, activities) {
     const level = [...floors][0], selected = new Set(walls.map(w => w.dbId));
     return activities.filter(a => a.scope === 'wall' && STAGE_NAMES.slice(1).includes(a.stage)).flatMap(a => {
         const count = a.walls ? new Set(a.walls.map(w => w?.dbId).filter(id => selected.has(id))).size : a.level === level ? walls.length : 0;
-        return count ? [{ activity: a, count, basis: a.demoWalls ? 'Demo wall set' : a.walls ? 'Assigned wall set' : 'Whole floor + install stage' }] : [];
+        return count ? [{ activity: a, count, basis: a.demoWalls ? 'Demo wall set' : a.assignedWalls ? 'Assigned elements' : a.walls ? 'Assigned wall set' : 'Whole floor + install stage' }] : [];
     }).sort((x, y) => STAGE_NAMES.indexOf(x.activity.stage) - STAGE_NAMES.indexOf(y.activity.stage) || (x.activity.start || '').localeCompare(y.activity.start || '') || x.activity.id.localeCompare(y.activity.id));
+}
+
+// --- Exact element assignment ------------------------------------------------------------------------------------------
+// map.elements = { activity id: [externalId, ...] }: the model elements an activity covers, by the stable source identity
+// (the Viewer's externalId, a Revit UniqueId), never a viewer dbId. One element can belong to its framing, boarding,
+// taping and finishing activities; the activity's own install stage says which stage the assignment is for.
+
+// The map with ids added to (or removed from) an activity's assignment. Returns a new elements object.
+export function assignElements(elements, activityId, externalIds, { remove = false } = {}) {
+    const out = { ...(elements || {}) }, ids = new Set(out[activityId] || []);
+    for (const id of externalIds) if (id) remove ? ids.delete(id) : ids.add(id);
+    if (ids.size) out[activityId] = [...ids].sort(); else delete out[activityId];
+    return out;
+}
+
+// Exact assignments override floor/stage and demo wall sets. wallsByExternalId: Map(externalId -> { dbId, level }).
+// The activity keeps its resolved floor when an assigned wall is on it; else the floor most of its walls are on.
+export function applyElementLinks(linked, elements, wallsByExternalId) {
+    for (const a of linked) {
+        const ids = elements?.[a.id];
+        if (!ids?.length) continue;
+        const walls = ids.map(id => wallsByExternalId.get(id)).filter(Boolean);
+        const floors = new Map();
+        for (const w of walls) if (w.level) floors.set(w.level, (floors.get(w.level) || 0) + 1);
+        if (floors.size && !floors.has(a.level)) {
+            a.level = [...floors].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], undefined, { numeric: true }))[0][0];
+            a.levelHow = 'assigned elements';
+        }
+        Object.assign(a, { walls, assignedWalls: true, missingElements: ids.length - walls.length, demoWalls: false });
+    }
+    return linked;
+}
+
+// Selected walls that other activities at the same install stage already cover: [{ activity, count }].
+export function stageOverlaps(activity, externalIds, elements, linked) {
+    const ids = new Set(externalIds);
+    return linked.filter(b => b.id !== activity.id && b.stage && b.stage === activity.stage && elements?.[b.id]?.length)
+        .map(b => ({ activity: b, count: elements[b.id].filter(id => ids.has(id)).length })).filter(x => x.count);
+}
+
+// The element link spreadsheet: one row per model element + P6 activity (+ optional stage to check against).
+export const ELEMENT_COLUMNS = {
+    model: /^(model|model name|model id)$/,
+    element: /^(element id|external id|externalid|unique ?id|revit unique ?id|source element id|element identity)$/,
+    activity: /^(activity id|act id|task code|activity code)$/,
+    stage: /^(stage|install stage|work stage)$/,
+};
+export const ELEMENT_HEADER = ['Model', 'Element ID', 'Activity ID', 'Stage', 'Level', 'Wall type'];
+
+// Rows (CSV / XLSX cells) -> { rows: [{ line, model, element, activity, stage }] }; throws without the two key columns.
+export function readElementLinkRows(cells) {
+    const norm = (v) => String(v ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const at = cells.findIndex(r => r.some(c => ELEMENT_COLUMNS.element.test(norm(c))) && r.some(c => ELEMENT_COLUMNS.activity.test(norm(c))));
+    if (at < 0) throw new Error('No header row with "Element ID" and "Activity ID" columns');
+    const header = cells[at].map(norm), col = Object.fromEntries(Object.entries(ELEMENT_COLUMNS).map(([k, re]) => [k, header.findIndex(h => re.test(h))]));
+    const get = (r, k) => (col[k] >= 0 ? String(r[col[k]] ?? '').trim() : '');
+    return { rows: cells.slice(at + 1).map((r, i) => ({ line: at + i + 2, model: get(r, 'model'), element: get(r, 'element'), activity: get(r, 'activity'), stage: get(r, 'stage') }))
+        .filter(r => r.element || r.activity) };
+}
+
+// Validates rows before anything is saved. models: names this model answers to (a blank Model cell is this model).
+// Activities named in valid rows have their assignment replaced by the file's set; others are untouched.
+export function previewElementLinks(rows, { linked, externalIds, models = [] }) {
+    const acts = new Map(linked.map(a => [a.id, a])), known = new Set(externalIds), names = new Set(models.map(m => m.toLowerCase()));
+    const problems = [], seen = new Set(), elements = {};
+    let blank = 0;
+    for (const r of rows) {
+        const a = acts.get(r.activity);
+        const problem = !r.activity ? (blank++, null)
+            : r.model && names.size && !names.has(r.model.toLowerCase()) ? `another model (${r.model})`
+            : !a ? 'unknown Activity ID'
+            : a.scope !== 'wall' ? 'not wall work'
+            : !STAGE_NAMES.slice(1).includes(a.stage) ? 'activity has no install stage'
+            : r.stage && matchStage(r.stage) !== a.stage ? `stage conflict (${r.stage} vs ${a.stage})`
+            : !r.element ? 'Element ID missing'
+            : !known.has(r.element) ? 'element not in this model'
+            : seen.has(`${r.activity}|${r.element}`) ? 'duplicate row' : null;
+        if (!r.activity) continue;
+        if (problem) { problems.push({ ...r, problem }); continue; }
+        seen.add(`${r.activity}|${r.element}`);
+        (elements[r.activity] ??= []).push(r.element);
+    }
+    // The same element on two activities of one stage: allowed (split work), reported for review.
+    const byStage = new Map();
+    for (const [id, ids] of Object.entries(elements)) for (const e of ids) {
+        const key = `${acts.get(id).stage}|${e}`;
+        byStage.set(key, [...(byStage.get(key) || []), id]);
+    }
+    const overlaps = [...byStage.entries()].filter(([, ids]) => ids.length > 1).map(([key, ids]) => ({ stage: key.split('|')[0], element: key.slice(key.indexOf('|') + 1), activities: ids }));
+    const assigned = Object.values(elements).reduce((n, ids) => n + ids.length, 0);
+    return { elements, activities: Object.keys(elements).length, assigned, blank, problems, overlaps };
+}
+
+// The template: current assignments, then (optionally) unassigned walls with a blank Activity ID to fill in.
+export function elementLinkTemplate({ model, linked, elements, walls, blankWalls = [] }) {
+    const byExt = new Map(walls.map(w => [w.externalId, w])), acts = new Map(linked.map(a => [a.id, a]));
+    const rows = [ELEMENT_HEADER];
+    for (const [id, ids] of Object.entries(elements || {})) for (const e of ids) {
+        const w = byExt.get(e);
+        rows.push([model, e, id, acts.get(id)?.stage || '', w?.level || '', w?.wallType || '']);
+    }
+    const used = new Set(Object.values(elements || {}).flat());
+    for (const w of blankWalls) if (w.externalId && !used.has(w.externalId)) rows.push([model, w.externalId, '', '', w.level || '', w.wallType || '']);
+    return rows;
 }
 
 // --- Progress --------------------------------------------------------------------------------------------------------

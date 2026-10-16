@@ -1,7 +1,7 @@
 import {escapeHtml} from './helpers.js';
 import {dashboardIcon} from './project-dashboard.mjs';
 
-// These are explanations, not assignment commands. Keep availability explicit.
+// These are explanations, not assignment commands (assignment lives in Related P6 work and Activity links). Keep availability explicit.
 const METHODS = [
     {id:'model',icon:'model',name:'Source model properties',status:'Available: floor + stage',best:'Start here when the modeller can prepare consistent properties.',
         input:'The modeller supplies the floor. For richer grouping, agree zone, work package and element identity fields with the planner. A future exact-link workflow could also author one P6 Activity ID property per work stage in the source model.',
@@ -18,21 +18,21 @@ const METHODS = [
         model:['Walls · Floor: 3RD FLOOR','Future filter: Zone A + partition type'],key:'Name / WBS → suggested floor + stage',schedule:['A310 · Board walls Level 3','Suggested: 3RD FLOOR · Boarded'],
         steps:['Start with floor names and recognizable work-stage words.','Use the Check link entries in Activity links to inspect inferred matches.','Correct the floor or stage in Link settings; verify coverage and overlaps.'],
         boundary:'Name/WBS inference is available but needs review. Combining zone, type, phase and other property conditions into saved rules is a design option; ambiguous names should remain unresolved.'},
-    {id:'batch',icon:'both',name:'Batch selection',status:'Design option',best:'Best for zones or work packages that do not follow a whole floor.',
-        input:'Select a group of model elements, choose a P6 Activity ID and work stage, then confirm the set before saving.',
+    {id:'batch',icon:'both',name:'Batch selection',status:'Available now',best:'Best for zones or work packages that do not follow a whole floor.',
+        input:'Select a group of walls in the 3D model or plan, choose the P6 activity under Related P6 work, then Assign. The activity’s install stage is the stage of the assignment.',
         model:['Select walls A, B and C','Scope: east corridor'],key:'Selected element identities + stage',schedule:['PKG-210 · Frame east corridor','Stage: Framed · selected set'],
-        steps:['Filter a floor, zone or type, then select the intended elements.','Choose the P6 task and stage; inspect the highlighted set and count.','Save the group assignment and check for missing or overlapping elements.'],
-        boundary:'Exact group-to-activity assignment is not implemented yet. Progress by floor currently edits field stages; selecting several walls does not create a P6 assignment.'},
-    {id:'single',icon:'review',name:'Single element',status:'Design option',best:'Best for an exception or an element with its own schedule task.',
-        input:'Click one element and choose an Activity ID for each relevant work stage. Store the model identity and stable source element identity with the link.',
+        steps:['Open a floor, then select the intended walls (Ctrl/Shift for several).','Under Related P6 work, choose the activity and press Assign; Remove takes walls back out.','Open the activity to check its highlighted walls; Activity links lists every element assignment.'],
+        boundary:'Saved in this dashboard’s schedule state by stable element ID. An assignment replaces the floor/stage link for that activity only. Walls already assigned at the same stage are reported, not blocked. Nothing is written to P6 or Revit.'},
+    {id:'single',icon:'review',name:'Single element',status:'Available now',best:'Best for an exception or an element with its own schedule task.',
+        input:'Click one wall and assign it to the activity of each relevant work stage. The link stores the wall’s stable source element ID, not the viewer selection number.',
         model:['Selected wall A','Stable source identity: wall-001'],key:'One element + one stage → Activity ID',schedule:['EX-100 · Frame wall A','EX-200 · Board wall A'],
-        steps:['Select the element in the model or plan and inspect its identity.','Assign its framing task, boarding task and other stages as needed.','Check the same element in both views and review the links after a model revision.'],
-        boundary:'The demo can show related floor/stage tasks for a selected wall. Saving an exact individual element-to-activity assignment is a design option; a viewer selection number should not be the permanent link key.'},
-    {id:'sheet',icon:'drawings',name:'Link spreadsheet',status:'Design option',best:'Best for bulk preparation, review or moving assignments between systems.',
+        steps:['Select the wall in the model or plan.','Assign it to its framing task, then its boarding task and other stages as needed.','Check the same wall in both views; after a model revision, Link settings show assigned elements that are no longer in the model.'],
+        boundary:'Same assignment as batch selection, for one wall. Assigned elements missing from a revised model are counted and the activity shows as Unlinked rather than falling back to the whole floor.'},
+    {id:'sheet',icon:'drawings',name:'Link spreadsheet',status:'Available now',best:'Best for bulk preparation, review or moving assignments between systems.',
         input:'Prepare one row per model element + stage + P6 activity. Include model identity, source element identity, Activity ID and stage; keep revision context.',
         model:['Model: Wilton · element: wall-001','Model: Wilton · element: wall-002'],key:'Model | Element | Activity ID | Stage',schedule:['wall-001 → WH04F · Framed','wall-002 → WH04B · Boarded'],
-        steps:['Export the element identities and P6 Activity IDs into a shared template.','Fill the assignment rows; validate unknown IDs, duplicates and stage conflicts.','Preview the matched/unmatched sets before importing, and recheck after revisions.'],
-        boundary:'Exact link-spreadsheet import/export is not implemented. Current CSV/XLSX upload reads schedule activities, not this proposed element-link template.'},
+        steps:['In Activity links → Element link spreadsheet, download the template (saved assignments, plus the open floor’s unassigned walls).','Fill the Activity ID per row; Stage is optional and only checked.','Import the CSV/XLSX, read the preview of skipped rows and overlaps, then Apply.'],
+        boundary:'Applying replaces the element assignment of each activity named in the file; other activities keep theirs. Unknown activities or elements, other models, non-wall work, stage conflicts and duplicates are skipped. The schedule CSV/XLSX upload is separate.'},
 ];
 
 export function mountScheduleLinkGuide({button,dialog,canReview,onReview,onSources}) {
@@ -45,7 +45,7 @@ export function mountScheduleLinkGuide({button,dialog,canReview,onReview,onSourc
             <div class="link-guide-flow" aria-label="Example linking flow"><article>${dashboardIcon('model')}<b>Model content</b>${selected.model.map(t => `<span>${e(t)}</span>`).join('')}</article><div class="link-guide-key">${dashboardIcon('connect')}<b>Shared link</b><span>${e(selected.key)}</span><small>Illustrative example</small></div><article>${dashboardIcon('schedule')}<b>P6 activities</b>${selected.schedule.map(t => `<span>${e(t)}</span>`).join('')}</article></div>
             <div class="link-guide-entry"><b>Who enters what</b><p>${e(selected.input)}</p></div><ol>${selected.steps.map(t => `<li>${e(t)}</li>`).join('')}</ol><p class="link-guide-boundary"><b>Current support</b> ${e(selected.boundary)}</p></section>
             <section class="link-guide-checks"><b>Before you rely on a link</b><div><span>${dashboardIcon('review')} Review missing and duplicate assignments</span><span>${dashboardIcon('model')} Confirm the highlighted elements and stage</span><span>${dashboardIcon('history')} Recheck links after model or P6 revisions</span></div><p>Schedule percentages and field/model percentages are separate measures. Linking does not change quantities or establish that installation is complete.</p></section></div>
-            <footer><span>Available now uses imported schedule snapshots. Design options describe possible future input workflows.</span><button data-guide-sources>${dashboardIcon('model')} Model & schedule sources</button><button data-guide-review ${canReview() ? '' : 'disabled'}>${dashboardIcon('connect')} Open Activity links</button></footer></div>`;
+            <footer><span>Available now uses imported schedule snapshots. Design options describe possible future input workflows. Links are not written back to P6 or Revit.</span><button data-guide-sources>${dashboardIcon('model')} Model & schedule sources</button><button data-guide-review ${canReview() ? '' : 'disabled'}>${dashboardIcon('connect')} Open Activity links</button></footer></div>`;
         dialog.querySelector('[data-guide-close]').onclick = () => dialog.close();
         dialog.querySelectorAll('[data-link-method]').forEach(b => b.onclick = () => { method = b.dataset.linkMethod; render(); dialog.querySelector(`[data-link-method="${method}"]`).focus({preventScroll:true}); });
         dialog.querySelector('[data-guide-review]').onclick = () => { dialog.close(); onReview(); };

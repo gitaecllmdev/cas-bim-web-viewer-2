@@ -103,6 +103,17 @@
 .pg-related>div{display:flex;gap:4px;overflow:auto;max-width:100%;padding-bottom:2px}
 .pg-related button{flex:none;padding:4px 7px;font-size:11px;white-space:nowrap}
 .pg-related small{color:var(--muted);font-size:10px}
+.pg-assign{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.pg-assign label{display:flex;align-items:center;gap:4px;min-width:0;flex:1 1 220px}
+.pg-assign select{min-width:0;flex:1;max-width:100%;font-size:11px}
+.pg-element-sheet{margin-top:7px}
+.pg-element-sheet summary{cursor:pointer;font-weight:600}
+.pg-element-sheet p{margin:4px 0}
+.pg-sheet-actions{display:flex;gap:5px;flex-wrap:wrap}
+.pg-sheet-actions label{cursor:pointer}
+.pg-sheet-preview{margin-top:6px;padding:6px;border:1px solid var(--line);border-radius:5px;display:grid;gap:4px;font-size:11px}
+.pg-sheet-preview ul{margin:0;padding-left:16px;max-height:110px;overflow:auto}
+.pg-sheet-preview div{display:flex;gap:5px}
 .pg-review-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pg-review-head label{display:flex;align-items:center;gap:5px}
 .pg-link-counts{display:flex;gap:6px;flex-wrap:wrap;padding:5px 0}

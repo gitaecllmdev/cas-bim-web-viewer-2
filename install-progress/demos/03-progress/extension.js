@@ -12,6 +12,7 @@ import {
     STAGE_NAMES, demoShift, assignDemoLevels, linkedLevelNames, levelPercents, topStage, parseDateText, decodeText, parseXer, scheduleFromXer, scheduleFromRows, parseCsv, calendarOf, linkActivities, matchLevel, matchStage,
     stageCounts, modelProgress, compare, expectedPct, finishVariance, plannedStages, playbackStages, scheduleSpan, ganttRows, completeGroups, fmtDay as compactDay, addDays, dayMs, monthName,
     randomWallLinks, wallProgress, demoTarget, activityLinkState, relatedWallActivities,
+    assignElements, applyElementLinks, stageOverlaps, readElementLinkRows, previewElementLinks, elementLinkTemplate,
 } from './p6.mjs';
 import { ganttHtml, calendarHtml, SCALES, ganttX } from './schedule-views.js';
 import { AllPlans } from './all-plans.js';
@@ -194,6 +195,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             this.asOf = /^\d{4}-\d{2}-\d{2}$/.test(saved.asOf || '') ? saved.asOf : null;
             this.walls =(await getWallData(model, map)).walls.map(w=>({...w,level:w.level||null}));
             this.byDbId = new Map(this.walls.map(w => [w.dbId, w]));
+            this.wallsByExternalId = new Map(this.walls.filter(w => w.externalId).map(w => [w.externalId, w]));
+            this.modelNames = [entry?.name, modelKey(urn)].filter(Boolean); // what an element link spreadsheet's Model cell may say
             this.wallOrder = [...this.walls].sort((a, b) => a.dbId - b.dbId);
             const freshDemo=this.options.standalone&&!Object.hasOwn(saved,'stages');if(freshDemo)this.asOf=DEMO_DATE;
             if (schedule?.activities?.length) { this.useSchedule(schedule); this.loadPdf(); }
@@ -263,6 +266,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 for (const a of this.linkedCache) {
                     // Reviewed mappings take precedence over illustrative wall picking.
                     const map = this.schedule.map, demoLevels = this.schedule.source.demo.levelAssignments || {};
+                    if (map.elements?.[a.id]?.length) continue; // an exact element assignment replaces the demo set
                     if (this.options.standalone && (Object.keys(map.activities?.[a.id] || {}).length || Object.hasOwn(map.stages, a.stageKey) ||
                         Object.hasOwn(map.levels, a.locationKey) && map.levels[a.locationKey] !== demoLevels[a.locationKey])) continue;
                     const l = links.get(a.id);
@@ -272,6 +276,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                     Object.assign(a, { level: l.level, stage: l.stage, walls: l.dbIds.map(id => this.byDbId.get(id)), demoWalls: true });
                 }
             }
+            // Exact element assignments (map.elements, by externalId) override floor/stage and demo wall sets.
+            if (this.schedule?.map?.elements && this.walls) applyElementLinks(this.linkedCache, this.schedule.map.elements, this.wallsByExternalId);
         }
         return this.linkedCache;
     }
@@ -1157,6 +1163,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     setModelSelection(context) {
         this.modelSelectionIds = context.level ? context.ids.filter(id => this.byDbId?.has(id)) : [];
+        this.modelSelectionRaw = context.level ? [...context.ids] : [];
         this.renderRelated();
     }
 
@@ -1167,8 +1174,43 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         el.hidden = !walls.length;
         if (el.hidden) return;
         const related = relatedWallActivities(walls, this.linked);
-        el.innerHTML = `<span><b>Related P6 work</b> · ${walls.length} selected · ${escapeHtml(walls[0].level)}</span><div>${related.map(({activity:a,count,basis}) => `<button data-related-act="${escapeHtml(a.id)}" title="${escapeHtml(a.name)} · ${count} selected wall(s) · ${basis} · ${activityLinkState(a,this.levels).label}">${escapeHtml(a.stage)} <b>${escapeHtml(a.id)}</b></button>`).join('') || '<span class="muted">No linked activity. Review Activity links.</span>'}</div><small>Open a task to see its link basis and wall scope.</small>`;
+        // Batch / single element assignment: the selected walls (by externalId) to one wall activity at its install stage.
+        const targets = this.linked.filter(a => a.scope === 'wall' && STAGE_NAMES.slice(1).includes(a.stage))
+            .sort((x, y) => (y.level === walls[0].level) - (x.level === walls[0].level) || STAGE_NAMES.indexOf(x.stage) - STAGE_NAMES.indexOf(y.stage) || x.id.localeCompare(y.id, undefined, { numeric: true }));
+        if (!targets.some(a => a.id === this.assignActId)) this.assignActId = related[0]?.activity.id || targets[0]?.id || '';
+        const live = this.selectionIsLive(), ids = walls.map(w => w.externalId).filter(Boolean), elements = this.schedule?.map.elements || {};
+        const inTarget = (elements[this.assignActId] || []).filter(id => ids.includes(id)).length;
+        const assign = this.schedule && targets.length ? `<div class="pg-assign"><label>Assign to <select data-assign-act aria-label="Activity for the selected walls">${targets.map(a => `<option value="${escapeHtml(a.id)}" ${a.id === this.assignActId ? 'selected' : ''}>${escapeHtml(a.stage)} · ${escapeHtml(a.id)} ${escapeHtml(a.name)}</option>`).join('')}</select></label>
+            <button data-assign-add ${ids.length && live ? '' : 'disabled'}>Assign ${ids.length} selected</button><button data-assign-remove ${inTarget && live ? '' : 'disabled'}>Remove ${inTarget || ''}</button>${live ? '' : '<span class="muted">Select the walls again in the model or plan to assign.</span>'}</div>` : '';
+        el.innerHTML = `<span><b>Related P6 work</b> · ${walls.length} selected · ${escapeHtml(walls[0].level)}</span><div>${related.map(({activity:a,count,basis}) => `<button data-related-act="${escapeHtml(a.id)}" title="${escapeHtml(a.name)} · ${count} selected wall(s) · ${basis} · ${activityLinkState(a,this.levels).label}">${escapeHtml(a.stage)} <b>${escapeHtml(a.id)}</b>${a.assignedWalls ? ' · assigned' : ''}</button>`).join('') || '<span class="muted">No linked activity. Review Activity links.</span>'}</div>${assign}<small>Open a task to see its link basis and wall scope.${walls.length > ids.length ? ` ${walls.length - ids.length} selected wall(s) have no stable element ID and can't be assigned.` : ''}</small>`;
         el.querySelectorAll('[data-related-act]').forEach(b => b.onclick = () => this.openScheduleActivity(b.dataset.relatedAct));
+        const pick = el.querySelector('[data-assign-act]');
+        if (pick) pick.onchange = () => { this.assignActId = pick.value; this.renderRelated(); };
+        el.querySelector('[data-assign-add]')?.addEventListener('click', () => this.assignSelected(this.assignActId, ids));
+        el.querySelector('[data-assign-remove]')?.addEventListener('click', () => this.assignSelected(this.assignActId, ids, { remove: true }));
+    }
+
+    // Assignment acts only while the model or plan still holds exactly the selection shown (opening a task clears it,
+    // and a whole-floor plan highlight is not a wall selection).
+    selectionIsLive() {
+        const want = new Set(this.modelSelectionRaw || []);
+        return !!want.size && [this.views.viewer3d, this.views.viewer2d].filter(v => v?.model)
+            .some(v => { const sel = v.getSelection(); return sel.length === want.size && sel.every(id => want.has(id)); });
+    }
+
+    // Saves (or removes) an exact element assignment. Floor/stage links stay as they were for every other activity.
+    assignSelected(id, externalIds, { remove = false } = {}) {
+        const a = this.activity(id);
+        if (!a || !externalIds.length) return;
+        if (!this.selectionIsLive()) { this.renderRelated(); this.message('Those walls are no longer selected. Select them again in the model or plan, then assign.', 'warn'); return; }
+        if (this.viewingOriginal) { this.message('Viewing the original dates: switch back to the adjusted dates to change links.', 'warn'); return; }
+        const map = this.schedule.map, overlaps = remove ? [] : stageOverlaps(a, externalIds, map.elements, this.linked);
+        map.elements = assignElements(map.elements, id, externalIds, { remove });
+        if (!Object.keys(map.elements).length) delete map.elements;
+        this.linksChanged();
+        this.renderRelated();
+        const total = map.elements?.[id]?.length || 0;
+        this.message(`${remove ? 'Removed' : 'Assigned'} ${externalIds.length} wall${externalIds.length === 1 ? '' : 's'} ${remove ? 'from' : 'to'} ${id} (${a.stage}). ${total} element${total === 1 ? '' : 's'} assigned to it now.${overlaps.length ? ` Also assigned at ${a.stage} to ${overlaps.map(o => `${o.activity.id} (${o.count})`).join(', ')}: check for double counting.` : ''}`, overlaps.length ? 'warn' : '');
     }
 
     async openScheduleActivity(id, {review = false} = {}) {
@@ -1403,7 +1445,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const ms = a.type === 'start' || a.type === 'finish';
         const status = a.status === 'complete' ? '<span class="tk-src ok">Complete</span>' : a.status === 'active' ? '<span class="tk-src manual">In progress</span>' : '<span class="tk-src">Not started</span>';
         const own = this.schedule.map.activities?.[a.id] || {};
-        const linkState = activityLinkState(a, this.levels);
+        const linkState = activityLinkState(a, this.levels), assignedCount = this.schedule.map.elements?.[a.id]?.length || 0;
         const levelOptions = `<option value="__auto">Auto${own.level === undefined ? `: ${escapeHtml(a.level || 'none')}` : ''}</option>${this.levels.map(l => `<option ${own.level === l ? 'selected' : ''}>${escapeHtml(l)}</option>`).join('')}<option value="" ${own.level === '' ? 'selected' : ''}>Not in the model</option>`;
         const stageOptions = `<option value="__auto">Auto${own.stage === undefined ? `: ${escapeHtml(a.stage || 'none')}` : ''}</option>${STAGE_NAMES.slice(1).map(s => `<option ${own.stage === s ? 'selected' : ''}>${s}</option>`).join('')}<option value="" ${own.stage === '' ? 'selected' : ''}>No stage</option>`;
         const linkFacts=`                ${ms ? '' : `<dt>Scope</dt><dd><select data-own="scope"><option value="__auto">Auto: ${a.scope === 'other' ? 'not wall work' : 'wall work'}</option><option value="wall" ${own.scope === 'wall' ? 'selected' : ''}>Wall work</option><option value="other" ${own.scope === 'other' ? 'selected' : ''}>Not wall work</option></select><span class="muted pg-how">${escapeHtml(a.scopeHow || '')}</span></dd>`}
@@ -1417,7 +1459,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 ${m ? `<span class="pg-cmp ${c.state}" title="Model: ${m.done} of ${m.total} walls ${escapeHtml(a.stage)} or later">model ${m.pct}%</span>` : ''}
                 ${a.level && a.scope !== 'other' ? '<span class="pg-d-acts"><button class="pg-btn" data-show-level title="Cut the model at this level and open its plan">Level</button><button class="pg-btn" data-select-walls title="Select these walls, then set their stage on the Stages tab">Select walls</button></span>' : ''}</div>
             ${this.options.standalone?`<section class="activity-insight" data-state="${insight.state}" aria-label="Activity explanation"><h4>${escapeHtml(insight.title)}</h4><p>${escapeHtml(insight.summary)}</p><div><b>Suggested check</b><span>${escapeHtml(insight.action)}</span></div><small>Field record ${this.fmtDay(this.asOf||dd)} · Schedule data date ${this.fmtDay(dd)}. This comparison does not establish the cause.</small></section>`:''}
-            ${this.options.standalone ? `<p class="pg-link-basis"><b>${escapeHtml(linkState.label)}</b> · ${escapeHtml(linkState.basis)}<br>${linkState.kind === 'context' || linkState.kind === 'unlinked' ? 'No resolved wall assignment.' : a.demoWalls ? 'Demo wall set; not a source P6 assignment.' : a.walls ? 'Assigned wall set.' : 'Whole floor + install stage; not an individual wall assignment.'}</p>` : ''}
+            ${this.options.standalone ? `<p class="pg-link-basis"><b>${escapeHtml(linkState.label)}</b> · ${escapeHtml(linkState.basis)}<br>${linkState.kind === 'context' || linkState.kind === 'unlinked' ? 'No resolved wall assignment.' : a.assignedWalls ? `Exact element assignment: ${a.walls.length} model element${a.walls.length === 1 ? '' : 's'} at ${escapeHtml(a.stage)}.` : a.demoWalls ? 'Demo wall set; not a source P6 assignment.' : a.walls ? 'Assigned wall set.' : 'Whole floor + install stage; not an individual wall assignment.'}</p>` : ''}
             <dl class="pg-d-facts">
                 <dt>Dates</dt><dd>${this.fmtDay(a.start)}${a.actualStart ? ' A' : ''} → ${this.fmtDay(a.finish)}${a.actualFinish ? ' A' : ''}${ms ? '' : ` · ${Math.round(a.dur)} d${a.status === 'active' ? `, ${Math.round(a.rem)} left` : ''}`}</dd>
                 <dt>Planned</dt><dd>${this.fmtDay(a.plannedStart)} → ${this.fmtDay(a.plannedFinish)} · ${v > 0 ? `<span class="warn">${v} d late</span>` : v < 0 ? `${-v} d early` : 'on time'}</dd>
@@ -1427,7 +1469,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 ${this.pdfBytes && this.schedule.source.pdfRows?.[a.id] ? `<dt>Source</dt><dd>PDF page ${this.schedule.source.pdfRows[a.id][0]} <button class="pg-btn" data-in-pdf title="The page of the imported PDF, this activity's row highlighted">Show in the PDF</button></dd>` : ''}
                 <dt>Before</dt><dd>${preds.map(l => rel(l, l.from)).join(', ') || '<span class="muted">none</span>'}</dd>
                 <dt>After</dt><dd>${succs.map(l => rel(l, l.to)).join(', ') || '<span class="muted">none</span>'}</dd>
-            </dl>${this.options.standalone?`<details class="activity-mapping"><summary>Link settings</summary><dl class="pg-d-facts">${linkFacts}</dl></details>`:''}</div>`;
+            </dl>${this.options.standalone?`<details class="activity-mapping"><summary>Link settings</summary><dl class="pg-d-facts">${linkFacts}${ms ? '' : `<dt>Elements</dt><dd>${assignedCount ? `${assignedCount} assigned${a.missingElements ? ` · ${a.missingElements} not in this model` : ''} <button class="pg-btn" data-clear-elements>Clear element assignment</button>` : '<span class="muted">None. Select walls in the model, then Assign.</span>'}</dd>`}</dl></details>`:''}</div>`;
         el.querySelectorAll('[data-goto]').forEach(x => x.onclick = (e) => { e.preventDefault(); this.selectActivity(x.dataset.goto); });
         el.querySelector('[data-clear-act]').onclick = () => this.selectActivity(a.id);
         el.querySelector('[data-in-pdf]')?.addEventListener('click', () => this.showInPdf(a));
@@ -1435,6 +1477,14 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         if (show) show.onclick = () => this.views.setLevel(a.level);
         const sel = el.querySelector('[data-select-walls]');
         if (sel) sel.onclick = () => { this.views.select(this.wallsOf(a).map(w => w.dbId)); this.setTab('stages'); };
+        el.querySelector('[data-clear-elements]')?.addEventListener('click', () => {
+            if (this.viewingOriginal) { this.message('Viewing the original dates: switch back to the adjusted dates to change links.', 'warn'); return; }
+            const map = this.schedule.map;
+            map.elements = assignElements(map.elements, a.id, map.elements?.[a.id] || [], { remove: true });
+            if (!Object.keys(map.elements).length) delete map.elements;
+            this.linksChanged();
+            this.message(`${a.id}: element assignment cleared; its floor / stage link applies again.`);
+        });
         el.querySelectorAll('[data-own]').forEach(s => s.onchange = () => {
             const own = (this.schedule.map.activities ??= {});
             const entry = { ...own[a.id] };
@@ -1469,7 +1519,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const linked = this.linked.filter(a => a.level && a.stage).length, own = Object.keys(map.activities || {}).length;
         const states = this.linked.map(a => ({a, state: activityLinkState(a,this.levels)}));
         const filter = this.linkReviewFilter || 'review';
-        const review = this.options.standalone ? `<header class="pg-review-head"><b>Model / P6 link review</b><label>Show <select data-link-review-filter><option value="review" ${filter === 'review' ? 'selected' : ''}>Needs review</option><option value="unlinked" ${filter === 'unlinked' ? 'selected' : ''}>Unlinked</option><option value="all" ${filter === 'all' ? 'selected' : ''}>All activities</option></select></label></header><div class="pg-link-counts">${[['mapped','Mapped'],['suggested','Check link'],['demo','Demo assignment'],['unlinked','Unlinked'],['context','Schedule only']].map(([kind,label]) => `<span>${label} <b>${states.filter(x => x.state.kind === kind).length}</b></span>`).join('')}</div><p class="muted">Mapped describes the link source, not approval. Floor / stage matches do not establish individual wall assignments.</p><div class="pg-link-review"><table><thead><tr><th>Activity</th><th>Floor / stage</th><th>Link basis</th><th></th></tr></thead><tbody>${states.filter(x => filter === 'all' || filter === 'unlinked' && x.state.kind === 'unlinked' || filter === 'review' && ['suggested','demo','unlinked'].includes(x.state.kind)).map(({a,state}) => `<tr><td><b>${escapeHtml(a.id)}</b><span>${escapeHtml(a.name)}</span></td><td>${escapeHtml(a.level || 'No floor')}<span>${escapeHtml(a.stage || 'No stage')}</span></td><td><b>${escapeHtml(state.label)}</b><span>${escapeHtml(state.basis)}</span></td><td><button data-review-act="${escapeHtml(a.id)}" aria-label="Review ${escapeHtml(a.id)} link">Review</button></td></tr>`).join('') || '<tr><td colspan="4">No activities in this filter.</td></tr>'}</tbody></table></div><details class="pg-bulk-links"><summary>Bulk location and stage mappings</summary>` : '';
+        const review = this.options.standalone ? `<header class="pg-review-head"><b>Model / P6 link review</b><label>Show <select data-link-review-filter><option value="review" ${filter === 'review' ? 'selected' : ''}>Needs review</option><option value="unlinked" ${filter === 'unlinked' ? 'selected' : ''}>Unlinked</option><option value="assigned" ${filter === 'assigned' ? 'selected' : ''}>Element assignments</option><option value="all" ${filter === 'all' ? 'selected' : ''}>All activities</option></select></label></header><div class="pg-link-counts">${[['assigned','Element assignment'],['mapped','Mapped'],['suggested','Check link'],['demo','Demo assignment'],['unlinked','Unlinked'],['context','Schedule only']].map(([kind,label]) => `<span>${label} <b>${states.filter(x => x.state.kind === kind).length}</b></span>`).join('')}</div><p class="muted">Mapped describes the link source, not approval. Floor / stage matches do not establish individual wall assignments.</p><div class="pg-link-review"><table><thead><tr><th>Activity</th><th>Floor / stage</th><th>Link basis</th><th></th></tr></thead><tbody>${states.filter(x => filter === 'all' || filter === 'unlinked' && x.state.kind === 'unlinked' || filter === 'assigned' && x.state.kind === 'assigned' || filter === 'review' && ['suggested','demo','unlinked'].includes(x.state.kind)).map(({a,state}) => `<tr><td><b>${escapeHtml(a.id)}</b><span>${escapeHtml(a.name)}</span></td><td>${escapeHtml(a.level || 'No floor')}<span>${escapeHtml(a.stage || 'No stage')}</span></td><td><b>${escapeHtml(state.label)}</b><span>${escapeHtml(state.basis)}</span></td><td><button data-review-act="${escapeHtml(a.id)}" aria-label="Review ${escapeHtml(a.id)} link">Review</button></td></tr>`).join('') || '<tr><td colspan="4">No activities in this filter.</td></tr>'}</tbody></table></div>${this.elementSheetHtml()}<details class="pg-bulk-links"><summary>Bulk location and stage mappings</summary>` : '';
         el.innerHTML = `<div class="tk-settings pg-links">
             ${review}
             <div><b>Link the schedule to the model.</b> <span class="muted">A wall activity needs a level (from a Location/Level activity code, the WBS or the name) and an install stage
@@ -1489,8 +1539,59 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         };
         el.querySelectorAll('[data-map-level]').forEach(s => s.onchange = () => update('levels', s.dataset.mapLevel, s.value));
         el.querySelectorAll('[data-map-stage]').forEach(s => s.onchange = () => update('stages', s.dataset.mapStage, s.value));
+        this.bindElementSheet(el);
         const clear = el.querySelector('[data-clear-own]');
         if (clear) clear.onclick = () => { map.activities = {}; this.linksChanged(); };
+    }
+
+    // --- Element link spreadsheet: Model | Element ID | Activity ID | Stage rows, previewed before anything is saved ---
+
+    elementSheetHtml() {
+        const p = this.elementPreview, n = Object.values(this.schedule.map.elements || {}).reduce((t, ids) => t + ids.length, 0);
+        const preview = p ? `<div class="pg-sheet-preview" data-sheet-preview><b>${escapeHtml(p.file)}</b>: ${p.assigned} assignment${p.assigned === 1 ? '' : 's'} for ${p.activities} activit${p.activities === 1 ? 'y' : 'ies'} ready · ${p.problems.length} row${p.problems.length === 1 ? '' : 's'} skipped${p.blank ? ` · ${p.blank} without an Activity ID ignored` : ''}${p.overlaps.length ? ` · <span class="warn">${p.overlaps.length} element${p.overlaps.length === 1 ? '' : 's'} on two activities at one stage</span>` : ''}
+            ${p.problems.length ? `<ul>${p.problems.slice(0, 8).map(r => `<li>Row ${r.line}: ${escapeHtml(r.activity || '–')} / ${escapeHtml(r.element || '–')} · ${escapeHtml(r.problem)}</li>`).join('')}${p.problems.length > 8 ? `<li>… ${p.problems.length - 8} more</li>` : ''}</ul>` : ''}
+            <span class="muted">Applying replaces the element assignment of the ${p.activities} activit${p.activities === 1 ? 'y' : 'ies'} in the file; other activities keep theirs.</span>
+            <div><button data-sheet-apply ${p.activities ? '' : 'disabled'}>Apply ${p.assigned}</button><button data-sheet-cancel>Cancel</button></div></div>` : '';
+        return `<details class="pg-element-sheet" ${p || this.elementSheetOpen ? 'open' : ''}><summary>Element link spreadsheet <span class="muted">${n} element assignment${n === 1 ? '' : 's'} saved</span></summary>
+            <p class="muted">One row per model element and P6 activity: Model, Element ID (the model's stable element ID), Activity ID, and optionally Stage to check. Rows are checked before anything is saved.</p>
+            <div class="pg-sheet-actions"><button data-sheet-template>Download template</button><label class="pg-btn">Import CSV / XLSX<input type="file" accept=".csv,.xlsx,.txt" data-sheet-file hidden></label></div>${preview}</details>`;
+    }
+
+    bindElementSheet(el) {
+        const box = el.querySelector('.pg-element-sheet');
+        if (!box) return;
+        box.ontoggle = () => { this.elementSheetOpen = box.open; this.fitGantt(); };
+        box.querySelector('[data-sheet-template]').onclick = () => {
+            const level = this.views.level?.name, blank = level ? this.walls.filter(w => w.level === level) : [];
+            const rows = elementLinkTemplate({ model: this.modelNames[0] || '', linked: this.linked, elements: this.schedule.map.elements, walls: this.walls, blankWalls: blank });
+            downloadCsv(`${(this.schedule.project.id || 'schedule').replace(/[^\w-]+/g, '_')}-element-links-${localToday()}.csv`, rows);
+            const saved = rows.filter((r, i) => i && r[2]).length;
+            this.message(`Template: ${saved} saved assignment row(s)${level ? ` and ${rows.length - 1 - saved} unassigned wall(s) of ${level} with a blank Activity ID` : '. Open a floor to add its unassigned walls'}.`);
+        };
+        box.querySelector('[data-sheet-file]').onchange = async (e) => {
+            const file = e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            try {
+                const ext = file.name.split('.').pop().toLowerCase();
+                let read, firstError;
+                if (ext === 'xlsx') {
+                    for (const sheet of await readXlsx(await file.arrayBuffer())) { try { read = readElementLinkRows(sheet.rows); break; } catch (err) { firstError ??= err; } }
+                    if (!read) throw firstError || new Error('The workbook has no sheets');
+                } else read = readElementLinkRows(parseCsv(decodeText(await file.arrayBuffer())));
+                this.elementPreview = { file: file.name, ...previewElementLinks(read.rows, { linked: this.linked, externalIds: this.wallsByExternalId.keys(), models: this.modelNames }) };
+            } catch (err) { this.elementPreview = null; this.message(`${file.name}: ${err.message}`, 'warn'); }
+            this.renderLinks(); this.fitGantt();
+        };
+        box.querySelector('[data-sheet-cancel]')?.addEventListener('click', () => { this.elementPreview = null; this.renderLinks(); this.fitGantt(); });
+        box.querySelector('[data-sheet-apply]')?.addEventListener('click', () => {
+            const p = this.elementPreview;
+            if (this.viewingOriginal) { this.message('Viewing the original dates: switch back to the adjusted dates to change links.', 'warn'); return; }
+            this.schedule.map.elements = { ...(this.schedule.map.elements || {}), ...p.elements };
+            this.elementPreview = null; this.elementSheetOpen = true;
+            this.linksChanged();
+            this.message(`${p.file}: ${p.assigned} element assignment${p.assigned === 1 ? '' : 's'} saved for ${p.activities} activit${p.activities === 1 ? 'y' : 'ies'}.${p.problems.length ? ` ${p.problems.length} row(s) skipped.` : ''}`);
+        });
     }
 
     linksChanged() {
