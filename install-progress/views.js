@@ -20,6 +20,8 @@ const PLAN_MIN_FRAME = 1 / 8;        // a picked wall zoomed to on the plan: at 
 export class Views {
     constructor(viewer3d) {
         this.viewer3d = viewer3d;
+        this.autoFit = new Map(); // viewer -> how to frame it again (an automatic fit the user has not moved away from)
+        this.watchCamera(viewer3d);
         this.viewer2d = null; // created the first time the 2D pane is shown
         this.colors = new Map(); // dbId -> hex
         this.appliedTo = new WeakMap(); // model -> the colors map last applied to it in full or by changes (setColors)
@@ -773,7 +775,7 @@ export class Views {
         // A model with far-away extents (see setModel), or asked for: frame the level's walls (or the building's).
         if ((fit || this.farExtents) && this.viewer3d.model && !this.apart) {
             const walls = level ? this.wallsByLevel.get(level.name) : [...this.wallsByLevel.values()].flat();
-            if (walls?.length) this.viewer3d.fitToView(walls, this.viewer3d.model, fit === 'now');
+            if (walls?.length) this.fitPadded(this.viewer3d, walls, this.viewer3d.model);
         }
         if (this.showing2d && plan) {
             const plan = this.planFor(level?.name);
@@ -835,7 +837,26 @@ export class Views {
         const level = this.level && this.wallsByLevel.get(this.level.name);
         const iso = this.isolated && new Set(this.isolated), mine = level && iso ? level.filter(id => iso.has(id)) : null;
         const ids = level ? (mine?.length ? mine : level) : this.isolated?.length ? this.isolated : [...this.wallsByLevel.values()].flat();
-        if (ids.length) this.viewer3d.fitToView(ids, model);
+        if (ids.length) this.fitPadded(this.viewer3d, ids, model);
+    }
+
+    // Frame these elements with a margin (the color legend and controls sit over the view's edges). An automatic fit
+    // is redone when the view changes size (a layout switch, the divider, the window), until the user zooms or pans.
+    // Viewer3D.fitToView (immediate) and Navigation getPosition / getTarget / setView:
+    // https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Viewer3D/
+    fitPadded(viewer, ids, model, pad = 1.15) {
+        if (!viewer || !model || !ids?.length) return;
+        viewer.fitToView(ids, model, true);
+        const nav = viewer.navigation, target = nav.getTarget().clone(), pos = nav.getPosition().clone();
+        nav.setView(target.clone().add(pos.sub(target).multiplyScalar(pad)), target);
+        this.autoFit.set(viewer, () => this.fitPadded(viewer, ids, model, pad));
+    }
+
+    // A zoom, pan or orbit by the user keeps their view: no automatic refit on resize.
+    watchCamera(viewer) {
+        const drop = () => this.autoFit.delete(viewer);
+        viewer.container.addEventListener('wheel', drop, { passive: true });
+        viewer.container.addEventListener('pointerdown', (e) => { if (e.target === viewer.canvas) drop(); }, { passive: true });
     }
 
     // The level of the 2D sheet that is open ('' when it has none, e.g. a detail sheet).
@@ -882,7 +903,7 @@ export class Views {
     // Not while the sheet is still loading: openSheet frames it once its geometry is in.
     frame2d() {
         const ids = this.isolated || (this.level ? this.wallsByLevel.get(this.level.name) : [...this.wallsByLevel.values()].flat());
-        if (this.model2d?.isLoadDone() && ids?.length) this.viewer2d.fitToView(ids, this.model2d);
+        if (this.model2d?.isLoadDone() && ids?.length) this.fitPadded(this.viewer2d, ids, this.model2d, 1.3); // wider: grids, tags and dimensions around the walls, and the sheet picker over the top
     }
 
     setSheetStatus(text, kind = '') {
@@ -913,6 +934,12 @@ export class Views {
     // After the containers change size (layout, the dock-bottom split bar): both viewers re-measure their canvases.
     resize() {
         [this.viewer3d, this.viewer2d].forEach(v => v?.resize());
+        // Automatic fits follow the new size, once it settles.
+        clearTimeout(this.refitTimer);
+        this.refitTimer = setTimeout(() => {
+            if (this.apart) { this.frameApart(); return; }
+            for (const refit of [...this.autoFit.values()]) refit();
+        }, 250);
     }
 
     ensureViewer2d() {
@@ -921,6 +948,7 @@ export class Views {
         viewer.start();
         viewer.setTheme('light-theme');
         this.viewer2d = viewer;
+        this.watchCamera(viewer);
         this.planPop = new PlanPop(viewer); // colored walls still show on a whole sheet (plan-pop.mjs)
         this.syncSelection(viewer);
         // Plan labels follow the camera: dimmed while it moves, re-placed (and the new view sampled) when it stops.

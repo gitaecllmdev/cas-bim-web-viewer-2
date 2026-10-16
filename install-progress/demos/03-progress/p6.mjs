@@ -594,6 +594,40 @@ export function floorScheduleShare(walls, reached, { stage = null } = {}) {
     return out;
 }
 
+// Wall length (the model's Length, LF) each wall activity covers: its assigned walls, else every wall on its floor.
+// Map(activity id -> length). Walls without a usable length add nothing (never guessed).
+export function activityLengths(walls, linked) {
+    const byLevel = new Map(), out = new Map(), len = (w) => (Number.isFinite(+w.length) && +w.length > 0 ? +w.length : 0);
+    for (const w of walls) byLevel.set(w.level, (byLevel.get(w.level) || 0) + len(w));
+    for (const a of linked) if (a.scope === 'wall' && isStage(a.stage)) out.set(a.id, a.walls ? a.walls.reduce((t, w) => t + len(w), 0) : byLevel.get(a.level) || 0);
+    return out;
+}
+
+// How much wall length the schedule expects done by the end of a day: each activity's length times its share of
+// working days elapsed (expectedPct), per stage and overall. Per the schedule, not field progress.
+// Returns { stages: [{ stage, total, planned, pct }], total, planned, pct } (lengths rounded to whole LF).
+export function plannedLengths(linked, lengths, day, cal, stageNames = null) {
+    const per = new Map((stageNames || []).map(s => [s, { stage: s, total: 0, planned: 0 }]));
+    for (const a of linked) {
+        const L = lengths.get(a.id);
+        if (!L || !/^\d{4}-\d{2}-\d{2}$/.test(a.start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(a.finish || '')) continue;
+        const r = per.get(a.stage) || per.set(a.stage, { stage: a.stage, total: 0, planned: 0 }).get(a.stage);
+        r.total += L;
+        r.planned += (L * expectedPct(a, day, cal)) / 100;
+    }
+    const stages = [...per.values()].map(r => ({ stage: r.stage, total: Math.round(r.total), planned: Math.round(r.planned), pct: r.total ? Math.round((100 * r.planned) / r.total) : 0 }));
+    const total = stages.reduce((t, r) => t + r.total, 0), planned = stages.reduce((t, r) => t + r.planned, 0);
+    return { stages, total, planned, pct: total ? Math.round((100 * planned) / total) : 0 };
+}
+
+// The planned curve over the schedule: plannedLengths every `step` days from `from` to `to` (both included).
+export function plannedCurve(linked, lengths, from, to, cal, stageNames = null, step = 7) {
+    const days = [];
+    for (let d = from; d < to; d = addDays(d, step)) days.push(d);
+    days.push(to);
+    return days.map(day => ({ day, ...plannedLengths(linked, lengths, day, cal, stageNames) }));
+}
+
 // The day the schedule viewer opens on: the project's first activity start.
 export function projectStart(activities) {
     return activities.map(a => a.start).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d || '')).sort()[0] || null;

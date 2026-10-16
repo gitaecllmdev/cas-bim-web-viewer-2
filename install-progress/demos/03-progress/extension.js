@@ -14,6 +14,7 @@ import {
     randomWallLinks, wallProgress, demoTarget, activityLinkState, relatedWallActivities,
     assignElements, applyElementLinks, stageOverlaps, readElementLinkRows, previewElementLinks, elementLinkTemplate,
     isStage, scheduleStageLinks, scheduleStageNames, stageColors, scheduleWallsAt, floorScheduleShare, projectStart, GHOST_COLOR,
+    activityLengths, plannedLengths, plannedCurve,
 } from './p6.mjs';
 import { ganttHtml, calendarHtml, SCALES, ganttX } from './schedule-views.js';
 import { AllPlans } from './all-plans.js';
@@ -572,10 +573,13 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             // The timeline: play / scrub the schedule on the model. The Gantt's date scale scrubs the same date.
             el.innerHTML = `<div class="pg-timeline"><button class="pg-btn" data-play title="Play the schedule on the model from this date">Play</button>
                 <button class="pg-btn" data-cursor-start title="The project's first activity start">Start</button>
-                <input type="range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
+                <div class="pg-slider" data-slider><output class="pg-slider-tip" data-slider-tip></output>
+                    <input type="range" data-cursor min="0" max="${days}" step="1" aria-label="Date the model shows the schedule for" title="Drag to see the model on a day of the schedule">
+                    <div class="pg-slider-ticks" aria-hidden="true">${this.sliderTicks()}</div></div>
                 <b data-cursor-label class="pg-cursor-label"></b>
                 <button class="pg-btn" data-cursor-dd title="The schedule's data date">Data date</button></div>`;
-            el.querySelector('[data-cursor]').oninput = (e) => this.setCursor(addDays(this.span[0], Number(e.target.value)));
+            el.querySelector('[data-cursor]').oninput = (e) => { this.sliding(); this.setCursor(addDays(this.span[0], Number(e.target.value))); };
+            el.querySelector('[data-cursor]').onpointerdown = () => this.sliding();
             el.querySelector('[data-play]').onclick = () => (this.playTimer ? this.stopPlay() : this.play());
             el.querySelector('[data-cursor-start]').onclick = () => this.setCursor(projectStart(this.schedule.activities) || this.span[0], { move: true });
             el.querySelector('[data-cursor-dd]').onclick = () => this.setCursor(this.schedule.project.dataDate || this.span[0], { move: true });
@@ -765,6 +769,30 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.updateCursorUi({ move });
     }
 
+    // Month ticks under the timeline slider (positions in % of the schedule span).
+    sliderTicks() {
+        const total = dayMs(this.span[1]) - dayMs(this.span[0]), out = [];
+        for (let t = Date.UTC(+this.span[0].slice(0, 4), +this.span[0].slice(5, 7), 1); t <= dayMs(this.span[1]); t = Date.UTC(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth() + 1, 1)) {
+            const d = new Date(t), pct = (100 * (t - dayMs(this.span[0]))) / total;
+            out.push(`<span style="left:${pct.toFixed(2)}%">${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]}${d.getUTCMonth() ? '' : ` ${d.getUTCFullYear()}`}</span>`);
+        }
+        return out.join('');
+    }
+    // While the slider moves (and briefly after), the bubble over its handle shows the date and its week, zoomed in.
+    sliding() {
+        const s = this.panel.querySelector('[data-slider]');
+        if (!s) return;
+        s.classList.add('sliding');
+        clearTimeout(this.slideTimer);
+        this.slideTimer = setTimeout(() => s.classList.remove('sliding'), 1400);
+    }
+    // The week of a day: Monday to Sunday, with its ISO week number.
+    weekOf(day) {
+        const t = dayMs(day), dow = (new Date(t).getUTCDay() + 6) % 7, monday = t - dow * 86400000, thursday = monday + 3 * 86400000;
+        const jan1 = Date.UTC(new Date(thursday).getUTCFullYear(), 0, 1), week = 1 + Math.floor((thursday - jan1) / (7 * 86400000));
+        return { from: new Date(monday).toISOString().slice(0, 10), to: new Date(monday + 6 * 86400000).toISOString().slice(0, 10), week };
+    }
+
     updateCursorUi({ move = false } = {}) {
         const bar = this.panel.querySelector('[data-colorbar]');
         if (bar) {
@@ -774,6 +802,12 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             bar.querySelector('[data-cursor]').disabled = false;
             const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(dayMs(this.cursor)).getUTCDay()];
             bar.querySelector('[data-cursor-label]').textContent = `${wd} ${this.fmtDay(this.cursor)}`;
+            const tip = bar.querySelector('[data-slider-tip]');
+            if (tip) {
+                const w = this.weekOf(this.cursor), input = bar.querySelector('[data-cursor]'), f = (+input.value - +input.min) / Math.max(1, +input.max - +input.min);
+                tip.innerHTML = `<b>${wd} ${this.fmtDay(this.cursor)}</b><span>Week ${w.week} · ${this.fmtDay(w.from).replace(/, \d{4}$/, '')} – ${this.fmtDay(w.to)}</span>`;
+                tip.style.left = `calc(${(f * 100).toFixed(2)}% + ${(8 - f * 16).toFixed(1)}px)`;
+            }
             bar.querySelector('[data-cursor-label]').classList.toggle('muted', !this.options.standalone && this.colorMode === 'actual');
             bar.querySelector('[data-play]').textContent = this.playTimer?(this.options.standalone?'Pause':'❚❚'):(this.options.standalone?'Play':'▶');
             this.renderColorLegend();
@@ -1133,6 +1167,20 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     reachedWalls() {
         return this.schedule ? scheduleWallsAt(this.walls, this.linked, this.cursor, { keep: this.scheduleKeep() }) : new Map();
     }
+    // Planned wall length (LF) by the shown date, per stage, and the planned curve over the schedule (weekly). Lengths
+    // and the curve are worked out once per schedule / link change (the linked list is rebuilt then).
+    plannedLf() {
+        if (!this.schedule || !this.walls) return null;
+        const linked = this.linked, names = this.stageNames || [];
+        if (this.lfCache?.linked !== linked) {
+            const lengths = activityLengths(this.walls, linked), from = projectStart(this.schedule.activities) || this.span[0];
+            const to = linked.map(a => a.finish).filter(Boolean).sort().at(-1) || this.span[1];
+            this.lfCache = { linked, lengths, from, to, curve: plannedCurve(linked, lengths, from, to, this.cal, names) };
+        }
+        const { lengths, from, to, curve } = this.lfCache;
+        return { ...plannedLengths(linked, lengths, this.cursor, this.cal, names), from, to, curve };
+    }
+
     refreshSchedule() {
         const colors = new Map(), reached = this.reachedWalls(), focus = this.focusActivity();
         if (this.schedule) {
@@ -1152,7 +1200,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             dataDate: this.schedule?.project.dataDate, cursor: this.cursor, demo: !!(this.schedule?.source.sample || this.schedule?.source.demo),
             stages: (this.stageNames || []).map(name => ({ name, color: this.stageColorMap.get(name), hidden: !!this.hiddenStages?.has(name), count: [...reached.values()].filter(a => a.stage === name).length })),
             reachedPct: total ? Math.round((100 * hit) / total) : 0, floors: share, finish: this.schedule ? this.linked.map(a => a.finish).filter(Boolean).sort().at(-1) : null,
-            start: this.schedule ? projectStart(this.schedule.activities) : null, schedule: true,
+            start: this.schedule ? projectStart(this.schedule.activities) : null, schedule: true, lf: this.plannedLf(),
         } }));
     }
 
@@ -1622,9 +1670,9 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     // Schedule viewer: the Gantt's columns the user keeps (Columns menu), narrower charts dropping the date columns.
     applyGanttColumns(chart, compact) {
         if (!chart) return;
-        const widths = { id: 62, name: 0, start: 84, finish: 84, dur: 34, pct: 44 }, off = this.gantt.hiddenCols || new Set();
+        const widths = { id: 84, name: 0, start: 100, finish: 100, dur: 52, pct: 62 }, off = this.gantt.hiddenCols || new Set();
         const shown = Object.keys(widths).filter(k => !off.has(k) && !(compact && ['start', 'finish', 'dur'].includes(k)));
-        const name = compact ? 150 : 230;
+        const name = compact ? 170 : 240;
         chart.style.setProperty('--cols', shown.map(k => (k === 'name' ? '1fr' : `${widths[k]}px`)).join(' '));
         chart.style.setProperty('--cells', `${name + shown.reduce((t, k) => t + widths[k], 0)}px`);
         chart.querySelectorAll('[data-c]').forEach(c => { c.style.display = shown.includes(c.dataset.c) ? '' : 'none'; });

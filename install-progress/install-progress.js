@@ -147,7 +147,7 @@ function mountViewControls(){
     bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
     // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
     document.querySelector('.model-bar .layout').after(bar);
-    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);});
+    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
     bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
     bar.querySelector('#apart-gap input').onchange=e=>tracker?.setApartGap(Number(e.target.value));
     // The color legend rides on the 3D view (top left).
@@ -185,8 +185,27 @@ document.addEventListener('progress-summary',e=>{
     $('start-value').textContent=dashboardDate(s.start);$('finish-value').textContent=dashboardDate(s.finish);$('reached-value').textContent=s.activities?s.reachedPct+'%':'—';
     $('reached-status').textContent='On '+dashboardDate(s.cursor);
     renderModelStatusLegend(s);
+    renderPlannedLf(s);
     renderSources();renderDrill();
 });
+// Above the model: the wall length (LF) the schedule expects done by the shown date, per stage and overall, with the
+// planned curve over the whole schedule (a marker on the shown date; click the graph to move the date there).
+function renderPlannedLf(s){
+    let el=$('plan-progress');const lf=s.lf;
+    if(!lf?.total){el?.remove();return;}
+    if(!el){el=document.createElement('section');el.id='plan-progress';el.setAttribute('aria-label','Planned wall length by the shown date');document.querySelector('.model-card .model-bar').after(el);}
+    const color=new Map((s.stages||[]).map(x=>[x.name,x.color])),W=260,H=58,c=lf.curve,n=Math.max(1,c.length-1);
+    const x=i=>(i/n)*W,y=p=>H-2-(p/100)*(H-6),line=k=>c.map((p,i)=>`${x(i).toFixed(1)},${y(k?p.stages.find(r=>r.stage===k)?.pct||0:p.pct).toFixed(1)}`).join(' ');
+    const span=Date.parse(lf.to)-Date.parse(lf.from),at=span>0?Math.max(0,Math.min(1,(Date.parse(s.cursor)-Date.parse(lf.from))/span)):0;
+    el.innerHTML=`<div class="pp-head"><b>Planned by ${escapeHtml(dashboardDate(s.cursor))}</b><strong>${lf.pct}%</strong><span>${lf.planned.toLocaleString()} of ${lf.total.toLocaleString()} LF of wall</span><small>Per schedule · not field-verified</small></div>
+        <div class="pp-stages">${lf.stages.map(r=>`<div class="pp-stage" title="${escapeHtml(r.stage)}: ${r.planned.toLocaleString()} of ${r.total.toLocaleString()} LF planned by ${escapeHtml(dashboardDate(s.cursor))}"><span><i style="background:${color.get(r.stage)||'#8c96a0'}"></i>${escapeHtml(r.stage)}</span><div class="pp-bar"><i style="width:${r.pct}%;background:${color.get(r.stage)||'#8c96a0'}"></i></div><b>${r.pct}%</b><small>${r.planned.toLocaleString()} / ${r.total.toLocaleString()} LF</small></div>`).join('')}</div>
+        <svg class="pp-curve" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Planned percent of wall length over the schedule; click to move the date">
+            <line x1="0" x2="${W}" y1="${y(50)}" y2="${y(50)}" class="pp-grid"/><line x1="0" x2="${W}" y1="${y(100)}" y2="${y(100)}" class="pp-grid"/>
+            ${lf.stages.map(r=>`<polyline points="${line(r.stage)}" style="stroke:${color.get(r.stage)||'#8c96a0'}"/>`).join('')}<polyline points="${line(null)}" class="pp-all"/>
+            <line x1="${(at*W).toFixed(1)}" x2="${(at*W).toFixed(1)}" y1="0" y2="${H}" class="pp-now"/></svg>
+        <div class="pp-axis"><span>${escapeHtml(dashboardDate(lf.from))}</span><span>${escapeHtml(dashboardDate(lf.to))}</span></div>`;
+    el.querySelector('svg').onclick=e=>{const r=e.currentTarget.getBoundingClientRect(),f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));const d=new Date(Date.parse(lf.from)+f*span).toISOString().slice(0,10);tracker?.setCursor(d,{move:true});};
+}
 renderSources();decorateControls();
 async function start(){
     if(!window.Autodesk?.Viewing?.GuiViewer3D)throw Error('The Autodesk Viewer could not load. Check your internet connection to the Autodesk services, then retry.');
@@ -200,9 +219,9 @@ async function start(){
     location.hash=model.urn;const viewer=await initViewer($('preview'));views=new Views(viewer);views.setSelectionFollow(true,{contextZoom:$('selection-context-zoom').checked});views.on('selectioncontext',context=>{const el=$('selection-context');el.dataset.level=context.level||'';el.hidden=!context.ids.length;el.textContent=context.level?`${context.ids.length} wall${context.ids.length===1?'':'s'} selected · ${context.level} · Whole floor context · ${context.plan}`:'Selection spans levels or has no wall-level mapping';setWorkspaceMode('both');if(context.level&&tracker){tracker.selectedAct=null;tracker.linkedOnly=false;tracker.isolatedBySchedule=false;tracker.isolatedStage=null;tracker.refresh();tracker.renderBody();}tracker?.setModelSelection(context);renderDrill();});
     tools=await viewer.loadExtension(TOOLS_EXTENSION_ID,{views,is3d:true,toolbar:{builtin:[],tools:['showall','fit']}});views.use2d(TOOLS_EXTENSION_ID,{views,is3d:false,toolbar:{builtin:[],tools:['showall','fit']}});
     mountViewControls();
-    // The model opens looking straight down (top view), fitted, once its floors are known.
-    let topDone=false;
-    onModelReady(viewer,m=>views.setModel(m).then(()=>{if(topDone)return;topDone=true;tools?.look([0,0,1]);views.fitShown();}).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
+    // The model opens in an iso (3/4) view, fitted with a margin, once its floors are known.
+    let firstView=false;
+    onModelReady(viewer,m=>views.setModel(m).then(()=>{if(firstView)return;firstView=true;tools?.look([1,-1,.8]);views.fitShown();}).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
     tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel});
     mountHoverProperties();
     // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.

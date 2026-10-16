@@ -1052,7 +1052,8 @@ body.dock-bottom .pt-slicers .pt-search { grid-row: span 3; margin-top: 6px; }
 .pq-big.pq-rzlink { flex-direction: row; gap: 0.5em; text-decoration: none; width: 100%; margin: 0.3em 0; background: #0f4c81; border-color: #0f4c81; color: #fff; }
 .pq .pq-big[disabled] { opacity: 0.55; cursor: default; }
 /* Gantt: Excel-style column filters (same look as the P6 Converter's column menu). */
-.pg-g-head .pg-h { display: flex; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; }
+.pg-g-head .pg-h { display: flex; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; overflow: hidden; padding-right: 2px; }
+.pg-g-head .pg-hl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pg-g-head .pg-h.num { justify-content: flex-end; }
 .pg-gantt .pg-fbtn { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 1px; min-width: 18px; height: 18px; border: 1px solid #b9c6d2; background: #f4f7fa; color: #3e5568; padding: 0 2px; margin-left: 3px; border-radius: 3px; font-size: 10px; line-height: 1; cursor: pointer; box-shadow: 0 1px 0 #0b1b2a14; }
 .pg-gantt .pg-fbtn:hover, .pg-gantt .pg-fbtn:focus-visible { border-color: #256b69; background: #fff; color: #1f3b57; }
