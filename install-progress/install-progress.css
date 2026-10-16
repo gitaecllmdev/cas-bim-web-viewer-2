@@ -190,14 +190,25 @@
 .install-app .arrange-toggle button{border:0;border-radius:0;padding:6px 10px;font-size:11px;background:white;color:#5b7083}
 .install-app .arrange-toggle button[aria-pressed=true]{background:#173e52;color:white}
 @media(min-width:701px){
-.install-app #main[data-arrange=below][data-workspace-mode]{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:var(--model-height,40vh) 40px max(520px,calc(100dvh - 150px - var(--model-height,40vh)))}
-.install-app #main[data-arrange=below][data-workspace-mode=model]{grid-template-rows:calc(100dvh - 170px) 40px 0}
-.install-app #main[data-arrange=below][data-workspace-mode=schedule]{grid-template-rows:0 40px calc(100dvh - 170px)}
+.install-app #main[data-arrange=below][data-workspace-mode]{height:calc(100dvh - 104px);min-height:560px;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,var(--model-height,60%)) 28px minmax(220px,1fr)}
+.install-app #main[data-arrange=below][data-workspace-mode=model]{grid-template-rows:minmax(0,1fr) 28px 0}
+.install-app #main[data-arrange=below][data-workspace-mode=schedule]{grid-template-rows:0 28px minmax(0,1fr)}
 .install-app #main[data-arrange=below]>.model-card{grid-area:1/1}
 .install-app #main[data-arrange=below]>.workspace-divider-region{grid-area:2/1;flex-direction:row;align-items:center;padding:4px 0}
 .install-app #main[data-arrange=below]>.dashboard-side{grid-area:3/1}
 .install-app #main[data-arrange=below] .workspace-modes{flex-direction:row;width:auto}
-.install-app #main[data-arrange=below] #workspace-divider{cursor:row-resize;min-height:0;height:32px;width:auto;flex:1}
+.install-app #main[data-arrange=below] #workspace-divider{cursor:row-resize;min-height:0;height:22px;width:auto;flex:1}
+/* Info below: the schedule's controls in two compact rows, so the Gantt gets most of the data area */
+.install-app #main[data-arrange=below] .pg-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,34%);column-gap:10px;row-gap:6px;align-items:center;padding:6px 0;margin-bottom:6px}
+.install-app #main[data-arrange=below] .pg-head>*{grid-column:1/-1}
+.install-app #main[data-arrange=below] .pg-head>.pg-colorbar{grid-column:1;margin:0;padding:3px 6px}
+.install-app #main[data-arrange=below] .pg-head>.pg-search{grid-column:2;margin:0}
+.install-app #main[data-arrange=below] .pg-head>.pg-row:first-child>.tk-tabs{flex-basis:auto;width:auto;margin-right:auto}
+.install-app #main[data-arrange=below] .pg-head>.pg-row:first-child>.pg-info{display:none}
+.install-app #main[data-arrange=below] .schedule-switch{float:left;margin:0 8px 0 0}
+.install-app #main[data-arrange=below] .schedule-switch button{padding:5px 10px}
+.install-app #main[data-arrange=below] .pg-tools{margin-bottom:6px}
+.install-app #main[data-arrange=below] .pg-tools>.tk-tabs{flex:none}
 .install-app #main[data-arrange=below] #workspace-divider>span{width:32px;height:4px}
 }
 @media(max-width:700px){.arrange-toggle{display:none}}
@@ -217,6 +228,17 @@
 .install-app #model-legend .legend-ghost{display:inline-flex;align-items:center;gap:5px;color:#5b7083;padding:0 4px}
 .install-app #model-legend .legend-ghost i{background:#dde3ea;border:1px solid #c5ced8}
 .install-app #model-legend button[data-legend-all]{font-weight:600}
+/* Floors apart / All plans loading: a progress card over the model; the model controls wait */
+.model-card.views-busy .model-bar,.model-card.views-busy #views{pointer-events:none}
+.model-card.views-busy #views{filter:saturate(.6) opacity(.7)}
+#views-loading{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#0f243566;pointer-events:auto}
+#views-loading>div{width:min(360px,calc(100% - 32px));background:white;border-radius:10px;padding:16px 18px;box-shadow:0 12px 32px #0b1b2a55;display:grid;gap:8px}
+#views-loading b{font-size:15px;color:#13293d}
+#views-loading span{font-size:12px;color:#4a6274}
+#views-loading small{font-size:10px;color:#7c8a99}
+#views-loading .vl-bar{height:10px;border-radius:6px;background:#e3eaf0;overflow:hidden}
+#views-loading .vl-bar i{display:block;height:100%;background:linear-gradient(90deg,#2a7f78,#3aa59b);border-radius:6px;transition:width .3s}
+.install-app #views-loading button{justify-self:end;padding:5px 12px;font-size:12px}
 /* Labeled 3D view buttons, in the model card's toolbar */
 .install-app .model-bar>.view-context-controls{position:static;max-width:none;padding:0;background:none;border:0;box-shadow:none;display:flex;flex-wrap:wrap;gap:4px}
 .install-app #preview>#model-legend{padding:4px 6px;gap:3px;max-width:min(560px,calc(100% - 16px))}

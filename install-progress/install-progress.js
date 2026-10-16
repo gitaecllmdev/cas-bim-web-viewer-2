@@ -25,26 +25,26 @@ let bimSnapshot=demoBimSnapshot();
 let tracker,views,tools,summary,share=.34,resizeFrame,links={},linkKey='',integration='revit',mode='both';
 try{const saved=localStorage.getItem('cas-project-dashboard:split');if(saved!==null)share=clampSplit(Number(saved));}catch{}
 // Layout: 'below' (model on top, schedule and data full width under it; the default) or 'side' (side by side).
-let arrange='below',rowShare=.42;
-try{arrange=localStorage.getItem('cas-project-dashboard:arrange')==='side'?'side':'below';const rows=localStorage.getItem('cas-project-dashboard:rows');if(rows!==null)rowShare=clampSplit(Number(rows));}catch{}
+let arrange='below',rowShare=.6;
+try{arrange=localStorage.getItem('cas-project-dashboard:arrange')==='side'?'side':'below';const rows=localStorage.getItem('cas-project-dashboard:rows-60');if(rows!==null)rowShare=clampSplit(Number(rows));}catch{}
 const main=$('main'),divider=$('workspace-divider');
 try{$('selection-context-zoom').checked=localStorage.getItem('cas-project-dashboard:selection-context-zoom')!=='off';}catch{}
 $('selection-context-zoom').onchange=e=>{views?.setSelectionFollow(true,{contextZoom:e.target.checked});try{localStorage.setItem('cas-project-dashboard:selection-context-zoom',e.target.checked?'on':'off');}catch{}};
 
 function resizeWorkspace(value,save=false){
-    const below=arrange==='below',size=(below?innerHeight-108:main.clientWidth)-40,v=clampSplit(value??(below?rowShare:share),size);
+    const below=arrange==='below',size=(below?main.clientHeight:main.clientWidth)-(below?28:40),v=clampSplit(value??(below?rowShare:share),size);
     if(below){rowShare=v;main.style.setProperty('--model-height',`${Math.round(size*v)}px`);}else{share=v;main.style.setProperty('--model-width',`${Math.round(size*v)}px`);}
     divider.setAttribute('aria-valuenow',Math.round(v*100));divider.setAttribute('aria-valuetext',`${Math.round(v*100)}% model, ${Math.round((1-v)*100)}% schedule`);
-    if(save)try{localStorage.setItem(below?'cas-project-dashboard:rows':'cas-project-dashboard:split',String(v));}catch{}
+    if(save)try{localStorage.setItem(below?'cas-project-dashboard:rows-60':'cas-project-dashboard:split',String(v));}catch{}
     cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>views?.resize());
 }
 function setWorkspaceMode(value,save=true){mode=value;main.dataset.workspaceMode=mode;document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.workspaceMode===mode));if(save)try{localStorage.setItem('cas-project-dashboard:mode',mode);}catch{}resizeWorkspace();}
 divider.onpointerdown=e=>{if(e.button!==0||mode!=='both')return;divider.setPointerCapture(e.pointerId);document.body.classList.add('workspace-resizing');e.preventDefault();};
-divider.onpointermove=e=>{if(!divider.hasPointerCapture(e.pointerId))return;const r=main.getBoundingClientRect();resizeWorkspace(arrange==='below'?(e.clientY-r.top)/(innerHeight-148):(e.clientX-r.left)/(main.clientWidth-40));};
+divider.onpointermove=e=>{if(!divider.hasPointerCapture(e.pointerId))return;const r=main.getBoundingClientRect();resizeWorkspace(arrange==='below'?(e.clientY-r.top)/(main.clientHeight-28):(e.clientX-r.left)/(main.clientWidth-40));};
 const finishResize=()=>{document.body.classList.remove('workspace-resizing');resizeWorkspace(share,true);};
 divider.onpointerup=finishResize;divider.onlostpointercapture=finishResize;divider.onpointercancel=finishResize;
-divider.ondblclick=()=>resizeWorkspace(arrange==='below'?.42:.34,true);
-divider.onkeydown=e=>{const v=arrange==='below'?rowShare:share,step=e.shiftKey?.05:.02,values=arrange==='below'?{ArrowUp:v-step,ArrowDown:v+step,Home:0,End:1,Enter:.42}:{ArrowLeft:v-step,ArrowRight:v+step,Home:0,End:1,Enter:.34};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
+divider.ondblclick=()=>resizeWorkspace(arrange==='below'?.6:.34,true);
+divider.onkeydown=e=>{const v=arrange==='below'?rowShare:share,step=e.shiftKey?.05:.02,values=arrange==='below'?{ArrowUp:v-step,ArrowDown:v+step,Home:0,End:1,Enter:.6}:{ArrowLeft:v-step,ArrowRight:v+step,Home:0,End:1,Enter:.34};if(Object.hasOwn(values,e.key)){e.preventDefault();setWorkspaceMode('both');resizeWorkspace(values[e.key],true);}};
 document.querySelectorAll('[data-workspace-mode]').forEach(b=>b.onclick=()=>setWorkspaceMode(b.dataset.workspaceMode));
 function setArrange(value,save=true){arrange=value==='side'?'side':'below';main.dataset.arrange=arrange;divider.setAttribute('aria-orientation',arrange==='below'?'horizontal':'vertical');document.querySelectorAll('[data-arrange]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.arrange===arrange));if(save)try{localStorage.setItem('cas-project-dashboard:arrange',arrange);}catch{}resizeWorkspace();requestAnimationFrame(()=>{views?.resize();tracker?.fitGantt();});}
 document.querySelectorAll('[data-arrange]').forEach(b=>b.onclick=()=>setArrange(b.dataset.arrange));
@@ -114,7 +114,7 @@ $('demo-reset').onclick=async()=>{if(!tracker||!confirm('Start over with demo da
 async function backOverview(){closeConnect();tracker?.clearFocus();setWorkspaceMode('both');await views?.setLevel(null);tracker?.refresh();renderDrill();}
 function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act);$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab?({gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
 $('back-overview').onclick=backOverview;document.addEventListener('dashboard-context',e=>{renderDrill(e.detail);decorateControls();});
-function showActivityContext(){setWorkspaceMode('both');views?.setLayout('split');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker?.panel,details=panel?.querySelector('.pg-details');if(details){const head=panel.querySelector('.pg-head');panel.scrollTop+=details.getBoundingClientRect().top-panel.getBoundingClientRect().top-(head?.offsetHeight||0)-12;}}
+function showActivityContext(){setWorkspaceMode('both');if(!tracker?.apartOn&&!tracker?.allPlans?.isOpen)views?.setLayout('split');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker?.panel,details=panel?.querySelector('.pg-details');if(details){const head=panel.querySelector('.pg-head');panel.scrollTop+=details.getBoundingClientRect().top-panel.getBoundingClientRect().top-(head?.offsetHeight||0)-12;}}
 // Built-in Viewer panels: PropertiesManager (selected element's properties) and ModelStructure (model browser).
 // https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions/PropertiesManager/ and .../Extensions/ModelStructure/
 async function builtinPanel(id,on){
@@ -157,6 +157,17 @@ function mountViewControls(){
     bar.addEventListener('pointerdown',e=>e.stopPropagation());bar.addEventListener('keydown',e=>e.stopPropagation());
 }
 document.addEventListener('dashboard-focus',showActivityContext);
+// Floors apart / All plans loading: a progress bar over the model with Cancel. Model controls wait until it is done, so
+// another click cannot cut the loading short.
+document.addEventListener('model-views-loading',e=>{
+    const d=e.detail,card=document.querySelector('.model-card');let box=$('views-loading');
+    card.classList.toggle('views-busy',!!d);
+    if(!d){box?.remove();return;}
+    if(!box){box=document.createElement('div');box.id='views-loading';box.setAttribute('role','status');box.setAttribute('aria-live','polite');card.append(box);}
+    const what=d.kind==='apart'?'Floors apart':'All plans',pct=d.total?Math.round(100*d.done/d.total):0;
+    box.innerHTML=`<div><b>Loading ${what}</b><span>${d.total?`${Math.min(d.done+1,d.total)} of ${d.total} · ${escapeHtml(d.name||'')}`:'Preparing…'}</span><div class="vl-bar"><i style="width:${Math.max(4,pct)}%"></i></div><small>${pct}% · the model controls wait until this finishes</small><button data-vl-cancel>Cancel</button></div>`;
+    box.querySelector('[data-vl-cancel]').onclick=()=>{if(d.kind==='apart')tracker?.setApart(false);else tracker?.setAllPlans(false);};
+});
 window.addEventListener('pagehide',()=>tracker?.endPlayback());
 // Start / finish move the timeline there; the share card goes to the Gantt.
 document.querySelectorAll('[data-headline]').forEach(b=>b.onclick=()=>{if(!tracker?.schedule||!summary)return;setWorkspaceMode('both');$('connect-page').hidden=true;$('panel').hidden=false;tracker.setTab('gantt');const key=b.dataset.headline;if(key==='start'&&summary.start)tracker.setCursor(summary.start,{move:true});else if(key==='finish'&&summary.finish)tracker.setCursor(summary.finish,{move:true});main.scrollIntoView({block:'start'});renderDrill();});

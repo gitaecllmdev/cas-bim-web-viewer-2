@@ -673,6 +673,12 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.updateViewButtons();
     }
 
+    // Floors apart / All plans loading (kind null: done or cancelled): the page shows a progress bar over the model.
+    viewsLoading(kind, done = 0, total = 0, name = '') {
+        this.loadingViews = kind ? { kind, done, total, name } : null;
+        document.dispatchEvent(new CustomEvent('model-views-loading', { detail: this.loadingViews }));
+    }
+
     setApartGap(scale) {
         this.views.setApartGap(scale);
         this.updateFloorLabels();
@@ -685,7 +691,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         // Schedule viewer: the floor stack gets the whole model card (3D only) while it is on, then the layout returns.
         if (this.options.standalone && on && this.views.layout !== '3d') { this.layoutBeforeApart = this.views.layout; this.views.setLayout('3d'); }
         if (!on) {
-            await this.views.setLevelsApart(null); this.showDefault(); this.message('');
+            this.viewsLoading(null); await this.views.setLevelsApart(null); this.showDefault(); this.message('');
             if (this.layoutBeforeApart) { this.views.setLayout(this.layoutBeforeApart); this.layoutBeforeApart = null; }
             return;
         }
@@ -704,21 +710,23 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.updateFloorLabels();
         await this.views.setLevelsApart(levels, { onProgress: (i, n, name) => {
             if (!this.apartOn) return;
-            if (i < n) this.message(`Floors apart: loading ${name} (${i + 1} of ${n})…`, 'warn');
-            else this.message(`Floors apart: ${n} floors, each lifted over the one below. Colors and the timeline apply to every floor.`);
+            this.viewsLoading('apart', i, n, name);
+            if (i >= n) this.message(`Floors apart: ${n} floors, each lifted over the one below. Colors and the timeline apply to every floor.`);
         } });
+        this.viewsLoading(null);
         // The model card changed size (3D only): fit the stack to the new view.
         if (this.apartOn && this.views.apart) { this.views.resize?.(); this.views.frameApart(); this.views.placeApartLabels(); }
     }
 
     async setAllPlans(on) {
-        if (!on) { this.allPlans.close(); this.updateViewButtons(); return; }
+        if (!on) { this.viewsLoading(null); this.allPlans.close(); this.updateViewButtons(); return; }
         const levels = this.schedule ? this.linkedLevels() : this.views.levels.filter(l => this.views.wallsByLevel.get(l.name)?.length);
         if (!levels.length) { this.message('No floors to show: load a schedule linked to the model first.', 'warn'); return; }
         this.allPlans.colors = new Map(this.views.colors); // what the model shows now
-        const opening = this.allPlans.open(levels, { onClose: () => this.updateViewButtons() });
+        const opening = this.allPlans.open(levels, { onClose: () => { this.viewsLoading(null); this.updateViewButtons(); },
+            onProgress: (i, n, name) => this.allPlans.isOpen && this.viewsLoading(i < n ? 'plans' : null, i, n, name) });
         this.updateViewButtons();
-        await opening;
+        await opening.finally(() => this.viewsLoading(null));
     }
 
     updateViewButtons() {
@@ -1392,7 +1400,9 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const a = this.focusActivity();
         if (this.options.standalone) {
             const selected = this.selectedAct && this.activity(this.selectedAct);
-            if (selected?.level) this.focusScheduleLevel(selected.level);
+            // With every floor in view (Floors apart, All plans) the activity is highlighted where it is; switching
+            // to its floor would close (or cut short the loading of) those views.
+            if (selected?.level && !this.apartOn && !this.allPlans.isOpen) this.focusScheduleLevel(selected.level);
         } else if (a) {
             const ids = this.wallsOf(a).map(w => w.dbId);
             // With the floors apart every floor stays in view, colored by the activity's stage (refresh).
@@ -1425,7 +1435,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     filterChipsHtml() {
         const f = this.gantt.filters;
         if (!f.size && !this.gantt.sort) return '';
-        return `<div class="pg-filter-chips">${[...f].map(([k, set]) => { const v = [...set].map(x => x || '(Blanks)'); return `<span class="pg-fchip" title="${escapeHtml(v.join(', '))}"><b>${COLUMN_LABELS[k]}:</b> ${escapeHtml(v.slice(0, 2).join(', '))}${v.length > 2 ? ` +${v.length - 2}` : ''}<button data-unfilter="${k}" aria-label="Remove the ${COLUMN_LABELS[k]} filter">×</button></span>`; }).join('')}
+        const shown = this.visibleActivities(this.gantt.show).filter(a => a.type !== 'start' && a.type !== 'finish').length, all = this.linked.filter(a => a.type !== 'start' && a.type !== 'finish').length;
+        return `<div class="pg-filter-chips">${f.size ? `<b class="pg-filter-count">Filtered: ${shown.toLocaleString()} of ${all.toLocaleString()} activities</b>` : ''}${[...f].map(([k, set]) => { const v = [...set].map(x => x || '(Blanks)'); return `<span class="pg-fchip" title="${escapeHtml(v.join(', '))}"><b>${COLUMN_LABELS[k]}:</b> ${escapeHtml(v.slice(0, 2).join(', '))}${v.length > 2 ? ` +${v.length - 2}` : ''}<button data-unfilter="${k}" aria-label="Remove the ${COLUMN_LABELS[k]} filter">×</button></span>`; }).join('')}
             ${this.gantt.sort ? `<span class="pg-fchip"><b>Sorted:</b> ${COLUMN_LABELS[this.gantt.sort.key]} ${this.gantt.sort.dir === 'desc' ? '↓' : '↑'}</span>` : ''}<button class="pg-btn" data-clear-filters>Clear filters</button></div>`;
     }
 
