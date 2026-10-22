@@ -122,6 +122,29 @@ async function builtinPanel(id,on){
     catch(err){$('save-notice').textContent=`${id==='Autodesk.ModelStructure'?'Model browser':'Properties'} is not available: ${err.message||err}`;}
 }
 const propsOn=()=>document.querySelector('[data-view-panel="props"]')?.getAttribute('aria-pressed')==='true';
+// Scope: Walls only (the default) limits hover and selection to the model's walls; off, any element (as before).
+let wallsOnly=true;
+try{wallsOnly=localStorage.getItem('cas-project-dashboard:walls-only')!=='off';}catch{}
+const isWall=id=>!!tracker?.byDbId?.has(id);
+// A selection that includes other elements keeps only its walls (none: nothing selected). Viewer3D getSelection /
+// select / clearSelection: https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Viewer3D/
+function keepWallSelection(viewer){
+    if(!wallsOnly||!viewer?.model||!tracker?.byDbId)return;
+    const sel=viewer.getSelection(),keep=sel.filter(isWall);
+    if(keep.length===sel.length)return;
+    if(keep.length)viewer.select(keep,viewer.model);else viewer.clearSelection();
+}
+function watchWallSelection(viewer){
+    if(!viewer||viewer.__wallScope)return;
+    viewer.__wallScope=true;
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>keepWallSelection(viewer));
+}
+function setWallsOnly(on){
+    wallsOnly=on;
+    try{localStorage.setItem('cas-project-dashboard:walls-only',on?'on':'off');}catch{}
+    document.querySelectorAll('[data-wall-scope]').forEach(b=>b.setAttribute('aria-pressed',on));
+    if(on)[views?.viewer3d,views?.viewer2d].forEach(keepWallSelection);
+}
 // Hover: quick properties of the element under the pointer, in 3D and on the sheet (Viewer3D.hitTest, Model.getProperties).
 function mountHoverProperties(){
     const tip=document.createElement('div');tip.className='hover-props';tip.hidden=true;tip.setAttribute('role','tooltip');document.body.append(tip);
@@ -133,7 +156,7 @@ function mountHoverProperties(){
         const v=viewerAt(e.target);if(!v||e.buttons){tip.hidden=true;shown=null;return;}
         if(!tip.hidden)place(e);const now=performance.now();if(now-at<90)return;at=now;
         const r=v.canvas.getBoundingClientRect(),hit=v.hitTest(e.clientX-r.left,e.clientY-r.top,true),id=hit?.dbId;
-        if(!id){tip.hidden=true;shown=null;return;}if(id===shown)return;shown=id;
+        if(!id||wallsOnly&&!isWall(id)){tip.hidden=true;shown=null;return;}if(id===shown)return;shown=id;
         const wall=tracker?.byDbId?.get(id);
         if(wall){const a=tracker.reached?.get(wall);show(e,`<b>${escapeHtml(wall.wallType||'Wall')}</b><span>${escapeHtml(wall.level||'No level')}${wall.fireRating?' · '+escapeHtml(wall.fireRating):''}</span><span>${a?`<i style="background:${tracker.colorOf(a)}"></i>${escapeHtml(a.stage)} · ${escapeHtml(a.id)}`:'Not started on '+dashboardDate(tracker.cursor)}</span>`);return;}
         const key=v.model.id+':'+id;
@@ -144,7 +167,8 @@ function mountHoverProperties(){
 }
 function mountViewControls(){
     const bar=document.createElement('div');bar.className='view-context-controls';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','3D view controls');
-    bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
+    bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-wall-scope aria-pressed="${wallsOnly}" title="Scope: on, hover and selection pick walls only; off, any element of the model">Walls only</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
+    bar.querySelector('[data-wall-scope]').onclick=()=>setWallsOnly(!wallsOnly);
     // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
     document.querySelector('.model-bar .layout').after(bar);
     bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
@@ -228,6 +252,10 @@ async function start(){
     mountHoverProperties();
     // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{if(propsOn()&&viewer.getSelection().length)builtinPanel('Autodesk.PropertiesManager',true);});
+    // Walls only: the 3D viewer now, the sheet viewer as soon as it exists (it is made when the plan pane first shows).
+    watchWallSelection(viewer);
+    document.addEventListener('pointerdown',()=>watchWallSelection(views.viewer2d),{capture:true,passive:true});
+    views.on('level',()=>watchWallSelection(views.viewer2d));
     await loadModel(viewer,model.urn);
     views.on('level',()=>{if($('selection-context').dataset.level!==views.level?.name)$('selection-context').hidden=true;renderDrill();});renderSources();new ResizeObserver(()=>views.resize()).observe($('main'));
 }
