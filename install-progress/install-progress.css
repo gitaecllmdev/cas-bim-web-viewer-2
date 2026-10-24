@@ -474,3 +474,17 @@
 .la-quick button{border:0;border-radius:0;background:transparent;padding:4px 9px;font-size:10.5px;color:#4a6276;cursor:pointer}
 .la-quick button+button{border-left:1px solid #d6e0e8}
 .la-quick button[aria-pressed=true]{background:#1f3b57;color:#fff;font-weight:650}
+/* Lookahead: one slim toolbar joined to the top of the board */
+.la-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 0;padding:6px 10px;background:#f7fafc;border:1px solid #e3eaf0;border-bottom:0;border-radius:10px 10px 0 0}
+.la-head h3{font-size:13px!important;margin:0!important;letter-spacing:-.2px;white-space:nowrap}
+.la-dates{font-size:10px;color:#7d8d9c;white-space:nowrap}
+.la-head .la-range{border-radius:7px}
+.la-head .la-range button{padding:3px 9px;font-size:10.5px}
+.la-from{display:flex;align-items:center;gap:5px;font-size:10px;color:#8796a6;white-space:nowrap}
+.la-from input{border:1px solid #d6e0e8;padding:2px 5px;border-radius:6px;font-size:10.5px;background:#fff}
+.la-head .la-stats{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:#6b7f90}
+.la-head .la-stats>span{display:inline;padding:0;background:none;min-width:0;white-space:nowrap}
+.la-head .la-stats b{font-size:11px;color:#1f3b57;line-height:1}
+.la-head .la-stats i{font-style:normal;color:#c5ced8}
+.la-head~.la-focus{margin:0;border-radius:0;border-left:1px solid #e3eaf0;border-right:1px solid #e3eaf0}
+.la-head~.pg-main .la-board{border-top-left-radius:0;border-top-right-radius:0}
