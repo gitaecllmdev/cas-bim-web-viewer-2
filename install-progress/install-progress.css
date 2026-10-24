@@ -311,7 +311,8 @@
 .la-head{display:flex;align-items:flex-end;gap:14px;margin:8px 0 10px;flex-wrap:wrap}
 .la-head h3{font-size:17px!important;letter-spacing:-.4px;margin:2px 0!important}
 .la-head p{font-size:10px;color:#7d8d9c;margin:0}
-.la-stats{display:flex;gap:6px;margin-right:auto}
+.la-stats{display:flex;gap:6px;margin-left:auto}
+.la-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .la-stats span{display:flex;flex-direction:column;padding:5px 10px;border-radius:8px;background:#f1f5f8;font-size:9px;color:#7d8d9c;min-width:56px}
 .la-stats b{font-size:15px;color:#1f3b57;line-height:1.2}
 .la-controls{display:flex;align-items:center;gap:10px}

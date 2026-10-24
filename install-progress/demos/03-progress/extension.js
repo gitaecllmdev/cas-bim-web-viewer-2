@@ -1509,9 +1509,9 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         const month=d=>new Date(dayMs(d)).toLocaleDateString('en-US',{month:'short',timeZone:'UTC'});
         const pos=d=>Math.min(days,Math.max(0,(dayMs(d)-dayMs(from))/864e5));
         const stats=[['Activities',acts.length],['Starting',acts.filter(a=>a.start>=from).length],['Finishing',acts.filter(a=>a.finish<=end).length],['In progress',acts.filter(a=>(a.pct??0)>0&&(a.pct??0)<100).length]];
-        body.innerHTML=`<div class="la-head"><div><span class="eyebrow">LOOKAHEAD</span><h3>Next ${n} weeks</h3><p>${this.fmtDay(from)} – ${this.fmtDay(end)}</p></div>
-            <div class="la-stats">${stats.map(([k,v])=>`<span><b>${v}</b>${k}</span>`).join('')}</div>
-            <div class="la-controls"><div class="la-range" role="group" aria-label="Lookahead length">${[3,6,12].map(w=>`<button data-look-weeks="${w}" aria-pressed="${w===n}">${w} wk</button>`).join('')}</div><label>From <input type="date" data-lookahead-date value="${from}" min="${this.span[0]}" max="${this.span[1]}"></label></div></div>
+        // The length and start date sit on the title line, beside "Next N weeks"; the counts go to the right.
+        body.innerHTML=`<div class="la-head"><div><span class="eyebrow">LOOKAHEAD</span><div class="la-title"><h3>Next ${n} weeks</h3><div class="la-controls"><div class="la-range" role="group" aria-label="Lookahead length">${[3,6,12].map(w=>`<button data-look-weeks="${w}" aria-pressed="${w===n}">${w} wk</button>`).join('')}</div><label>From <input type="date" data-lookahead-date value="${from}" min="${this.span[0]}" max="${this.span[1]}"></label></div></div><p>${this.fmtDay(from)} – ${this.fmtDay(end)}</p></div>
+            <div class="la-stats">${stats.map(([k,v])=>`<span><b>${v}</b>${k}</span>`).join('')}</div></div>
             ${outside?`<p class="la-focus"><b>${escapeHtml(focus.name)}</b> (${this.fmtDay(focus.start)} – ${this.fmtDay(focus.finish)}) falls outside these ${n} weeks.</p>`:''}
             <div class="pg-main float"><div class="la-board" style="--weeks:${n}">
                 <div class="la-row la-top"><span class="la-name">${acts.length} activities</span><div class="la-weeks">${plan.weeks.map((w,i)=>`<div class="lookahead-week" title="Week ${i+1}: ${this.fmtDay(w.start)} – ${this.fmtDay(w.finish)} · ${w.activities.length} activities"><small>${i===0||month(w.start)!==month(plan.weeks[i-1].start)?month(w.start):'&nbsp;'}</small><b>${short(w.start)}</b><i>${w.activities.length}</i></div>`).join('')}</div></div>
