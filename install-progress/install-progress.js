@@ -399,15 +399,26 @@ function mountLevelTags(viewer){
         out.forEach((f,i)=>f.mid=(f.z+(out[i+1]?.z??f.z+step))/2);
         return {floors:out,x:[pct(xs,.02),pct(xs,.98)],y:[pct(ys,.02),pct(ys,.98)]};
     }
+    // The building corner farthest left on screen at this height: tags sit just left of it.
+    const cornerAt=z=>{const {x,y}=floors;return [[x[0],y[0]],[x[1],y[0]],[x[0],y[1]],[x[1],y[1]]].map(c=>({c,p:viewer.worldToClient(new THREE.Vector3(c[0],c[1],z))})).filter(o=>o.p).sort((a,b)=>a.p.x-b.p.x)[0];};
     function place(){
         frame=0;
-        const show=engine==='aps'&&!views?.level&&!views?.apart&&viewer.model;
-        if(!show){layer.innerHTML='';return;}
+        const all=engine==='aps'&&!views?.level&&!views?.apart&&viewer.model,one=engine==='aps'&&views?.level&&!views?.apart&&viewer.model;
+        if(!all&&!one){layer.innerHTML='';return;}
         if(!floors)floors=measure();
         if(!floors){layer.innerHTML='';return;}
-        const {x,y}=floors,mid=floors.floors[Math.floor(floors.floors.length/2)].mid;
-        // The building corner farthest left on screen: every tag sits just left of it.
-        const corner=[[x[0],y[0]],[x[1],y[0]],[x[0],y[1]],[x[1],y[1]]].map(c=>({c,p:viewer.worldToClient(new THREE.Vector3(c[0],c[1],mid))})).filter(o=>o.p).sort((a,b)=>a.p.x-b.p.x)[0];
+        // One floor shown: its name beside it, for context (click: every floor again).
+        if(one){
+            const f=floors.floors.find(o=>o.name===views.level.name),corner=f&&cornerAt(f.mid);
+            if(!corner){layer.innerHTML='';return;}
+            const left=corner.p.x>110,W=layer.clientWidth,H=layer.clientHeight,px=Math.min(W-8,Math.max(8,left?corner.p.x-6:corner.p.x+6)),py=Math.min(H-12,Math.max(12,corner.p.y));
+            layer.style.setProperty('--tag-size','12px');
+            layer.innerHTML=`<button class="level-tag current ${left?'left':'right'}" data-level-all style="left:${px.toFixed(0)}px;top:${py.toFixed(0)}px" title="Showing ${escapeHtml(f.name)} · click for every floor">${escapeHtml(f.name)}</button>`;
+            layer.querySelector('[data-level-all]').onclick=e=>{e.stopPropagation();views.setLevel(null);};
+            return;
+        }
+        const mid=floors.floors[Math.floor(floors.floors.length/2)].mid;
+        const corner=cornerAt(mid);
         if(!corner){layer.innerHTML='';return;}
         const pts=floors.floors.map(f=>({f,p:viewer.worldToClient(new THREE.Vector3(corner.c[0],corner.c[1],f.mid))})).filter(o=>o.p);
         const gaps=pts.slice(1).map((o,i)=>Math.abs(o.p.y-pts[i].p.y)).sort((a,b)=>a-b),gap=gaps.length?gaps[Math.floor(gaps.length/2)]:20;
@@ -450,9 +461,11 @@ async function setModelFull(on){
         preview.classList.add('model-full');
         fullUi=document.createElement('div');fullUi.className='full-ui';
         fullUi.innerHTML=`<div class="full-top"><b>${escapeHtml($('project-name').textContent)}</b><label>Floor <select data-full-level></select></label><span class="full-views"><button data-full-view="top">Top</button><button data-full-view="iso">Iso</button><button data-full-view="fit">Fit</button></span><button class="full-exit" data-full-exit title="Back to the dashboard (Esc)">Exit full screen</button></div>
+            <div class="full-gantt" data-full-gantt></div>
             <div class="full-time"><button data-full-play>Play</button><div class="full-date"><b data-full-date></b><small data-full-week></small></div><div class="full-track"><input type="range" data-full-range min="0" value="0" aria-label="Schedule date"><div class="full-ticks" data-full-ticks></div></div><div class="full-lf" data-full-lf></div></div>`;
         preview.append(fullUi);
-        preview.append($('model-legend'));
+        fullUi.querySelector('.full-top').insertBefore($('model-legend'),fullUi.querySelector('[data-full-exit]'));
+        if($('plan-progress'))preview.append($('plan-progress'));
         const tip=document.querySelector('.hover-props');if(tip)preview.append(tip);
         const sel=fullUi.querySelector('[data-full-level]');
         sel.innerHTML=$('levels').innerHTML;sel.value=$('levels').value;
@@ -466,9 +479,12 @@ async function setModelFull(on){
         // Not awaited: some browsers leave the request pending; the window-filling layout works either way.
         try{if(!document.fullscreenElement)preview.requestFullscreen?.()?.catch?.(()=>{});}catch{}
     }else{
+        // The legend goes back to the banner before the full-screen layer (which holds it) is removed.
+        document.querySelector('.project-banner .project-view-context')?.before($('model-legend'));
         const ui=fullUi;fullUi=null;ui?.remove();
         preview.classList.remove('model-full');
         document.querySelector('.project-banner .project-view-context')?.before($('model-legend'));
+        if($('plan-progress'))document.querySelector('.model-card .model-bar')?.after($('plan-progress'));
         const tip=preview.querySelector('.hover-props');if(tip)document.body.append(tip);
         try{if(document.fullscreenElement)document.exitFullscreen()?.catch?.(()=>{});}catch{}
     }
@@ -488,6 +504,24 @@ function syncFull(){
     const ticks=fullUi.querySelector('[data-full-ticks]');
     if(ticks.dataset.span!==a+b){ticks.dataset.span=a+b;const out=[];for(let m=new Date(a.slice(0,7)+'-01T00:00:00Z');m.getTime()<=Date.parse(b);m.setUTCMonth(m.getUTCMonth()+1)){const f=(m.getTime()-Date.parse(a))/864e5/Math.max(1,days);if(f>=0&&f<=1)out.push(`<span style="left:${(100*f).toFixed(2)}%">${m.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}</span>`);}ticks.innerHTML=out.join('');}
     const sel=fullUi.querySelector('[data-full-level]');if(sel&&document.activeElement!==sel)sel.value=$('levels').value;
+    renderFullGantt();
+}
+// Full screen: a Gantt strip of the work around the shown date (a week before to three weeks after): what is under way
+// first, then what starts next, up to 6 rows, each bar in its stage's color with the shown date marked. Same filters as
+// the schedule (floor, search, column filters). Click a row to pick that activity.
+function renderFullGantt(){
+    const el=fullUi?.querySelector('[data-full-gantt]');if(!el||!tracker?.linked||!tracker.cursor)return;
+    const DAY=864e5,at=Date.parse(tracker.cursor),from=at-7*DAY,to=at+21*DAY,span=to-from,pos=t=>Math.max(0,Math.min(1,(t-from)/span))*100;
+    const acts=tracker.visibleActivities('all').filter(a=>a.start&&a.finish&&a.type!=='start'&&a.type!=='finish'&&Date.parse(a.start)<=to&&Date.parse(a.finish)+DAY>=from);
+    const live=a=>Date.parse(a.start)<=at&&Date.parse(a.finish)+DAY>at;
+    acts.sort((a,b)=>(live(b)-live(a))||a.start.localeCompare(b.start)||String(a.id).localeCompare(String(b.id)));
+    const rows=acts.slice(0,6),more=acts.length-rows.length,short=t=>new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+    const ticks=[0,1,2,3,4].map(i=>from+i*7*DAY);
+    el.hidden=!acts.length;
+    el.innerHTML=`<div class="fg-head"><b>${acts.filter(live).length} under way</b><span>${acts.length-acts.filter(live).length} starting in the next 3 weeks${more>0?` · ${more} more in the Gantt`:''}</span><div class="fg-axis">${ticks.map(t=>`<i style="left:${pos(t).toFixed(1)}%">${short(t)}</i>`).join('')}</div></div>
+        ${rows.map(a=>{const l=pos(Date.parse(a.start)),r=pos(Date.parse(a.finish)+DAY),pct=a.pct??0;return `<button class="fg-row${a.id===tracker.selectedAct?' on':''}" data-fg-act="${escapeHtml(a.id)}" style="--stage-color:${tracker.colorOf(a)}" title="${escapeHtml(a.name)} · ${escapeHtml(a.id)} · ${escapeHtml(a.start)} – ${escapeHtml(a.finish)} · P6 ${pct}%"><span class="fg-name"><b>${escapeHtml(a.name)}</b><small>${escapeHtml(a.level||'Project')}${live(a)?' · under way':''}</small></span><span class="fg-track"><i class="fg-bar" style="left:${l.toFixed(1)}%;width:${Math.max(1.2,r-l).toFixed(1)}%"><i style="width:${pct}%"></i></i></span></button>`;}).join('')}
+        <i class="fg-now" style="left:calc(12px + var(--fg-name) + (100% - 24px - var(--fg-name)) * ${(pos(at)/100).toFixed(4)})"></i>`;
+    el.querySelectorAll('[data-fg-act]').forEach(b=>b.onclick=()=>tracker.selectActivity(b.dataset.fgAct));
 }
 document.addEventListener('progress-summary',()=>syncFull());
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fullUi)setModelFull(false);requestAnimationFrame(()=>views?.resize());});

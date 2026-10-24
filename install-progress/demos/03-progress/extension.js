@@ -467,7 +467,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             <div class="tk-head pg-head">
                 <div class="pg-row">
                     <b class="pg-title">${this.options.standalone?'Project workspace':'Install Progress'}</b>
-                    <div class="tk-tabs" role="tablist" aria-label="Progress and schedule views">${Object.entries(nav).map(([k, label]) => `<button role="tab" aria-selected="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'}" data-tab="${k}" class="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'?'active':''}">${label}</button>`).join('')}</div>
+                    <div class="tk-tabs" role="tablist" aria-label="Progress and schedule views">${Object.entries(nav).map(([k, label]) => `<button role="tab" aria-selected="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'}" data-tab="${k}" class="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'?'active':''}">${label}</button>`).join('')}</div>${this.options.standalone?`<div class="la-quick" role="group" aria-label="Lookahead shortcuts" title="Open the lookahead for the next 3, 6 or 12 weeks">${[3,6,12].map(w=>`<button data-la-quick="${w}" aria-pressed="${this.tab==='lookahead'&&this.lookWeeks===w}">${w} wk</button>`).join('')}</div>`:''}
                     <span class="pg-info" data-sched-info></span>
                     ${s?.source.original || this.viewingOriginal ? `<button class="pg-btn ${this.viewingOriginal ? 'active' : ''}" data-original title="${this.viewingOriginal ? 'Back to the demo schedule (dates adjusted)' : 'The schedule as imported: its own project, data date and dates (view only)'}">${this.viewingOriginal ? 'Original dates' : 'Show original'}</button>` : ''}
                     ${d?.day ? `<span class="pg-chip demo" title="Demo: dates moved ${d.shiftDays.toLocaleString()} days (whole weeks) so ${this.fmtDay(d.day)} falls today. Original: ${escapeHtml(d.originalProject)} (data date ${d.originalDataDate ? this.fmtDay(d.originalDataDate) : '–'}). Schedule ⋯ › Undo restores them.">dates adjusted</span>`
@@ -500,6 +500,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             ${this.options.standalone?`<div data-schedule-switch class="schedule-switch" ${['gantt','calendar'].includes(this.tab)?'':'hidden'}><button data-subview="gantt" aria-pressed="${this.tab==='gantt'}">Timeline</button><button data-subview="calendar" aria-pressed="${this.tab==='calendar'}">Calendar</button></div>`:''}<div data-body></div></div>`;
         const p = this.panel;
         p.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => this.setTab(b.dataset.tab==='gantt'&&this.options.standalone?(this.scheduleTab||'gantt'):b.dataset.tab));
+        // Lookahead shortcuts: straight to the next 3, 6 or 12 weeks.
+        p.querySelectorAll('[data-la-quick]').forEach(b => b.onclick = () => { this.lookWeeks = +b.dataset.laQuick; try { localStorage.setItem('cas-project-dashboard:lookahead-weeks', String(this.lookWeeks)); } catch {} if (this.tab === 'lookahead') { this.renderBody(); this.syncLookQuick(); } else this.setTab('lookahead'); });
         p.querySelectorAll('[data-subview]').forEach(b=>b.onclick=()=>this.setTab(b.dataset.subview));
         p.querySelector('[data-upload]').onchange = async (e) => {
             const file = e.target.files[0];
@@ -552,6 +554,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
         this.panel.querySelector('.pg').classList.toggle('management',tab==='management');
         this.panel.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab||this.options.standalone&&b.dataset.tab==='gantt'&&tab==='calendar';b.classList.toggle('active',active);b.setAttribute('aria-selected',active);});const sub=this.panel.querySelector('[data-schedule-switch]');if(sub){sub.hidden=!['gantt','calendar'].includes(tab);sub.querySelectorAll('[data-subview]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.subview===tab));}
+        this.syncLookQuick();
         const search = this.panel.querySelector('[data-search]');
         if (search) search.hidden = ['stages','management'].includes(tab);
         this.renderBody();
@@ -1496,6 +1499,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     // The schedule viewer's lookahead: 3, 6 or 12 weeks as a compact board, one slim row per activity with its bar
     // across the week columns (the tracker keeps the week cards above).
+    syncLookQuick() { this.panel?.querySelectorAll('[data-la-quick]').forEach(b => b.setAttribute('aria-pressed', this.tab === 'lookahead' && +b.dataset.laQuick === this.lookWeeks)); }
+
     renderLookaheadBoard(body) {
         const n=this.lookWeeks||3,plan=lookaheadWeeks(this.visibleActivities('all'),this.cursor,{all:true,weeks:n});
         const from=this.cursor,days=n*7,end=plan.weeks.at(-1).finish,focus=this.selectedAct&&this.activity(this.selectedAct);
@@ -1513,7 +1518,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 ${acts.map(a=>{const l=pos(a.start)/days*100,r=pos(addDays(a.finish,1))/days*100,pct=a.pct??0;return `<button class="la-row lookahead-card ${a.id===this.selectedAct?'selected':''}" data-look-act="${escapeHtml(a.id)}" style="--stage-color:${this.colorOf(a)}" title="${escapeHtml(a.name)} · ${escapeHtml(a.id)} · ${this.fmtDay(a.start)} – ${this.fmtDay(a.finish)} · P6 ${pct}%"><span class="la-name"><b>${escapeHtml(a.name)}</b><small>${escapeHtml(a.level||'Project')} · ${short(a.start)} – ${short(a.finish)}</small></span><span class="la-weeks"><i class="la-bar ${a.start<from?'from-before':''} ${a.finish>end?'past-end':''}" style="left:${l}%;width:${Math.max(1.5,r-l)}%"><i style="width:${pct}%"></i></i><em>${pct}%</em></span></button>`;}).join('')||'<p class="lookahead-empty">No activities in these weeks.</p>'}
             </div><div class="pg-side" data-details></div></div>${plan.unscheduled?`<p class="note">${plan.unscheduled} activities need valid start/finish dates and are not shown.</p>`:''}`;
         body.querySelector('[data-lookahead-date]').onchange=e=>{if(e.target.value)this.setCursor(e.target.value,{move:true});};
-        body.querySelectorAll('[data-look-weeks]').forEach(b=>b.onclick=()=>{this.lookWeeks=+b.dataset.lookWeeks;try{localStorage.setItem('cas-project-dashboard:lookahead-weeks',String(this.lookWeeks));}catch{}this.renderBody();});
+        body.querySelectorAll('[data-look-weeks]').forEach(b=>b.onclick=()=>{this.lookWeeks=+b.dataset.lookWeeks;try{localStorage.setItem('cas-project-dashboard:lookahead-weeks',String(this.lookWeeks));}catch{}this.renderBody();this.syncLookQuick();});
         body.querySelectorAll('[data-look-act]').forEach(b=>b.onclick=()=>this.selectActivity(b.dataset.lookAct));
         this.renderDetails(body.querySelector('[data-details]'));
     }

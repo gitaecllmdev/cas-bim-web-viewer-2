@@ -438,3 +438,38 @@
 #speckle-view .ifc-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;gap:8px;justify-items:center;max-width:min(380px,calc(100% - 32px));padding:14px 18px;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px #0b1b2a33;font-size:12px;text-align:center;color:#253c50;z-index:3}
 #speckle-view .ifc-status[hidden]{display:none}
 #speckle-view .ifc-status.error{border-color:#e5b4ae}
+/* Full screen: the LF strip (planned share, stages, histogram) as a glass card at the top right; legend bottom left */
+#preview.model-full>#plan-progress{position:absolute;top:64px;right:12px;z-index:21;width:min(760px,calc(100% - 24px));grid-template-columns:auto minmax(0,1fr) minmax(220px,300px);border:1px solid #fff;border-radius:12px;background:#ffffffd6;box-shadow:0 8px 28px #0b1b2a26;backdrop-filter:blur(14px) saturate(1.4);padding:8px 12px}
+@media(max-width:900px){#preview.model-full>#plan-progress{left:12px;width:auto;grid-template-columns:auto minmax(0,1fr)}}
+/* The shown floor's tag (one floor in 3D) */
+.install-app .adsk-viewing-viewer .level-tags button.level-tag.current{background:#1f3b57;color:#fff;box-shadow:0 2px 8px #0b1b2a40;padding:2px 8px}
+.install-app .adsk-viewing-viewer .level-tags button.level-tag.current:hover{background:#13293d}
+/* Full screen: legend in the top bar; Gantt strip of the work around the shown date, above the timeline */
+.full-top>#model-legend{position:static;display:flex;align-items:center;gap:4px;flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px 4px;margin:0;background:transparent;border:0;box-shadow:none;font-size:10.5px}
+.full-top>#model-legend>b{font-size:9.5px;color:#6b7f90;font-weight:600;white-space:nowrap;width:auto}
+.full-top>#model-legend button{white-space:nowrap;padding:2px 7px 2px 3px;font-size:10.5px}
+.full-gantt{--fg-name:200px;position:absolute;left:50%;bottom:104px;transform:translateX(-50%);width:min(980px,calc(100% - 32px));padding:8px 12px 6px;border-radius:14px;background:#ffffffcc;border:1px solid #fff;box-shadow:0 10px 30px #0b1b2a2b;backdrop-filter:blur(16px) saturate(1.5)}
+.full-gantt[hidden]{display:none}
+.fg-head{display:grid;grid-template-columns:var(--fg-name) 1fr;align-items:end;column-gap:0;margin-bottom:3px}
+.fg-head>b{font-size:11px;color:#13293d}
+.fg-head>span{grid-column:1;font-size:9.5px;color:#6b7f90}
+.fg-axis{grid-column:2;grid-row:1/3;position:relative;height:14px;align-self:end}
+.fg-axis i{position:absolute;bottom:0;transform:translateX(-50%);font-style:normal;font-size:9px;color:#7c8a99;white-space:nowrap}
+.fg-axis i:first-child{transform:none}
+.fg-axis i:last-child{transform:translateX(-100%)}
+.fg-row{display:grid;grid-template-columns:var(--fg-name) 1fr;align-items:center;width:100%;border:0;border-top:1px solid #e9eef2;background:transparent;padding:0;margin:0;text-align:left;font:inherit;color:inherit;cursor:pointer;border-radius:0}
+.fg-row:hover{background:#f3f7fa}
+.fg-row.on{background:#e9f5f3}
+.fg-name{display:flex;flex-direction:column;padding:3px 8px 3px 8px;border-left:3px solid var(--stage-color);min-width:0}
+.fg-name b{font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fg-name small{font-size:8.5px;color:#8a99a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fg-track{position:relative;height:24px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),#e9eef2 calc(25% - 1px),#e9eef2 25%)}
+.fg-bar{position:absolute;top:50%;height:10px;transform:translateY(-50%);border-radius:5px;background:color-mix(in srgb,var(--stage-color) 28%,white);border:1px solid color-mix(in srgb,var(--stage-color) 70%,white);overflow:hidden;font-style:normal;box-sizing:border-box}
+.fg-bar>i{display:block;height:100%;background:var(--stage-color);opacity:.85}
+.fg-now{position:absolute;top:30px;bottom:6px;width:2px;margin-left:-1px;background:#c2410c;border-radius:1px;pointer-events:none}
+@media(max-width:700px){.full-gantt{--fg-name:120px;bottom:96px}}
+/* Lookahead shortcuts beside the home tabs */
+.la-quick{display:inline-flex;border:1px solid #d6e0e8;border-radius:8px;overflow:hidden;background:#f6f9fb;margin-left:6px}
+.la-quick button{border:0;border-radius:0;background:transparent;padding:4px 9px;font-size:10.5px;color:#4a6276;cursor:pointer}
+.la-quick button+button{border-left:1px solid #d6e0e8}
+.la-quick button[aria-pressed=true]{background:#1f3b57;color:#fff;font-weight:650}
