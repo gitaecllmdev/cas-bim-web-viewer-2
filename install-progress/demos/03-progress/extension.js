@@ -65,7 +65,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.modelSelectionIds = [];
         const params = new URLSearchParams(location.search);
         // Standalone: a model schedule viewer (the schedule on the model by date), no field progress tracking.
-        this.tabs=this.options.standalone?{gantt:'Timeline',calendar:'Calendar',lookahead:'Lookahead'}:TABS;
+        this.tabs=this.options.standalone?{gantt:'Timeline',calendar:'Calendar',data:'Data',lookahead:'Lookahead'}:TABS;
         this.tab = this.tabs[params.get('tab')] ? params.get('tab') : this.options.standalone?'gantt':'stages';
         this.colorMode = 'actual';
         // Schedule views: only the walls linked to the schedule, the floors apart (views.setLevelsApart), all floor plans.
@@ -469,14 +469,14 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     saveReviewed(){if(this.reviewKey)try{localStorage.setItem(this.reviewKey,JSON.stringify(this.reviewed));}catch{}}
 
     render() {
-        const nav=this.options.standalone?{gantt:'P6 Gantt',lookahead:'Lookahead'}:this.tabs;
+        const nav=this.options.standalone?{gantt:'Gantt View',lookahead:'Lookahead'}:this.tabs;
         const s = this.schedule;
         const d = s?.source.demo;
         this.panel.innerHTML = `<div class="demo-panel pg ${this.tab==='management'?'management':''}">
             <div class="tk-head pg-head">
                 <div class="pg-row">
                     <b class="pg-title">${this.options.standalone?'Project workspace':'Install Progress'}</b>
-                    <div class="tk-tabs" role="tablist" aria-label="Progress and schedule views">${Object.entries(nav).map(([k, label]) => `<button role="tab" aria-selected="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'}" data-tab="${k}" class="${k===this.tab||this.options.standalone&&k==='gantt'&&this.tab==='calendar'?'active':''}">${label}</button>`).join('')}</div>${this.options.standalone?`<div class="la-quick" role="group" aria-label="Lookahead shortcuts" title="Open the lookahead for the next 3, 6 or 12 weeks">${[3,6,12].map(w=>`<button data-la-quick="${w}" aria-pressed="${this.tab==='lookahead'&&this.lookWeeks===w}">${w} wk</button>`).join('')}</div>`:''}
+                    <div class="tk-tabs" role="tablist" aria-label="Progress and schedule views">${Object.entries(nav).map(([k, label]) => `<button role="tab" aria-selected="${k===this.tab||this.options.standalone&&k==='gantt'&&['calendar','data'].includes(this.tab)}" data-tab="${k}" class="${k===this.tab||this.options.standalone&&k==='gantt'&&['calendar','data'].includes(this.tab)?'active':''}">${label}</button>`).join('')}</div>${this.options.standalone?`<div class="la-quick" role="group" aria-label="Lookahead shortcuts" title="Open the lookahead for the next 3, 6 or 12 weeks">${[3,6,12].map(w=>`<button data-la-quick="${w}" aria-pressed="${this.tab==='lookahead'&&this.lookWeeks===w}">${w} wk</button>`).join('')}</div>`:''}
                     <span class="pg-info" data-sched-info></span>
                     ${s?.source.original || this.viewingOriginal ? `<button class="pg-btn ${this.viewingOriginal ? 'active' : ''}" data-original title="${this.viewingOriginal ? 'Back to the demo schedule (dates adjusted)' : 'The schedule as imported: its own project, data date and dates (view only)'}">${this.viewingOriginal ? 'Original dates' : 'Show original'}</button>` : ''}
                     ${d?.day ? `<span class="pg-chip demo" title="Demo: dates moved ${d.shiftDays.toLocaleString()} days (whole weeks) so ${this.fmtDay(d.day)} falls today. Original: ${escapeHtml(d.originalProject)} (data date ${d.originalDataDate ? this.fmtDay(d.originalDataDate) : '–'}). Schedule ⋯ › Undo restores them.">dates adjusted</span>`
@@ -506,7 +506,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
                 <div data-links hidden></div>
                 <p class="pg-msg" data-msg hidden></p>
             </div>
-            ${this.options.standalone?`<div data-schedule-switch class="schedule-switch" ${['gantt','calendar'].includes(this.tab)?'':'hidden'}><button data-subview="gantt" aria-pressed="${this.tab==='gantt'}">Timeline</button><button data-subview="calendar" aria-pressed="${this.tab==='calendar'}">Calendar</button></div>`:''}<div data-body></div></div>`;
+            ${this.options.standalone?`<div data-schedule-switch class="schedule-switch" ${['gantt','calendar','data'].includes(this.tab)?'':'hidden'}><button data-subview="gantt" aria-pressed="${this.tab==='gantt'}">Timeline</button><button data-subview="calendar" aria-pressed="${this.tab==='calendar'}">Calendar</button><button data-subview="data" aria-pressed="${this.tab==='data'}" title="Every activity as a table; Open selects its walls in the 3D and on the sheet">Data</button></div>`:''}<div data-body></div></div>`;
         const p = this.panel;
         p.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => this.setTab(b.dataset.tab==='gantt'&&this.options.standalone?(this.scheduleTab||'gantt'):b.dataset.tab));
         // Lookahead shortcuts: straight to the next 3, 6 or 12 weeks.
@@ -559,12 +559,12 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     setTab(tab) {
         if (this.options.standalone && !this.tabs[tab]) tab = 'gantt'; // old Overview / Progress by floor links
         if (this.options.standalone && tab === 'calendar' && this.cursor) this.calMonth = this.cursor.slice(0, 7); // the month of the shown date
-        this.tab = tab;if(['gantt','calendar'].includes(tab))this.scheduleTab=tab;
+        this.tab = tab;if(['gantt','calendar','data'].includes(tab))this.scheduleTab=tab;
         const params = new URLSearchParams(location.search);
         params.set('tab',tab);
         history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
         this.panel.querySelector('.pg').classList.toggle('management',tab==='management');
-        this.panel.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab||this.options.standalone&&b.dataset.tab==='gantt'&&tab==='calendar';b.classList.toggle('active',active);b.setAttribute('aria-selected',active);});const sub=this.panel.querySelector('[data-schedule-switch]');if(sub){sub.hidden=!['gantt','calendar'].includes(tab);sub.querySelectorAll('[data-subview]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.subview===tab));}
+        this.panel.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab||this.options.standalone&&b.dataset.tab==='gantt'&&['calendar','data'].includes(tab);b.classList.toggle('active',active);b.setAttribute('aria-selected',active);});const sub=this.panel.querySelector('[data-schedule-switch]');if(sub){sub.hidden=!['gantt','calendar','data'].includes(tab);sub.querySelectorAll('[data-subview]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.subview===tab));}
         this.syncLookQuick();
         const search = this.panel.querySelector('[data-search]');
         if (search) search.hidden = ['stages','management'].includes(tab);
@@ -953,6 +953,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         else if (this.tab === 'gantt') this.renderGantt(body);
         else if (this.tab === 'calendar') this.renderCalendar(body);
         else if (this.tab === 'lookahead'&&this.options.standalone) this.renderLookahead(body);
+        else if (this.tab === 'data'&&this.options.standalone) this.renderDataView(body);
         else this.renderStages(body);
         this.renderInfo();
         if(this.options.standalone)document.dispatchEvent(new CustomEvent('dashboard-context',{detail:{tab:this.tab}}));
@@ -1510,6 +1511,40 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
 
     // The schedule viewer's lookahead: 3, 6 or 12 weeks as a compact board, one slim row per activity with its bar
     // across the week columns (the tracker keeps the week cards above).
+    // Data view (Gantt View > Data): every activity the schedule shows (same floor, search and column filters as the
+    // Gantt) as a sortable table. Open selects the activity's walls through the model's own selection, so the 3D and the
+    // sheet highlight them together, go to their floor and zoom to them (Linked selection zoom); a row click picks the
+    // activity as in the Gantt.
+    renderDataView(body) {
+        const sort = this.dataSort || (this.dataSort = { key: 'start', dir: 1 });
+        const lf = (a) => (a.level && a.stage ? this.wallsOf(a).reduce((t, w) => t + (Number.isFinite(+w.length) && +w.length > 0 ? +w.length : 0), 0) : 0);
+        const walls = (a) => (a.level && a.stage ? this.wallsOf(a).length : 0);
+        const days = (a) => (a.start && a.finish ? Math.round((dayMs(a.finish) - dayMs(a.start)) / 864e5) + 1 : null);
+        const cols = [['id', 'Activity ID'], ['name', 'Activity name'], ['level', 'Level'], ['stage', 'Stage'], ['start', 'Start'], ['finish', 'Finish'], ['days', 'Days'], ['pct', 'P6 %'], ['walls', 'Walls'], ['lf', 'LF']];
+        const value = (a, k) => k === 'days' ? days(a) : k === 'walls' ? walls(a) : k === 'lf' ? lf(a) : k === 'pct' ? (a.pct ?? null) : (a[k] ?? '');
+        const acts = this.visibleActivities('all').slice().sort((a, b) => { const x = value(a, sort.key), y = value(b, sort.key); return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x ?? '').localeCompare(String(y ?? ''), undefined, { numeric: true })) * sort.dir || String(a.id).localeCompare(String(b.id)); });
+        const total = acts.reduce((t, a) => t + lf(a), 0);
+        body.innerHTML = `<div class="dv-head"><b>${acts.length} activities</b><span>${acts.filter(a => walls(a)).length} with walls · ${Math.round(total).toLocaleString()} LF · same filters as the Gantt · Open selects its walls in the 3D and on the sheet</span></div>
+            <div class="dv-wrap"><table class="dv-table"><thead><tr><th class="dv-open">Model</th>${cols.map(([k, label]) => `<th data-dv-sort="${k}" class="${sort.key === k ? (sort.dir > 0 ? 'asc' : 'desc') : ''}" title="Sort by ${label}">${label}</th>`).join('')}</tr></thead><tbody>
+            ${acts.map(a => { const n = walls(a); return `<tr data-dv-act="${escapeHtml(a.id)}" class="${a.id === this.selectedAct ? 'on' : ''}" style="--stage-color:${this.colorOf(a)}">
+                <td class="dv-open"><button data-open-model="${escapeHtml(a.id)}" ${n ? '' : 'disabled'} title="${n ? `Select its ${n.toLocaleString()} walls in the 3D and on the sheet` : 'Not linked to walls'}">Open</button></td>
+                <td>${escapeHtml(a.id)}</td><td class="dv-name">${escapeHtml(a.name)}</td><td>${escapeHtml(a.level || '–')}</td><td>${a.stage ? `<i class="dv-dot"></i>${escapeHtml(a.stage)}` : '–'}</td>
+                <td>${a.start ? this.fmtDay(a.start) : '–'}</td><td>${a.finish ? this.fmtDay(a.finish) : '–'}</td><td class="num">${days(a) ?? '–'}</td><td class="num">${a.pct ?? '–'}${a.pct != null ? '%' : ''}</td>
+                <td class="num">${n ? n.toLocaleString() : '–'}</td><td class="num">${n ? Math.round(lf(a)).toLocaleString() : '–'}</td></tr>`; }).join('') || `<tr><td colspan="${cols.length + 1}" class="dv-empty">No activities match the filters.</td></tr>`}
+            </tbody></table></div>`;
+        body.querySelectorAll('[data-dv-sort]').forEach(th => th.onclick = () => { const k = th.dataset.dvSort; this.dataSort = { key: k, dir: sort.key === k ? -sort.dir : 1 }; this.renderBody(); });
+        body.querySelectorAll('[data-open-model]').forEach(b => b.onclick = (e) => { e.stopPropagation(); this.openInModel(b.dataset.openModel); });
+        body.querySelectorAll('[data-dv-act]').forEach(tr => tr.onclick = () => this.selectActivity(tr.dataset.dvAct));
+    }
+
+    // The activity's walls selected in the model: the 3D and the sheet show the same selection (and its floor).
+    openInModel(id) {
+        const a = this.activity(id), ids = a ? this.wallsOf(a).map(w => w.dbId) : [];
+        if (!ids.length) { this.message(`${a?.name || id} is not linked to walls.`, 'warn'); return; }
+        this.views.select(ids);
+        this.message(`${a.name}: ${ids.length.toLocaleString()} walls selected in the 3D and on the sheet.`);
+    }
+
     syncLookQuick() { this.panel?.querySelectorAll('[data-la-quick]').forEach(b => b.setAttribute('aria-pressed', this.tab === 'lookahead' && +b.dataset.laQuick === this.lookWeeks)); }
 
     renderLookaheadBoard(body) {

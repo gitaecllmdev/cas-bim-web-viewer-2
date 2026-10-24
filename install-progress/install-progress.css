@@ -507,3 +507,23 @@
 #p6-dialog .p6-frames{flex:1;min-height:0;position:relative;background:#f4f6f8}
 #p6-dialog iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 #p6-dialog iframe[hidden]{display:none}
+/* Data view (Gantt View > Data): compact sortable table, Open selects in the model */
+.dv-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0;font-size:10.5px;color:#6b7f90}
+.dv-head b{font-size:12px;color:#13293d}
+.dv-wrap{overflow:auto;max-height:calc(100% - 30px);border:1px solid #e3eaf0;border-radius:10px;background:#fff}
+.dv-table{width:100%;border-collapse:collapse;font-size:10.5px}
+.dv-table th{position:sticky;top:0;z-index:1;background:#f7fafc;color:#4a6276;font-weight:650;text-align:left;padding:6px 8px;border-bottom:1px solid #e3eaf0;white-space:nowrap;cursor:pointer;user-select:none}
+.dv-table th.asc::after{content:' ▲';font-size:8px}
+.dv-table th.desc::after{content:' ▼';font-size:8px}
+.dv-table th.dv-open{cursor:default}
+.dv-table td{padding:4px 8px;border-bottom:1px solid #eef2f5;white-space:nowrap}
+.dv-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.dv-table td.dv-name{white-space:normal;min-width:220px;border-left:3px solid var(--stage-color,transparent)}
+.dv-table tr[data-dv-act]{cursor:pointer}
+.dv-table tr[data-dv-act]:hover{background:#f6fafc}
+.dv-table tr.on{background:#e9f5f3}
+.dv-table .dv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--stage-color);margin-right:5px}
+.dv-table td.dv-open button{border:1px solid #bad0cb;background:#edf5f4;color:#28685c;border-radius:6px;padding:2px 9px;font-size:10px;font-weight:600;cursor:pointer}
+.dv-table td.dv-open button:hover{background:#28685c;color:#fff}
+.dv-table td.dv-open button:disabled{opacity:.4;cursor:default;background:#f4f6f8;color:#8a99a7;border-color:#e3eaf0}
+.dv-empty{text-align:center;color:#8a99a7;padding:14px}
