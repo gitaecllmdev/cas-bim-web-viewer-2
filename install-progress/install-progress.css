@@ -360,6 +360,7 @@
 .install-app .project-banner>#model-legend input[type=color]{width:13px;height:13px}
 .install-app .project-banner>#model-legend .legend-ghost{white-space:nowrap;font-size:10px}
 .install-app .project-banner>#model-legend+.project-view-context{margin-left:0}
+.install-app .project-banner>h1,.install-app .project-banner>#model-legend+.project-view-context{flex:none;white-space:nowrap}
 @media(max-width:900px){.install-app .project-banner>#model-legend>b,.install-app .project-banner>#model-legend .legend-ghost{display:none}}
 
 /* Floor tags on the whole building (All levels): sized from the space between floors on screen */
@@ -412,3 +413,20 @@
 #preview.model-full>#model-legend{top:66px;bottom:auto;left:12px;z-index:21}
 #preview.model-full .hover-props{z-index:30}
 @media(max-width:700px){.full-time{grid-template-columns:auto minmax(0,1fr);gap:8px}.full-date,.full-lf{display:none}.full-top>b{display:none}}
+/* IFC: room names (3D when zoomed into a floor; the IFC plan) */
+.ifc-rooms{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.ifc-rooms span{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;line-height:1.1;color:#24384a;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff;white-space:nowrap;font-size:11px}
+.ifc-rooms span b{font-weight:650;letter-spacing:.2px}
+.ifc-rooms span i{font-style:normal;font-size:.85em;color:#5b7083}
+/* IFC plan in the plan pane, and its Sheet | IFC plan switch (IFC mode only) */
+#viewer2d.plan-ifc>.adsk-viewing-viewer{visibility:hidden}
+#ifc-plan{position:absolute;inset:0;z-index:6;background:#fff}
+#ifc-plan[hidden]{display:none}
+#ifc-plan .ifc-canvas{position:absolute;inset:0}
+#ifc-plan .ifc-plan-note{position:absolute;left:8px;top:8px;z-index:3;padding:3px 8px;border-radius:6px;background:#ffffffe6;border:1px solid #e1e8ee;font-size:10px;color:#4a6276;pointer-events:none}
+#ifc-plan .ifc-plan-note:empty{display:none}
+.pane2d-bar .plan-source{display:inline-flex;border:1px solid #d6e0e8;border-radius:7px;overflow:hidden;background:#f6f9fb;margin-left:6px}
+.pane2d-bar .plan-source[hidden]{display:none}
+.pane2d-bar .plan-source button{border:0;border-radius:0;background:transparent;padding:4px 9px;font-size:10.5px;color:#4a6276}
+.pane2d-bar .plan-source button+button{border-left:1px solid #d6e0e8}
+.pane2d-bar .plan-source button[aria-pressed=true]{background:#1f3b57;color:#fff;font-weight:650}

@@ -294,24 +294,25 @@ async function loadIfcModel(){
     // this browser earlier, then a file the user picks.
     ifcStatus('Downloading the IFC model…');
     const hosted=await fetch('ifc/wilton.frag').catch(()=>null);
-    if(hosted?.ok){await ifc.load({bytes:await hosted.arrayBuffer(),name:'wilton.frag'});return;}
+    if(hosted?.ok){const bytes=await hosted.arrayBuffer();ifcSource={bytes:bytes.slice(0),name:'wilton.frag'};await ifc.load({bytes,name:'wilton.frag'});return;}
     let key='';try{key=localStorage.getItem('cas-project-dashboard:ifc-key')||'';}catch{}
-    if(key)try{await ifc.load({key,name:'the IFC model'});return;}catch{}
+    if(key)try{await ifc.load({key,name:'the IFC model'});ifcSource={key,name:'the IFC model'};return;}catch{}
     const file=await chooseIfcFile();if(!file)throw Error('No IFC file chosen.');
     key=`${file.name}:${file.size}:${file.lastModified}`;
-    await ifc.load({bytes:await file.arrayBuffer(),name:file.name,key});
+    await ifc.load({bytes:await file.arrayBuffer(),name:file.name,key});ifcSource={key,name:file.name};
     try{localStorage.setItem('cas-project-dashboard:ifc-key',key);}catch{}
 }
 function bridgeIfc(){
     if(ifcBridged)return;ifcBridged=true;
     const setColors=views.setColors.bind(views);
-    views.setColors=colors=>{setColors(colors);if(engine==='ifc'&&ifc?.loaded)ifc.setColors(ifcColors(colors));};
+    views.setColors=colors=>{setColors(colors);if(engine==='ifc'&&ifc?.loaded)ifc.setColors(ifcColors(colors));if(ifcPlanOn())ifcPlan.setColors(ifcColors(colors));};
     // IFC camera moves run in order: a floor change frames the floor, then a linked selection zooms to its walls.
     const queue=fn=>{ifcQueue=ifcQueue.then(()=>engine==='ifc'&&ifc?.loaded?fn():null).catch(err=>console.warn('IFC viewer:',err));};
-    views.on('level',()=>queue(async()=>{const g=levelGuids();await ifc.section(g);await ifc.frame(g);}));
+    views.on('level',()=>queue(async()=>{const g=levelGuids();await ifc.section(g);await ifc.frame(g);if(ifcPlanOn())await planAtLevel();}));
+    views.on('sheet',()=>{if(ifcPlanOn()&&!views.level)queue(planAtLevel);});
     // Plan <-> 3D: a selection on the sheet (or in the IFC view) zooms the IFC view to it, as Linked selection zoom does in APS.
-    views.on('selectioncontext',({ids})=>{if(!$('selection-context-zoom')?.checked)return;const g=(ids||[]).map(id=>guidOfWall.get(id)).filter(Boolean);if(g.length)queue(()=>ifc.frame(g,null,{min:6}));});
-    views.viewer3d.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{if(engine==='ifc'&&ifc?.loaded)ifc.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));});
+    views.on('selectioncontext',({ids})=>{if(!$('selection-context-zoom')?.checked)return;const g=(ids||[]).map(id=>guidOfWall.get(id)).filter(Boolean);if(g.length)queue(async()=>{await ifc.frame(g,null,{min:6});if(ifcPlanOn())await ifcPlan.frame(g,null,{min:6});});});
+    views.viewer3d.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{const g=views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean);if(engine==='ifc'&&ifc?.loaded)ifc.select(g);if(ifcPlanOn())ifcPlan.select(g);});
 }
 // A pick in the IFC view selects the same wall through the APS pipeline (sheet highlight, floor, related activities).
 // Of the elements under the pointer (nearest first) it takes a wall of the shown floor, else the nearest wall.
@@ -325,7 +326,8 @@ async function setEngine(name){
     engine=name;
     document.querySelectorAll('[data-engine]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.engine===engine));
     const preview=$('preview');
-    if(engine==='aps'){preview.classList.remove('engine-ifc');if(ifcHost)ifcHost.hidden=true;views.resize();return;}
+    document.querySelectorAll('.plan-source').forEach(g=>g.hidden=engine!=='ifc');
+    if(engine==='aps'){preview.classList.remove('engine-ifc');if(ifcHost)ifcHost.hidden=true;$('viewer2d').classList.remove('plan-ifc');if(ifcPlanHost)ifcPlanHost.hidden=true;views.resize();return;}
     if(!ifcHost){ifcHost=document.createElement('div');ifcHost.id='ifc-view';ifcHost.innerHTML='<div class="ifc-canvas"></div><div class="ifc-status" role="status" hidden></div>';preview.append(ifcHost);}
     ifcHost.hidden=false;preview.classList.add('engine-ifc');
     try{
@@ -336,8 +338,10 @@ async function setEngine(name){
         const g=levelGuids();
         await ifc.setColors(ifcColors(views.colors));await ifc.section(g);await ifc.frame(g,'iso');
         ifc.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));
+        ifc.rooms();
         ifcStatus('');
-    }catch(err){console.warn('IFC viewer:',err);ifcStatus(`IFC viewer: ${err.message||err}`,{error:true});}
+        if(planSource==='ifc')setPlanSource('ifc');
+    }catch(err){console.warn('IFC viewer:',err);ifcStatus(`Open IFC: ${err.message||err}`,{error:true});}
 }
 document.querySelectorAll('[data-engine]').forEach(b=>b.onclick=()=>setEngine(b.dataset.engine));
 
@@ -461,6 +465,60 @@ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fullUi&&!document.fullscreenElement)setModelFull(false);});
 function mountModelExtras(viewer){
     mountLevelTags(viewer);
+    mountPlanSource();
+    addFitMenu(viewer);views.on('viewer2d',addFitMenu);
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>setTimeout(placePropertiesPanel,0));
     views.on('level',()=>syncFull());
+}
+
+// --- IFC plan (2D pane in IFC mode) and right-click fit --------------------------------------------------------------
+// In IFC mode the plan pane can show the Revit sheet (APS, as before) or a plan of the IFC: a second That Open view,
+// orthographic and locked looking down, cut 4'-0" above the floor as Revit plans are (REVIT_CUT), with the cut edges
+// drawn, the schedule colors, room names and the same picks and selection links as the sheet. The sheet stays the
+// default; the IFC plan opens only when picked.
+let ifcPlan=null,ifcPlanHost=null,planSource='sheet',ifcSource=null;
+function planLevelName(){return views?.level?.name||views?.planLevelName||[...(views?.wallsByLevel||[])].sort((a,b)=>b[1].length-a[1].length)[0]?.[0]||null;}
+function planGuids(){const name=planLevelName();return name&&tracker?.walls?tracker.walls.filter(w=>w.level===name).map(w=>guidOfWall.get(w.dbId)).filter(Boolean):null;}
+const ifcPlanOn=()=>engine==='ifc'&&planSource==='ifc'&&!!ifcPlan?.loaded;
+function mountPlanSource(){
+    const bar=document.querySelector('.pane2d-bar');if(!bar||bar.querySelector('.plan-source'))return;
+    const g=document.createElement('div');g.className='plan-source';g.hidden=engine!=='ifc';g.setAttribute('role','group');g.setAttribute('aria-label','Plan source');
+    g.innerHTML=`<button data-plan-source="sheet" aria-pressed="${planSource==='sheet'}" title="The Revit sheet (APS)">Sheet</button><button data-plan-source="ifc" aria-pressed="${planSource==='ifc'}" title="Open IFC (That Open engine): a plan of the IFC, cut 4'-0&quot; above the floor as Revit plans are">Open IFC plan</button>`;
+    bar.append(g);
+    g.querySelectorAll('[data-plan-source]').forEach(b=>b.onclick=()=>setPlanSource(b.dataset.planSource));
+}
+async function setPlanSource(name){
+    planSource=name;
+    document.querySelectorAll('[data-plan-source]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.planSource===name));
+    const pane=$('viewer2d');
+    if(name!=='ifc'||engine!=='ifc'){pane.classList.remove('plan-ifc');if(ifcPlanHost)ifcPlanHost.hidden=true;views?.resize();return;}
+    if(!ifcPlanHost){ifcPlanHost=document.createElement('div');ifcPlanHost.id='ifc-plan';ifcPlanHost.innerHTML='<div class="ifc-canvas"></div><div class="ifc-plan-note" role="status"></div>';pane.append(ifcPlanHost);}
+    ifcPlanHost.hidden=false;pane.classList.add('plan-ifc');
+    const note=ifcPlanHost.querySelector('.ifc-plan-note');
+    try{
+        if(!ifcPlan){note.textContent='Opening the Open IFC plan…';const {createIfcEngine}=await import('./ifc-engine.mjs');ifcPlan=await createIfcEngine(ifcPlanHost.querySelector('.ifc-canvas'),{plan:true,onPick:pickFromIfc,onStatus:t=>{note.textContent=t;}});}
+        if(!ifcPlan.loaded){if(!ifcSource)throw Error('Open the IFC 3D view first.');await ifcPlan.load(ifcSource.bytes?{bytes:ifcSource.bytes.slice(0),name:ifcSource.name}:{key:ifcSource.key,name:ifcSource.name});}
+        if(planSource!=='ifc'||engine!=='ifc')return;
+        await ifcPlan.setColors(ifcColors(views.colors));await planAtLevel();
+        ifcPlan.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));
+    }catch(err){console.warn('IFC plan:',err);note.textContent=`IFC plan: ${err.message||err}`;}
+}
+async function planAtLevel(){
+    if(!ifcPlan?.loaded)return;const name=planLevelName();
+    ifcPlanHost.querySelector('.ifc-plan-note').textContent=name?`${name} · Open IFC plan · cut 4'-0" above the floor`:'';
+    await ifcPlan.planAt(planGuids());
+}
+// Right-click a selected element: "Fit selection in 3D and plan" frames it in the 3D view and on the plan (and in the
+// IFC views when they are shown). GuiViewer3D.registerContextMenuCallback:
+// https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/GuiViewer3D/
+function fitSelectionBoth(ids){
+    ids=ids?.length?ids:views.viewer3d.getSelection();if(!ids?.length)return;
+    const v3=views.viewer3d,v2=views.viewer2d,g=ids.map(id=>guidOfWall.get(id)).filter(Boolean);
+    if(v3?.model)views.fitPadded(v3,ids,v3.model,1.6);
+    if(v2?.model)views.fitPadded(v2,ids,v2.model,2.2);
+    if(engine==='ifc'&&g.length){ifc?.frame(g,null,{min:6});if(ifcPlanOn())ifcPlan.frame(g,null,{min:6});}
+}
+function addFitMenu(viewer){
+    if(!viewer||viewer.__fitMenu)return;viewer.__fitMenu=true;
+    viewer.registerContextMenuCallback('cas-fit-3d-plan',(menu,status)=>{if(status.hasSelected)menu.unshift({title:'Fit selection in 3D and plan',target:()=>fitSelectionBoth(viewer.getSelection())});});
 }
