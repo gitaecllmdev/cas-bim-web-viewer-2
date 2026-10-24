@@ -488,3 +488,11 @@
 .la-head .la-stats i{font-style:normal;color:#c5ced8}
 .la-head~.la-focus{margin:0;border-radius:0;border-left:1px solid #e3eaf0;border-right:1px solid #e3eaf0}
 .la-head~.pg-main .la-board{border-top-left-radius:0;border-top-right-radius:0}
+/* Plan pane's Sheet bar: one line, half the height (label, sheet list, Saved plan, status, plan source) */
+.install-app #pane2d .pane2d-bar{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;padding:3px 6px;font-size:10px;min-height:0}
+.install-app #pane2d .pane2d-bar>label{display:flex;align-items:center;gap:5px;width:auto;flex:1;min-width:0;margin:0;color:#6b7f90;white-space:nowrap}
+.install-app #pane2d .pane2d-bar select{flex:1;width:auto;min-width:0;max-width:none;height:22px;padding:1px 6px;font-size:10.5px;border-radius:6px}
+.install-app #pane2d .pane2d-bar>button{flex:none;height:22px;margin:0;padding:1px 8px;font-size:10px;white-space:nowrap;border-radius:6px}
+.install-app #pane2d .pane2d-bar #sheet-status{flex:none;max-width:30%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
+.install-app #pane2d .pane2d-bar .plan-source{flex:none;margin-left:0}
+.install-app #pane2d .pane2d-bar .plan-source button{height:20px;padding:1px 8px;font-size:10px}
