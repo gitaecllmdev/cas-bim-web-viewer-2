@@ -168,15 +168,17 @@ function mountHoverProperties(){
 }
 function mountViewControls(){
     const bar=document.createElement('div');bar.className='view-context-controls';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','3D view controls');
-    bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-wall-scope aria-pressed="${wallsOnly}" title="Scope: on, hover and selection pick walls only; off, any element of the model">Walls only</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button>`;
+    bar.innerHTML=`<button data-view-command="top" title="Look straight down at the model">Top view</button><button data-view-command="iso" title="Isometric 3D view">Iso view</button><button data-view-command="fit" title="Fit the current floor or building">Fit</button><button data-model-view="apart" aria-pressed="false" title="Every floor at once, each lifted over the one below, with the schedule's share per floor">Floors apart</button><label id="apart-gap" hidden title="Space between the floors">Gap <input type="range" min="0.5" max="3" step="0.25" value="1"></label><button data-model-view="plans" aria-pressed="false" title="Every floor sheet at once, colored by the schedule">All plans</button><button data-wall-scope aria-pressed="${wallsOnly}" title="Scope: on, hover and selection pick walls only; off, any element of the model">Walls only</button><button data-view-panel="props" aria-pressed="true" title="Properties: open the selected element's properties">Properties</button><button data-view-panel="browser" title="Model browser: hide or isolate parts of the model">Model browser</button><button data-model-full title="Full screen 3D: only the model, with its own timeline">Full screen</button>`;
     bar.querySelector('[data-wall-scope]').onclick=()=>setWallsOnly(!wallsOnly);
     // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
     document.querySelector('.model-bar .layout').after(bar);
     bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(engine==='ifc'){ifc?.frame(levelGuids(),action==='fit'?null:action);return;}if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
     bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(engine==='ifc'&&b.dataset.modelView==='apart'){$('save-notice').textContent='Floors apart is in the APS viewer for now.';return;}if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
     bar.querySelector('#apart-gap input').onchange=e=>tracker?.setApartGap(Number(e.target.value));
-    // The color legend rides on the 3D view (top left).
-    $('preview').append($('model-legend'));
+    // The color legend sits in the project banner over the model card (the same colors are used everywhere);
+    // in full screen it rides on the 3D view.
+    document.querySelector('.project-banner .project-view-context').before($('model-legend'));
+    bar.querySelector('[data-model-full]').onclick=()=>setModelFull(true);
     // The Viewer's own Properties and Model browser panels (built-in extensions), opened from here.
     bar.querySelectorAll('[data-view-panel]').forEach(b=>b.onclick=()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);if(b.dataset.viewPanel==='browser')builtinPanel('Autodesk.ModelStructure',on);else builtinPanel('Autodesk.PropertiesManager',on&&views.viewer3d.getSelection().length>0);});
     bar.addEventListener('pointerdown',e=>e.stopPropagation());bar.addEventListener('keydown',e=>e.stopPropagation());
@@ -257,12 +259,16 @@ async function start(){
     onModelReady(viewer,m=>views.setModel(m).then(()=>{if(firstView)return;firstView=true;tools?.look([1,-1,.8]);views.fitShown();}).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
     tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel});
     mountHoverProperties();
+    mountModelExtras(viewer);
     // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.
     viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{if(propsOn()&&viewer.getSelection().length)builtinPanel('Autodesk.PropertiesManager',true);});
     // Walls only: the 3D viewer now, the sheet viewer as soon as it exists (it is made when the plan pane first shows).
     watchWallSelection(viewer);
     document.addEventListener('pointerdown',()=>watchWallSelection(views.viewer2d),{capture:true,passive:true});
     views.on('level',()=>watchWallSelection(views.viewer2d));
+    // A floor plan of another level picked in the Sheet list takes the 3D (section, schedule, LF) to that level too;
+    // the sheet stays the one picked.
+    $('sheets').addEventListener('change',()=>{const name=views.sheets[Number($('sheets').value)]?.levelName;if(name&&!views.apart&&views.levelOf(name)&&name!==views.level?.name)views.setLevel(name,{plan:false});});
     await loadModel(viewer,model.urn);
     views.on('level',()=>{if($('selection-context').dataset.level!==views.level?.name)$('selection-context').hidden=true;renderDrill();});renderSources();new ResizeObserver(()=>views.resize()).observe($('main'));
 }
@@ -334,3 +340,127 @@ async function setEngine(name){
     }catch(err){console.warn('IFC viewer:',err);ifcStatus(`IFC viewer: ${err.message||err}`,{error:true});}
 }
 document.querySelectorAll('[data-engine]').forEach(b=>b.onclick=()=>setEngine(b.dataset.engine));
+
+// --- Floor tags on the whole building, compact Properties, full-screen 3D -------------------------------------------
+// Whole building in 3D (All levels): each floor's name beside the building at its height, sized to the space between
+// floors on screen (closer floors: smaller text, and floors too close to read are skipped). Click a tag to go to that
+// floor. Floors apart has its own labels; one floor shown needs none. Positions: the walls' fragment bounds (robust
+// percentiles, so far-off elements don't move the tags) and Viewer3D.worldToClient, re-placed when the camera moves.
+// https://aps.autodesk.com/en/docs/viewer/v7/reference/Viewing/Viewer3D/
+function mountLevelTags(viewer){
+    const layer=document.createElement('div');layer.className='level-tags';viewer.container.append(layer);
+    let floors=null,frame=0;
+    const pct=(arr,p)=>arr[Math.min(arr.length-1,Math.max(0,Math.floor(p*(arr.length-1))))];
+    function measure(){
+        const m=viewer.model,it=m?.getInstanceTree?.(),fl=m?.getFragmentList?.();
+        if(!it||!fl||!views?.wallsByLevel?.size)return null;
+        const b=new THREE.Box3(),xs=[],ys=[],out=[];
+        for(const [name,ids] of views.wallsByLevel){
+            if(!name||!views.levelOf(name))continue;const zs=[];
+            for(const id of ids)it.enumNodeFragments(id,f=>{fl.getWorldBounds(f,b);if(b.isEmpty())return;zs.push(b.min.z);xs.push((b.min.x+b.max.x)/2);ys.push((b.min.y+b.max.y)/2);},true);
+            if(zs.length)out.push({name,z:pct(zs.sort((p,q)=>p-q),.25)});
+        }
+        if(!out.length||!xs.length)return null;
+        xs.sort((p,q)=>p-q);ys.sort((p,q)=>p-q);out.sort((p,q)=>p.z-q.z);
+        const step=out.length>1?(out.at(-1).z-out[0].z)/(out.length-1):10;
+        out.forEach((f,i)=>f.mid=(f.z+(out[i+1]?.z??f.z+step))/2);
+        return {floors:out,x:[pct(xs,.02),pct(xs,.98)],y:[pct(ys,.02),pct(ys,.98)]};
+    }
+    function place(){
+        frame=0;
+        const show=engine==='aps'&&!views?.level&&!views?.apart&&viewer.model;
+        if(!show){layer.innerHTML='';return;}
+        if(!floors)floors=measure();
+        if(!floors){layer.innerHTML='';return;}
+        const {x,y}=floors,mid=floors.floors[Math.floor(floors.floors.length/2)].mid;
+        // The building corner farthest left on screen: every tag sits just left of it.
+        const corner=[[x[0],y[0]],[x[1],y[0]],[x[0],y[1]],[x[1],y[1]]].map(c=>({c,p:viewer.worldToClient(new THREE.Vector3(c[0],c[1],mid))})).filter(o=>o.p).sort((a,b)=>a.p.x-b.p.x)[0];
+        if(!corner){layer.innerHTML='';return;}
+        const pts=floors.floors.map(f=>({f,p:viewer.worldToClient(new THREE.Vector3(corner.c[0],corner.c[1],f.mid))})).filter(o=>o.p);
+        const gaps=pts.slice(1).map((o,i)=>Math.abs(o.p.y-pts[i].p.y)).sort((a,b)=>a-b),gap=gaps.length?gaps[Math.floor(gaps.length/2)]:20;
+        if(gap<5){layer.innerHTML='';return;}
+        const size=Math.max(8,Math.min(12.5,gap*.62)),W=layer.clientWidth,H=layer.clientHeight;let last=Infinity;
+        const keep=[];for(const o of [...pts].sort((a,b)=>b.p.y-a.p.y)){if(last-o.p.y<size+3)continue;last=o.p.y;keep.push(o);}
+        const left=corner.p.x>90;
+        layer.style.setProperty('--tag-size',size.toFixed(1)+'px');
+        layer.innerHTML=keep.filter(o=>o.p.y>-10&&o.p.y<H+10&&o.p.x>-40&&o.p.x<W+40).map(o=>`<button class="level-tag ${left?'left':'right'}" data-level-tag="${escapeHtml(o.f.name)}" style="left:${(left?o.p.x-6:o.p.x+6).toFixed(0)}px;top:${o.p.y.toFixed(0)}px" title="Show ${escapeHtml(o.f.name)}">${escapeHtml(o.f.name)}</button>`).join('');
+        layer.querySelectorAll('[data-level-tag]').forEach(b=>b.onclick=e=>{e.stopPropagation();views.setLevel(b.dataset.levelTag);});
+    }
+    const later=()=>{if(!frame)frame=requestAnimationFrame(place);};
+    viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT,later);
+    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT,()=>{floors=null;later();});
+    views.on('level',later);new ResizeObserver(later).observe(viewer.container);
+    document.addEventListener('progress-summary',later);
+    layer.addEventListener('pointerdown',e=>{if(e.target.closest('.level-tag'))e.stopPropagation();});
+    return {refresh:later};
+}
+
+// The Viewer's Properties panel, compact: opened at the top right of the 3D view, narrower and shorter (move or
+// resize it as usual). Rows and title are made smaller in install-progress.css.
+function placePropertiesPanel(){
+    const host=views?.viewer3d?.container,panel=host?.querySelector('.property-panel');
+    if(!panel||panel.dataset.compact)return;
+    panel.dataset.compact='1';
+    const w=Math.min(280,host.clientWidth-24),h=Math.max(160,Math.min(320,host.clientHeight-24));
+    Object.assign(panel.style,{left:Math.max(8,host.clientWidth-w-12)+'px',top:'10px',width:w+'px',height:h+'px'});
+    window.dispatchEvent(new Event('resize'));
+}
+
+// Full-screen 3D: only the model, with its own timeline (play, date, week, planned LF), floor and view controls and the
+// color legend. These extra controls exist only in full screen; Esc or Exit returns to the dashboard as it was.
+// Element.requestFullscreen (falls back to filling the window when the browser refuses).
+let fullUi=null;
+async function setModelFull(on){
+    const preview=$('preview');
+    if(on===!!fullUi)return;
+    if(on){
+        preview.classList.add('model-full');
+        fullUi=document.createElement('div');fullUi.className='full-ui';
+        fullUi.innerHTML=`<div class="full-top"><b>${escapeHtml($('project-name').textContent)}</b><label>Floor <select data-full-level></select></label><span class="full-views"><button data-full-view="top">Top</button><button data-full-view="iso">Iso</button><button data-full-view="fit">Fit</button></span><button class="full-exit" data-full-exit title="Back to the dashboard (Esc)">Exit full screen</button></div>
+            <div class="full-time"><button data-full-play>Play</button><div class="full-date"><b data-full-date></b><small data-full-week></small></div><div class="full-track"><input type="range" data-full-range min="0" value="0" aria-label="Schedule date"><div class="full-ticks" data-full-ticks></div></div><div class="full-lf" data-full-lf></div></div>`;
+        preview.append(fullUi);
+        preview.append($('model-legend'));
+        const tip=document.querySelector('.hover-props');if(tip)preview.append(tip);
+        const sel=fullUi.querySelector('[data-full-level]');
+        sel.innerHTML=$('levels').innerHTML;sel.value=$('levels').value;
+        sel.onchange=()=>views.setLevel(sel.value||null);
+        fullUi.querySelectorAll('[data-full-view]').forEach(b=>b.onclick=()=>document.querySelector(`.view-context-controls [data-view-command="${b.dataset.fullView}"]`)?.click());
+        fullUi.querySelector('[data-full-exit]').onclick=()=>setModelFull(false);
+        fullUi.querySelector('[data-full-play]').onclick=()=>{if(!tracker)return;if(tracker.playTimer)tracker.stopPlay();else tracker.play();setTimeout(syncFull,50);};
+        const range=fullUi.querySelector('[data-full-range]');
+        range.oninput=()=>{if(!tracker?.span)return;tracker.stopPlay?.();tracker.setCursor(dayFrom(tracker.span[0],+range.value));};
+        syncFull();
+        // Not awaited: some browsers leave the request pending; the window-filling layout works either way.
+        try{if(!document.fullscreenElement)preview.requestFullscreen?.()?.catch?.(()=>{});}catch{}
+    }else{
+        const ui=fullUi;fullUi=null;ui?.remove();
+        preview.classList.remove('model-full');
+        document.querySelector('.project-banner .project-view-context')?.before($('model-legend'));
+        const tip=preview.querySelector('.hover-props');if(tip)document.body.append(tip);
+        try{if(document.fullscreenElement)document.exitFullscreen()?.catch?.(()=>{});}catch{}
+    }
+    requestAnimationFrame(()=>{views?.resize();ifc&&window.dispatchEvent(new Event('resize'));});
+}
+const dayFrom=(start,n)=>new Date(Date.parse(start+'T00:00:00Z')+n*864e5).toISOString().slice(0,10);
+function syncFull(){
+    if(!fullUi||!tracker?.span)return;
+    const [a,b]=tracker.span,days=Math.round((Date.parse(b)-Date.parse(a))/864e5),at=Math.round((Date.parse(tracker.cursor)-Date.parse(a))/864e5);
+    const range=fullUi.querySelector('[data-full-range]');range.max=days;if(document.activeElement!==range)range.value=at;
+    range.style.setProperty('--at',(days?100*at/days:0).toFixed(2)+'%');
+    const d=new Date(tracker.cursor+'T12:00:00Z'),monday=new Date(d.getTime()-((d.getUTCDay()+6)%7)*864e5);
+    fullUi.querySelector('[data-full-date]').textContent=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+    fullUi.querySelector('[data-full-week]').textContent=`Week of ${monday.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})} · day ${at+1} of ${days+1}`;
+    fullUi.querySelector('[data-full-play]').textContent=tracker.playTimer?'Pause':'Play';
+    const lf=summary?.lf;fullUi.querySelector('[data-full-lf]').innerHTML=lf?.total?`<b>${lf.pct}%</b><span>planned LF${lf.level?' · '+escapeHtml(lf.level):''}<small>${lf.planned.toLocaleString()} / ${lf.total.toLocaleString()} LF</small></span>`:'';
+    const ticks=fullUi.querySelector('[data-full-ticks]');
+    if(ticks.dataset.span!==a+b){ticks.dataset.span=a+b;const out=[];for(let m=new Date(a.slice(0,7)+'-01T00:00:00Z');m.getTime()<=Date.parse(b);m.setUTCMonth(m.getUTCMonth()+1)){const f=(m.getTime()-Date.parse(a))/864e5/Math.max(1,days);if(f>=0&&f<=1)out.push(`<span style="left:${(100*f).toFixed(2)}%">${m.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}</span>`);}ticks.innerHTML=out.join('');}
+    const sel=fullUi.querySelector('[data-full-level]');if(sel&&document.activeElement!==sel)sel.value=$('levels').value;
+}
+document.addEventListener('progress-summary',()=>syncFull());
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fullUi)setModelFull(false);requestAnimationFrame(()=>views?.resize());});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fullUi&&!document.fullscreenElement)setModelFull(false);});
+function mountModelExtras(viewer){
+    mountLevelTags(viewer);
+    viewer.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>setTimeout(placePropertiesPanel,0));
+    views.on('level',()=>syncFull());
+}

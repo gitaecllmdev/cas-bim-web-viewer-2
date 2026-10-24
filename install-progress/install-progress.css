@@ -245,7 +245,7 @@
 #plan-progress .pp-hist{margin:0;min-width:0;display:grid;gap:2px;padding:4px 8px 5px;border:1px solid #e3e9ef;border-radius:8px;background:white}
 #plan-progress .pp-hist figcaption{display:flex;justify-content:space-between;gap:6px;font-size:9px;color:#7c8a99;white-space:nowrap}
 #plan-progress .pp-hist figcaption b{color:#3e5568;font-weight:600}
-#plan-progress .pp-hist svg{width:100%;height:42px;display:block;cursor:pointer}
+#plan-progress .pp-hist svg{width:100%;height:29px;display:block;cursor:pointer}
 #plan-progress .pp-wk.later rect{opacity:.35}
 #plan-progress .pp-wk.now rect{stroke:#13293d;stroke-width:.6;vector-effect:non-scaling-stroke}
 #plan-progress .pp-cum{fill:none;stroke:#13293d;stroke-width:1.2;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
@@ -345,10 +345,70 @@
 .la-weeks>em{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-style:normal;font-size:8.5px;color:#6b7f90;background:#ffffffd9;padding:0 3px;border-radius:3px}
 @media(max-width:700px){.la-row{grid-template-columns:minmax(110px,40%) 1fr}.la-stats{order:3;width:100%}}
 /* Planned LF histogram: date axis (month starts, start / finish, the shown date) */
-#plan-progress .pp-axis{position:relative;height:13px;font-size:8.5px;color:#7c8a99;font-variant-numeric:tabular-nums;border-top:1px solid #e6ecf1}
+#plan-progress .pp-axis{position:relative;height:11px;font-size:8.5px;color:#7c8a99;font-variant-numeric:tabular-nums;border-top:1px solid #e6ecf1}
 #plan-progress .pp-axis span{position:absolute;top:2px;white-space:nowrap;line-height:1}
 #plan-progress .pp-tick{transform:translateX(-50%);padding-top:0}
 #plan-progress .pp-tick::before{content:'';position:absolute;left:50%;top:-4px;height:3px;border-left:1px solid #c5d0d9}
 #plan-progress .pp-end{left:0;color:#4f6577;font-weight:600}
 #plan-progress .pp-end.last{left:auto;right:0}
 #plan-progress .pp-axis .pp-axis-now{transform:translateX(-50%);top:1px;padding:1px 4px;border-radius:4px;background:#c2410c;color:white;font-weight:650;z-index:1;box-shadow:0 1px 3px #0002}
+/* Color legend in the project banner (the stages' colors used everywhere); compact chips, still hide / show / recolor */
+.install-app .project-banner>#model-legend{display:flex;align-items:center;gap:4px;margin-left:auto;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:3px 4px;background:#f6f9fb;border:1px solid #e1e8ee;border-radius:16px;font-size:10.5px}
+.install-app .project-banner>#model-legend>b{font-size:9.5px;color:#6b7f90;font-weight:600;white-space:nowrap;padding:0 4px}
+.install-app .project-banner>#model-legend .legend-chip{border-color:#e1e8ee}
+.install-app .project-banner>#model-legend button{padding:2px 7px 2px 3px;font-size:10.5px;white-space:nowrap}
+.install-app .project-banner>#model-legend input[type=color]{width:13px;height:13px}
+.install-app .project-banner>#model-legend .legend-ghost{white-space:nowrap;font-size:10px}
+.install-app .project-banner>#model-legend+.project-view-context{margin-left:0}
+@media(max-width:900px){.install-app .project-banner>#model-legend>b,.install-app .project-banner>#model-legend .legend-ghost{display:none}}
+
+/* Floor tags on the whole building (All levels): sized from the space between floors on screen */
+.level-tags{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;--tag-size:11px}
+.install-app .adsk-viewing-viewer .level-tags button.level-tag{position:absolute;transform:translateY(-50%);pointer-events:auto;cursor:pointer;font-family:inherit;font-weight:650;font-size:var(--tag-size);line-height:1.25;height:auto;min-height:0;min-width:0;width:auto;padding:1px 6px;margin:0;border:0;border-radius:4px;background:#ffffffe0;color:#1d2b38;white-space:nowrap;box-shadow:0 1px 3px #0b1b2a24;backdrop-filter:blur(4px)}
+.install-app .adsk-viewing-viewer .level-tags button.level-tag.left{transform:translate(-100%,-50%);border-right:2px solid #1f3b57}
+.install-app .adsk-viewing-viewer .level-tags button.level-tag.right{border-left:2px solid #1f3b57}
+.install-app .adsk-viewing-viewer .level-tags button.level-tag:hover{background:#1f3b57;color:white}
+
+/* The Viewer's Properties panel, compact: small title, 20px rows, slim name / value columns */
+.install-app .adsk-viewing-viewer .property-panel{border-radius:8px;box-shadow:0 8px 24px #0b1b2a30;min-width:200px;min-height:120px}
+.install-app .adsk-viewing-viewer .property-panel .docking-panel-title{font-size:12px;font-weight:650;height:16px;line-height:16px;padding:6px 30px 6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.install-app .adsk-viewing-viewer .property-panel .docking-panel-close{transform:scale(.75);transform-origin:top right;top:2px;right:2px}
+.install-app .adsk-viewing-viewer .property-panel .docking-panel-scroll{height:calc(100% - 28px - 20px)!important}
+.install-app .adsk-viewing-viewer .property-panel group.category>lmvheader{height:auto;padding:5px 6px 4px 8px;font-size:10.5px;font-weight:650;background:#f3f6f9}
+.install-app .adsk-viewing-viewer .property-panel group.category>lmvheader .category-name{font-size:10.5px}
+.install-app .adsk-viewing-viewer .property-panel leaf.property>lmvheader{height:20px;padding:0 6px 0 8px}
+.install-app .adsk-viewing-viewer .property-panel .property-name,.install-app .adsk-viewing-viewer .property-panel .property-value{height:20px;line-height:20px;font-size:10.5px}
+.install-app .adsk-viewing-viewer .property-panel .property-name{padding-left:6px;color:#5b7083}
+.install-app .adsk-viewing-viewer .property-panel .property-value{padding-left:8px;color:#14283b}
+.install-app .adsk-viewing-viewer .property-panel lmvheader>icon{transform:scale(.8)}
+
+/* Full-screen 3D: only the model, with its own timeline and controls (these exist only in full screen) */
+#preview.model-full{position:fixed!important;inset:0!important;z-index:2000;width:100vw!important;height:100vh!important;background:#eef2f5}
+#preview:fullscreen{width:100vw;height:100vh}
+.full-ui{position:absolute;inset:0;z-index:20;pointer-events:none;font-size:12px}
+.full-ui>*{pointer-events:auto}
+.full-top{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:12px;background:#ffffffd0;border:1px solid #ffffff;box-shadow:0 8px 28px #0b1b2a26;backdrop-filter:blur(14px) saturate(1.4)}
+.full-top>b{font-size:13px;color:#13293d;margin-right:4px}
+.full-top label{display:flex;align-items:center;gap:6px;color:#5b7083;font-size:11px}
+.full-top select{font-size:11px;padding:4px 6px;border:1px solid #d6e0e8;border-radius:7px;background:white}
+.full-views{display:inline-flex;border:1px solid #d6e0e8;border-radius:8px;overflow:hidden;background:white}
+.full-views button{border:0;border-radius:0;background:transparent;padding:5px 11px;font-size:11px;color:#355066;cursor:pointer}
+.full-views button+button{border-left:1px solid #d6e0e8}
+.full-views button:hover{background:#eef4f8}
+.full-exit{margin-left:auto;border:0;border-radius:8px;background:#1f3b57;color:white;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer}
+.full-time{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(980px,calc(100% - 32px));display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:10px 16px 12px;border-radius:16px;background:#ffffffcc;border:1px solid #ffffff;box-shadow:0 12px 36px #0b1b2a33;backdrop-filter:blur(16px) saturate(1.5)}
+.full-time [data-full-play]{border:0;border-radius:20px;background:#1f3b57;color:white;font-weight:650;padding:7px 16px;cursor:pointer;min-width:66px}
+.full-date{display:grid;line-height:1.25;min-width:150px}
+.full-date b{font-size:13px;color:#13293d;font-variant-numeric:tabular-nums}
+.full-date small{font-size:10px;color:#6b7f90}
+.full-track{position:relative;padding-bottom:14px}
+.full-track input[type=range]{width:100%;margin:0;accent-color:#c2410c;height:18px;cursor:pointer}
+.full-ticks{position:absolute;left:0;right:0;bottom:0;height:12px;font-size:9px;color:#7c8a99}
+.full-ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.full-lf{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.full-lf b{font-size:20px;color:#13293d;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.full-lf span{display:grid;font-size:10px;color:#5b7083;line-height:1.3}
+.full-lf small{font-size:9.5px;color:#8a99a7}
+#preview.model-full>#model-legend{top:66px;bottom:auto;left:12px;z-index:21}
+#preview.model-full .hover-props{z-index:30}
+@media(max-width:700px){.full-time{grid-template-columns:auto minmax(0,1fr);gap:8px}.full-date,.full-lf{display:none}.full-top>b{display:none}}
