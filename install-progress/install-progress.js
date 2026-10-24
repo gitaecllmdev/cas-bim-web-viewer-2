@@ -172,8 +172,8 @@ function mountViewControls(){
     bar.querySelector('[data-wall-scope]').onclick=()=>setWallsOnly(!wallsOnly);
     // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
     document.querySelector('.model-bar .layout').after(bar);
-    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(engine==='ifc'){ifc?.frame(levelGuids(),action==='fit'?null:action);return;}if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
-    bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(engine==='ifc'&&b.dataset.modelView==='apart'){$('save-notice').textContent='Floors apart is in the APS viewer for now.';return;}if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
+    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(engine==='ifc'){ifc?.frame(levelGuids(),action==='fit'?null:action);return;}if(engine==='speckle'){spk?.frame(levelGuids(),action==='fit'?null:action);return;}if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
+    bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(engine!=='aps'&&b.dataset.modelView==='apart'){$('save-notice').textContent='Floors apart is in the APS viewer for now.';return;}if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
     bar.querySelector('#apart-gap input').onchange=e=>tracker?.setApartGap(Number(e.target.value));
     // The color legend sits in the project banner over the model card (the same colors are used everywhere);
     // in full screen it rides on the 3D view.
@@ -305,14 +305,15 @@ async function loadIfcModel(){
 function bridgeIfc(){
     if(ifcBridged)return;ifcBridged=true;
     const setColors=views.setColors.bind(views);
-    views.setColors=colors=>{setColors(colors);if(engine==='ifc'&&ifc?.loaded)ifc.setColors(ifcColors(colors));if(ifcPlanOn())ifcPlan.setColors(ifcColors(colors));};
+    views.setColors=colors=>{setColors(colors);if(engine==='ifc'&&ifc?.loaded)ifc.setColors(ifcColors(colors));if(ifcPlanOn())ifcPlan.setColors(ifcColors(colors));if(engine==='speckle'&&spk?.loaded)spk.setColors(ifcColors(colors));};
+    views.on('level',()=>{if(engine!=='speckle'||!spk?.loaded)return;const g=levelGuids();spk.section(g);spk.frame(g);});
     // IFC camera moves run in order: a floor change frames the floor, then a linked selection zooms to its walls.
     const queue=fn=>{ifcQueue=ifcQueue.then(()=>engine==='ifc'&&ifc?.loaded?fn():null).catch(err=>console.warn('IFC viewer:',err));};
     views.on('level',()=>queue(async()=>{const g=levelGuids();await ifc.section(g);await ifc.frame(g);if(ifcPlanOn())await planAtLevel();}));
     views.on('sheet',()=>{if(ifcPlanOn()&&!views.level)queue(planAtLevel);});
     // Plan <-> 3D: a selection on the sheet (or in the IFC view) zooms the IFC view to it, as Linked selection zoom does in APS.
-    views.on('selectioncontext',({ids})=>{if(!$('selection-context-zoom')?.checked)return;const g=(ids||[]).map(id=>guidOfWall.get(id)).filter(Boolean);if(g.length)queue(async()=>{await ifc.frame(g,null,{min:6});if(ifcPlanOn())await ifcPlan.frame(g,null,{min:6});});});
-    views.viewer3d.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{const g=views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean);if(engine==='ifc'&&ifc?.loaded)ifc.select(g);if(ifcPlanOn())ifcPlan.select(g);});
+    views.on('selectioncontext',({ids})=>{if(!$('selection-context-zoom')?.checked)return;const g=(ids||[]).map(id=>guidOfWall.get(id)).filter(Boolean);if(!g.length)return;if(engine==='speckle'&&spk?.loaded)spk.frame(g,null,{min:6});queue(async()=>{await ifc.frame(g,null,{min:6});if(ifcPlanOn())await ifcPlan.frame(g,null,{min:6});});});
+    views.viewer3d.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{const g=views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean);if(engine==='ifc'&&ifc?.loaded)ifc.select(g);if(ifcPlanOn())ifcPlan.select(g);if(engine==='speckle'&&spk?.loaded)spk.select(g);});
 }
 // A pick in the IFC view selects the same wall through the APS pipeline (sheet highlight, floor, related activities).
 // Of the elements under the pointer (nearest first) it takes a wall of the shown floor, else the nearest wall.
@@ -322,14 +323,18 @@ function pickFromIfc(guids){
     if(w)views.select([w.dbId]);else{views.viewer3d.clearSelection();if(guids.length&&!wallsOnly)$('save-notice').textContent='Picked an IFC element that is not one of the schedule walls.';}
 }
 async function setEngine(name){
-    if(name===engine||name==='speckle'||!views)return;
+    if(name===engine||!views)return;
     engine=name;
     document.querySelectorAll('[data-engine]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.engine===engine));
     const preview=$('preview');
     document.querySelectorAll('.plan-source').forEach(g=>g.hidden=engine!=='ifc');
-    if(engine==='aps'){preview.classList.remove('engine-ifc');if(ifcHost)ifcHost.hidden=true;$('viewer2d').classList.remove('plan-ifc');if(ifcPlanHost)ifcPlanHost.hidden=true;views.resize();return;}
+    preview.classList.toggle('engine-ifc',engine==='ifc');preview.classList.toggle('engine-speckle',engine==='speckle');
+    if(ifcHost)ifcHost.hidden=engine!=='ifc';if(spkHost)spkHost.hidden=engine!=='speckle';
+    if(engine!=='ifc'){$('viewer2d').classList.remove('plan-ifc');if(ifcPlanHost)ifcPlanHost.hidden=true;}
+    if(engine==='aps'){views.resize();return;}
+    if(engine==='speckle'){await openSpeckle();return;}
     if(!ifcHost){ifcHost=document.createElement('div');ifcHost.id='ifc-view';ifcHost.innerHTML='<div class="ifc-canvas"></div><div class="ifc-status" role="status" hidden></div>';preview.append(ifcHost);}
-    ifcHost.hidden=false;preview.classList.add('engine-ifc');
+    ifcHost.hidden=false;
     try{
         if(!ifc){const {createIfcEngine}=await import('./ifc-engine.mjs');ifc=await createIfcEngine(ifcHost.querySelector('.ifc-canvas'),{onStatus:t=>ifcStatus(t),onPick:pickFromIfc});}
         if(!ifc.loaded)await loadIfcModel();
@@ -342,6 +347,30 @@ async function setEngine(name){
         ifcStatus('');
         if(planSource==='ifc')setPlanSource('ifc');
     }catch(err){console.warn('IFC viewer:',err);ifcStatus(`Open IFC: ${err.message||err}`,{error:true});}
+}
+// --- Speckle (the third 3D engine): static Speckle objects hosted with the site (speckle/wilton.json + chunks), shown
+// by the Speckle viewer in the 3D slot with the same links as Open IFC (colors, floor section, picks, selection, linked
+// zoom). Loaded only when Speckle is picked.
+let spk=null,spkHost=null;
+function spkStatus(text,{error=false}={}){
+    const el=spkHost?.querySelector('.ifc-status');if(!el)return;
+    el.hidden=!text;el.classList.toggle('error',error);
+    el.innerHTML=`${text?`<span>${escapeHtml(text)}</span>`:''}${error?'<button data-spk-back>Back to APS</button>':''}`;
+    el.querySelector('[data-spk-back]')?.addEventListener('click',()=>setEngine('aps'));
+}
+async function openSpeckle(){
+    if(!spkHost){spkHost=document.createElement('div');spkHost.id='speckle-view';spkHost.innerHTML='<div class="ifc-canvas"></div><div class="ifc-status" role="status" hidden></div>';$('preview').append(spkHost);}
+    spkHost.hidden=false;
+    try{
+        if(!spk){const {createSpeckleEngine}=await import('./speckle-engine.mjs');spk=await createSpeckleEngine(spkHost.querySelector('.ifc-canvas'),{onStatus:t=>spkStatus(t),onPick:pickFromIfc});}
+        if(!spk.loaded)await spk.load('speckle/wilton.json');
+        if(engine!=='speckle')return;
+        wallGuids();bridgeIfc();
+        const g=levelGuids();
+        spk.setColors(ifcColors(views.colors));spk.section(g);spk.frame(g,'iso');
+        spk.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));
+        spkStatus('');
+    }catch(err){console.warn('Speckle viewer:',err);spkStatus(`Speckle: ${err.message||err}`,{error:true});}
 }
 document.querySelectorAll('[data-engine]').forEach(b=>b.onclick=()=>setEngine(b.dataset.engine));
 
@@ -517,6 +546,7 @@ function fitSelectionBoth(ids){
     if(v3?.model)views.fitPadded(v3,ids,v3.model,1.6);
     if(v2?.model)views.fitPadded(v2,ids,v2.model,2.2);
     if(engine==='ifc'&&g.length){ifc?.frame(g,null,{min:6});if(ifcPlanOn())ifcPlan.frame(g,null,{min:6});}
+    if(engine==='speckle'&&g.length)spk?.frame(g,null,{min:6});
 }
 function addFitMenu(viewer){
     if(!viewer||viewer.__fitMenu)return;viewer.__fitMenu=true;

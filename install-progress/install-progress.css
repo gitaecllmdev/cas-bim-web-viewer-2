@@ -430,3 +430,11 @@
 .pane2d-bar .plan-source button{border:0;border-radius:0;background:transparent;padding:4px 9px;font-size:10.5px;color:#4a6276}
 .pane2d-bar .plan-source button+button{border-left:1px solid #d6e0e8}
 .pane2d-bar .plan-source button[aria-pressed=true]{background:#1f3b57;color:#fff;font-weight:650}
+/* Speckle in the 3D slot (same look as Open IFC) */
+#preview.engine-speckle>.adsk-viewing-viewer{visibility:hidden}
+#speckle-view{position:absolute;inset:0;z-index:5;background:#f4f6f8}
+#speckle-view[hidden]{display:none}
+#speckle-view .ifc-canvas{position:absolute;inset:0}
+#speckle-view .ifc-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;gap:8px;justify-items:center;max-width:min(380px,calc(100% - 32px));padding:14px 18px;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px #0b1b2a33;font-size:12px;text-align:center;color:#253c50;z-index:3}
+#speckle-view .ifc-status[hidden]{display:none}
+#speckle-view .ifc-status.error{border-color:#e5b4ae}

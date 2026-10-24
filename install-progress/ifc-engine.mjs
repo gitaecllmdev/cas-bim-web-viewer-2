@@ -63,7 +63,7 @@ export async function createIfcEngine(host, { onPick = () => {}, onStatus = () =
     const roomLayer = document.createElement('div');
     roomLayer.className = 'ifc-rooms';
     host.append(roomLayer);
-    const resize = new ResizeObserver(() => { world.renderer.resize?.(); world.camera.updateAspect?.(); fragments.core.update(true); placeRoomsLater(); });
+    const resize = new ResizeObserver(() => { if (!host.clientWidth || !host.clientHeight) return; world.renderer.resize?.(); world.camera.updateAspect?.(); fragments.core.update(true); placeRoomsLater(); }); // hidden: keep the last size
     resize.observe(host);
 
     let model = null, byGuid = new Map(), guidOf = new Map(), colored = new Map(), selected = [], hiddenByLevel = [];
