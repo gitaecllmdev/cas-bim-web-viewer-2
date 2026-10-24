@@ -291,3 +291,64 @@
 .install-app .view-context-controls button{width:auto;height:28px;padding:0 9px;font-size:11px}
 .install-app .view-context-controls button[aria-pressed=true]{background:#e1ecee;color:#164d59;border-color:#bfd4d9}
 @media(max-width:700px){.install-app #preview>#model-legend{flex-wrap:nowrap;overflow-x:auto;bottom:4px;left:4px;max-width:calc(100% - 8px);padding:3px 4px;scrollbar-width:none}.install-app #preview>#model-legend>b,.install-app #model-legend .legend-ghost{display:none}.install-app #model-legend button{white-space:nowrap;padding:2px 6px 2px 3px;font-size:10px}}
+/* 3D viewer switch (header) and the IFC view in the 3D slot; APS stays the default */
+.engine-switch{display:inline-flex;align-items:center;border:1px solid #ffffff30;border-radius:7px;overflow:hidden;margin-right:4px}
+.engine-switch>span{font-size:10px;color:#afc2d5;padding:0 7px;letter-spacing:.5px}
+#header .header-actions .engine-switch button{border:0;border-left:1px solid #ffffff25;border-radius:0;background:transparent;color:#d9e5ef;padding:7px 10px;font-size:11px}
+#header .header-actions .engine-switch button[aria-pressed=true]{background:#e6f5f0;color:#173f3d;font-weight:650}
+#header .header-actions .engine-switch button:disabled{color:#7f95a8;cursor:not-allowed}
+#preview.engine-ifc>.adsk-viewing-viewer{visibility:hidden}
+#ifc-view{position:absolute;inset:0;z-index:5;background:#f4f6f8}
+#ifc-view[hidden]{display:none}
+#ifc-view .ifc-canvas{position:absolute;inset:0}
+#ifc-view .ifc-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;gap:8px;justify-items:center;max-width:min(380px,calc(100% - 32px));padding:14px 18px;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px #0b1b2a33;font-size:12px;text-align:center;color:#253c50}
+#ifc-view .ifc-status[hidden]{display:none}
+#ifc-view .ifc-status.error{border-color:#e5b4ae}
+#ifc-view .ifc-choose{display:inline-block;padding:7px 14px;border-radius:7px;background:#1f3b57;color:white;cursor:pointer;font-weight:600}
+#ifc-view .ifc-status small{color:#7c8a99;font-size:10px}
+@media(max-width:700px){.engine-switch>span{display:none}}
+/* Lookahead board (3 / 6 / 12 weeks): slim activity rows, bars across week columns */
+.la-head{display:flex;align-items:flex-end;gap:14px;margin:8px 0 10px;flex-wrap:wrap}
+.la-head h3{font-size:17px!important;letter-spacing:-.4px;margin:2px 0!important}
+.la-head p{font-size:10px;color:#7d8d9c;margin:0}
+.la-stats{display:flex;gap:6px;margin-right:auto}
+.la-stats span{display:flex;flex-direction:column;padding:5px 10px;border-radius:8px;background:#f1f5f8;font-size:9px;color:#7d8d9c;min-width:56px}
+.la-stats b{font-size:15px;color:#1f3b57;line-height:1.2}
+.la-controls{display:flex;align-items:center;gap:10px}
+.la-controls label{font-size:10px;color:#8796a6;display:flex;align-items:center;gap:6px}
+.la-controls input{border:1px solid var(--line);padding:5px;border-radius:6px;font-size:11px}
+.la-range{display:inline-flex;border:1px solid #d6e0e8;border-radius:8px;overflow:hidden;background:#f6f9fb}
+.la-range button{border:0;border-radius:0;background:transparent;padding:6px 11px;font-size:11px;color:#4a6276;cursor:pointer}
+.la-range button+button{border-left:1px solid #d6e0e8}
+.la-range button[aria-pressed=true]{background:#1f3b57;color:white;font-weight:650}
+.la-focus{font-size:10px;color:#8a5a2b;background:#fff6ec;border:1px solid #f2dcc2;border-radius:7px;padding:6px 10px;margin:0 0 8px}
+.la-board{min-width:0;border:1px solid #e3eaf0;border-radius:10px;overflow:hidden;background:white}
+.la-row{display:grid;grid-template-columns:minmax(150px,32%) 1fr;align-items:stretch;width:100%;border:0;border-top:1px solid #eef2f5;background:white;padding:0;margin:0;text-align:left;font:inherit;color:inherit;border-radius:0}
+.la-row.lookahead-card{border-left:0;cursor:pointer;margin:0;padding:0}
+.la-row.lookahead-card:hover{background:#f6fafc}
+.la-row.lookahead-card.selected{outline:0;background:#e9f5f3;box-shadow:inset 3px 0 0 #367f7c}
+.la-name{display:flex;flex-direction:column;justify-content:center;gap:1px;padding:4px 8px 4px 10px;min-width:0;border-left:3px solid var(--stage-color,transparent)}
+.la-name b{font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+.la-name small{font-size:8.5px;color:#8a99a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.la-weeks{position:relative;display:grid;grid-template-columns:repeat(var(--weeks),1fr);min-height:30px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100% / var(--weeks) - 1px),#eef2f5 calc(100% / var(--weeks) - 1px),#eef2f5 calc(100% / var(--weeks)))}
+.la-row.la-top{border-top:0;background:#f7fafc;position:sticky;top:0;z-index:1}
+.la-top .la-name{font-size:9px;color:#7d8d9c;font-weight:650;letter-spacing:.3px;border-left-color:transparent}
+.la-top .la-weeks{background:none}
+.la-top .lookahead-week{display:flex;flex-direction:column;align-items:flex-start;padding:4px 5px;min-height:0;background:none;border-radius:0;border-left:1px solid #e3eaf0;min-width:0;overflow:hidden}
+.la-top .lookahead-week small{font-size:8px;font-weight:700;letter-spacing:.8px;color:#367f7c;text-transform:uppercase;height:10px}
+.la-top .lookahead-week b{font-size:9.5px;color:#253c50;white-space:nowrap}
+.la-top .lookahead-week i{font-style:normal;font-size:8px;color:#9aa7b5}
+.la-bar{position:absolute;top:50%;height:12px;transform:translateY(-50%);border-radius:6px;background:color-mix(in srgb,var(--stage-color) 28%,white);border:1px solid color-mix(in srgb,var(--stage-color) 70%,white);overflow:hidden;font-style:normal;box-sizing:border-box}
+.la-bar>i{display:block;height:100%;background:var(--stage-color);opacity:.85}
+.la-bar.from-before{border-top-left-radius:0;border-bottom-left-radius:0;border-left-style:dashed}
+.la-bar.past-end{border-top-right-radius:0;border-bottom-right-radius:0;border-right-style:dashed}
+.la-weeks>em{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-style:normal;font-size:8.5px;color:#6b7f90;background:#ffffffd9;padding:0 3px;border-radius:3px}
+@media(max-width:700px){.la-row{grid-template-columns:minmax(110px,40%) 1fr}.la-stats{order:3;width:100%}}
+/* Planned LF histogram: date axis (month starts, start / finish, the shown date) */
+#plan-progress .pp-axis{position:relative;height:13px;font-size:8.5px;color:#7c8a99;font-variant-numeric:tabular-nums;border-top:1px solid #e6ecf1}
+#plan-progress .pp-axis span{position:absolute;top:2px;white-space:nowrap;line-height:1}
+#plan-progress .pp-tick{transform:translateX(-50%);padding-top:0}
+#plan-progress .pp-tick::before{content:'';position:absolute;left:50%;top:-4px;height:3px;border-left:1px solid #c5d0d9}
+#plan-progress .pp-end{left:0;color:#4f6577;font-weight:600}
+#plan-progress .pp-end.last{left:auto;right:0}
+#plan-progress .pp-axis .pp-axis-now{transform:translateX(-50%);top:1px;padding:1px 4px;border-radius:4px;background:#c2410c;color:white;font-weight:650;z-index:1;box-shadow:0 1px 3px #0002}

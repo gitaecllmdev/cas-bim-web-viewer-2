@@ -3,6 +3,7 @@ import {initViewer,loadModel} from './viewer.js';
 import {Views} from './views.js';
 import {fetchJson,onModelReady,escapeHtml} from './helpers.js';
 import {CONFIG} from './config.js';
+import {revitIfcGuid} from './ifc-guid.mjs';
 import {clampSplit,INTEGRATIONS,dashboardDate,sourceFreshness,costSummary,labourSummary,labourAssignments,dashboardIcon,demoBimSnapshot,dashboardTimestamp} from './project-dashboard.mjs';
 const $=id=>document.getElementById(id);
 // The schedule's own stages and their colors (shown ones), then the ghosted rest.
@@ -112,7 +113,7 @@ $('integrations-close').onclick=closeConnect;
 $('integration-refresh').onclick=()=>{bimSnapshot=demoBimSnapshot();const at=new Date().toISOString();for(const s of INTEGRATIONS)if(links[s.id]?.mode==='demo')links[s.id].at=at;saveLinks();renderIntegration();$('integration-feedback').textContent='Sample records refreshed. No external service contacted.';};
 $('demo-reset').onclick=async()=>{if(!tracker||!confirm('Start over with demo data? The current schedule, its links and colors will be replaced.'))return;$('demo-reset').disabled=true;try{await tracker.resetDemo();tracker.reviewed={};tracker.saveReviewed();links=Object.fromEntries(INTEGRATIONS.map(s=>[s.id,{at:new Date().toISOString(),system:s.name,mode:'demo'}]));saveLinks();tracker.render();renderIntegration();$('integration-feedback').textContent='Demo data restored.';}finally{$('demo-reset').disabled=false;}};
 async function backOverview(){closeConnect();tracker?.clearFocus();setWorkspaceMode('both');await views?.setLevel(null);tracker?.refresh();renderDrill();}
-function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act);$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab?({gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Next 3 weeks'})[tab]:null].filter(Boolean).join(' · ');}
+function renderDrill(context={}){const level=views?.level?.name,act=tracker?.selectedAct,tab=tracker?.tab;const show=!!(level||act);$('drill-context').hidden=!show;$('drill-label').textContent=[level,act,tab?({gantt:'P6 Gantt',calendar:'P6 Gantt',lookahead:'Lookahead'})[tab]:null].filter(Boolean).join(' · ');}
 $('back-overview').onclick=backOverview;document.addEventListener('dashboard-context',e=>{renderDrill(e.detail);decorateControls();});
 function showActivityContext(){setWorkspaceMode('both');if(!tracker?.apartOn&&!tracker?.allPlans?.isOpen)views?.setLayout('split');$('panel').hidden=false;$('connect-page').hidden=true;const panel=tracker?.panel,details=panel?.querySelector('.pg-details');if(details){const head=panel.querySelector('.pg-head');panel.scrollTop+=details.getBoundingClientRect().top-panel.getBoundingClientRect().top-(head?.offsetHeight||0)-12;}}
 // Built-in Viewer panels: PropertiesManager (selected element's properties) and ModelStructure (model browser).
@@ -171,8 +172,8 @@ function mountViewControls(){
     bar.querySelector('[data-wall-scope]').onclick=()=>setWallsOnly(!wallsOnly);
     // The 3D view's buttons sit in the model card's toolbar, after the layout buttons, so the view itself stays clear.
     document.querySelector('.model-bar .layout').after(bar);
-    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
-    bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
+    bar.querySelectorAll('[data-view-command]').forEach(b=>b.onclick=()=>{const action=b.dataset.viewCommand;if(engine==='ifc'){ifc?.frame(levelGuids(),action==='fit'?null:action);return;}if(action==='fit')views.fitShown();else{tools?.look(action==='top'?[0,0,1]:[1,-1,.8]);views.fitShown();}});
+    bar.querySelectorAll('[data-model-view]').forEach(b=>b.onclick=async()=>{if(!tracker?.schedule)return;if(engine==='ifc'&&b.dataset.modelView==='apart'){$('save-notice').textContent='Floors apart is in the APS viewer for now.';return;}if(b.dataset.modelView==='apart')await tracker.setApart(!tracker.apartOn);else await tracker.setAllPlans(!tracker.allPlans.isOpen);renderModelStatusLegend(summary||{});});
     bar.querySelector('#apart-gap input').onchange=e=>tracker?.setApartGap(Number(e.target.value));
     // The color legend rides on the 3D view (top left).
     $('preview').append($('model-legend'));
@@ -224,12 +225,18 @@ function renderPlannedLf(s){
     const weeks=c.slice(1).map((p,i)=>({from:c[i].day,to:p.day,parts:lf.stages.map(r=>({stage:r.stage,lf:Math.max(0,(p.stages.find(q=>q.stage===r.stage)?.planned||0)-(c[i].stages.find(q=>q.stage===r.stage)?.planned||0))}))}));
     const top=Math.max(1,...weeks.map(w=>w.parts.reduce((t,q)=>t+q.lf,0))),bw=W/Math.max(1,weeks.length),now=Math.min(weeks.length-1,Math.floor(at*weeks.length));
     const bars=weeks.map((w,i)=>{let y=H;const total=w.parts.reduce((t,q)=>t+q.lf,0);return `<g class="${i===now?'pp-wk now':i>now?'pp-wk later':'pp-wk'}"><title>Week of ${escapeHtml(dashboardDate(w.from))}: ${Math.round(total).toLocaleString()} LF planned${w.parts.filter(q=>q.lf>0).map(q=>`\n${q.stage}: ${Math.round(q.lf).toLocaleString()} LF`).join('')}</title>${w.parts.map(q=>{const h=(q.lf/top)*(H-4);y-=h;return h>0?`<rect x="${(i*bw+.6).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(.8,bw-1.2).toFixed(1)}" height="${h.toFixed(1)}" fill="${color.get(q.stage)||'#8c96a0'}"/>`:'';}).join('')}</g>`;}).join('');
+    // Axis: each month's first day (Sep 1, Oct 1, ...) where it falls (not under the shown date's badge), with the
+    // start and finish dates at the ends.
+    const short=d=>new Date(String(d).slice(0,10)+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}),ticks=[];
+    if(span>0)for(let d=new Date(lf.from.slice(0,7)+'-01T00:00:00Z');d.getTime()<=Date.parse(lf.to);d.setUTCMonth(d.getUTCMonth()+1)){const f=(d.getTime()-Date.parse(lf.from))/span;if(f>0.06&&f<0.94&&Math.abs(f-at)>0.06)ticks.push(`<span class="pp-tick" style="left:${(f*100).toFixed(2)}%">${escapeHtml(short(d.toISOString()))}</span>`);}
+    const axis=`<span class="pp-end">${escapeHtml(short(lf.from))}</span>${ticks.join('')}<span class="pp-end last">${escapeHtml(short(lf.to))}</span>`;
     const cum=c.map((p,i)=>`${((i/n)*W).toFixed(1)},${(H-2-(p.pct/100)*(H-4)).toFixed(1)}`).join(' ');
-    el.innerHTML=`<div class="pp-head" title="Per schedule (working days elapsed in each activity), not field-verified"><strong>${lf.pct}%</strong><span><b>Planned by ${escapeHtml(dashboardDate(s.cursor))}${lf.level?` · ${escapeHtml(lf.level)}`:''}</b><small>${lf.planned.toLocaleString()} / ${lf.total.toLocaleString()} LF across ${lf.stages.length} stage${lf.stages.length===1?"":"s"} · per schedule</small></span></div>
+    el.innerHTML=`<div class="pp-head" title="Per schedule (working days elapsed in each activity), not field-verified"><strong>${lf.pct}%</strong><span><b>Planned by ${escapeHtml(dashboardDate(s.cursor))}${lf.level?` · ${escapeHtml(lf.level)}`:''}${lf.filtered?` · ${escapeHtml(lf.filtered==='filtered'?'filtered':lf.filtered)}`:''}</b><small>${lf.planned.toLocaleString()} / ${lf.total.toLocaleString()} LF across ${lf.stages.length} stage${lf.stages.length===1?"":"s"} · per schedule</small></span></div>
         <div class="pp-stages">${lf.stages.map(r=>`<div class="pp-stage" title="${escapeHtml(r.stage)}: ${r.planned.toLocaleString()} of ${r.total.toLocaleString()} LF planned by ${escapeHtml(dashboardDate(s.cursor))}"><span><i style="background:${color.get(r.stage)||'#8c96a0'}"></i>${escapeHtml(r.stage)}</span><b>${r.pct}%</b><div class="pp-bar"><i style="width:${r.pct}%;background:${color.get(r.stage)||'#8c96a0'}"></i></div></div>`).join('')}</div>
-        <figure class="pp-hist"><figcaption><b>Planned LF per week${lf.level?` · ${escapeHtml(lf.level)}`:''}</b><span>${escapeHtml(dashboardDate(lf.from))} – ${escapeHtml(dashboardDate(lf.to))}</span></figcaption>
+        <figure class="pp-hist"><figcaption><b>Planned LF per week${lf.level?` · ${escapeHtml(lf.level)}`:''}</b><span>${Math.round(top).toLocaleString()} LF peak week</span></figcaption>
         <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Wall length planned each week, by stage, with the cumulative percent; click to move the date">${bars}
-            <polyline points="${cum}" class="pp-cum"/><line x1="${(at*W).toFixed(1)}" x2="${(at*W).toFixed(1)}" y1="0" y2="${H}" class="pp-now"/></svg></figure>`;
+            <polyline points="${cum}" class="pp-cum"/><line x1="${(at*W).toFixed(1)}" x2="${(at*W).toFixed(1)}" y1="0" y2="${H}" class="pp-now"/></svg>
+        <div class="pp-axis">${axis}<span class="pp-axis-now" style="left:${(at*100).toFixed(2)}%">${escapeHtml(short(s.cursor))}</span></div></figure>`;
     el.querySelector('.pp-hist svg').onclick=e=>{const r=e.currentTarget.getBoundingClientRect(),f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));const d=new Date(Date.parse(lf.from)+f*span).toISOString().slice(0,10);tracker?.setCursor(d,{move:true});};
 }
 renderSources();decorateControls();
@@ -260,3 +267,70 @@ async function start(){
     views.on('level',()=>{if($('selection-context').dataset.level!==views.level?.name)$('selection-context').hidden=true;renderDrill();});renderSources();new ResizeObserver(()=>views.resize()).observe($('main'));
 }
 start().catch(err=>{$('model-health').textContent='Connection needs attention';$('model-loading').replaceChildren();const title=document.createElement('b');title.textContent='Model connection unavailable';const message=document.createElement('p');message.textContent=err.message||'Check your connection to the Autodesk services.';const retry=document.createElement('button');retry.textContent='Retry';retry.onclick=()=>location.reload();$('model-loading').append(title,message,retry);$('save-notice').textContent='Open Help for connection guidance.';});
+
+// --- 3D viewer switch: APS (the default; its code path is unchanged), That Open IFC, Speckle (not connected yet) ---
+// Nothing here runs until IFC is picked. The IFC viewer takes the 3D slot; the 2D pane stays the APS sheet. Walls are
+// matched by IFC GlobalId, worked out from each APS wall's Revit UniqueId (ifc-guid.mjs).
+let engine='aps',ifc=null,ifcHost=null,ifcBridged=false,ifcQueue=Promise.resolve();
+const guidOfWall=new Map(),wallOfGuid=new Map();
+function wallGuids(){if(guidOfWall.size||!tracker?.walls)return;for(const w of tracker.walls){const g=revitIfcGuid(w.externalId);if(g){guidOfWall.set(w.dbId,g);wallOfGuid.set(g,w);}}}
+function ifcColors(colors){const out=new Map();for(const [id,hex] of colors||[]){const g=guidOfWall.get(id);if(g)out.set(g,hex);}return out;}
+function levelGuids(){const name=views?.level?.name;return name&&tracker?.walls?tracker.walls.filter(w=>w.level===name).map(w=>guidOfWall.get(w.dbId)).filter(Boolean):null;}
+function ifcStatus(text,{error=false,choose=false}={}){
+    const el=ifcHost?.querySelector('.ifc-status');if(!el)return;
+    el.hidden=!text&&!choose;el.classList.toggle('error',error);
+    el.innerHTML=`${text?`<span>${escapeHtml(text)}</span>`:''}${choose?'<label class="ifc-choose">Choose IFC file…<input type="file" accept=".ifc,.frag" hidden></label><small>An IFC export of this building (Revit, IFC2x3 or IFC4). It is read in this browser and kept here after the first conversion.</small>':''}${error?'<button data-ifc-back>Back to APS</button>':''}`;
+    el.querySelector('[data-ifc-back]')?.addEventListener('click',()=>setEngine('aps'));
+}
+function chooseIfcFile(){return new Promise(resolve=>{ifcStatus('No IFC model on this site yet.',{choose:true});ifcHost.querySelector('.ifc-choose input').onchange=e=>resolve(e.target.files[0]||null);});}
+async function loadIfcModel(){
+    // The site's own converted model first (the browser's HTTP cache keeps it between visits), then one converted in
+    // this browser earlier, then a file the user picks.
+    ifcStatus('Downloading the IFC model…');
+    const hosted=await fetch('ifc/wilton.frag').catch(()=>null);
+    if(hosted?.ok){await ifc.load({bytes:await hosted.arrayBuffer(),name:'wilton.frag'});return;}
+    let key='';try{key=localStorage.getItem('cas-project-dashboard:ifc-key')||'';}catch{}
+    if(key)try{await ifc.load({key,name:'the IFC model'});return;}catch{}
+    const file=await chooseIfcFile();if(!file)throw Error('No IFC file chosen.');
+    key=`${file.name}:${file.size}:${file.lastModified}`;
+    await ifc.load({bytes:await file.arrayBuffer(),name:file.name,key});
+    try{localStorage.setItem('cas-project-dashboard:ifc-key',key);}catch{}
+}
+function bridgeIfc(){
+    if(ifcBridged)return;ifcBridged=true;
+    const setColors=views.setColors.bind(views);
+    views.setColors=colors=>{setColors(colors);if(engine==='ifc'&&ifc?.loaded)ifc.setColors(ifcColors(colors));};
+    // IFC camera moves run in order: a floor change frames the floor, then a linked selection zooms to its walls.
+    const queue=fn=>{ifcQueue=ifcQueue.then(()=>engine==='ifc'&&ifc?.loaded?fn():null).catch(err=>console.warn('IFC viewer:',err));};
+    views.on('level',()=>queue(async()=>{const g=levelGuids();await ifc.section(g);await ifc.frame(g);}));
+    // Plan <-> 3D: a selection on the sheet (or in the IFC view) zooms the IFC view to it, as Linked selection zoom does in APS.
+    views.on('selectioncontext',({ids})=>{if(!$('selection-context-zoom')?.checked)return;const g=(ids||[]).map(id=>guidOfWall.get(id)).filter(Boolean);if(g.length)queue(()=>ifc.frame(g,null,{min:6}));});
+    views.viewer3d.addEventListener(Autodesk.Viewing.SELECTION_CHANGED_EVENT,()=>{if(engine==='ifc'&&ifc?.loaded)ifc.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));});
+}
+// A pick in the IFC view selects the same wall through the APS pipeline (sheet highlight, floor, related activities).
+// Of the elements under the pointer (nearest first) it takes a wall of the shown floor, else the nearest wall.
+function pickFromIfc(guids){
+    const walls=guids.map(g=>wallOfGuid.get(g)).filter(Boolean),level=views?.level?.name;
+    const w=walls.find(x=>!level||x.level===level)||(level?null:walls[0]);
+    if(w)views.select([w.dbId]);else{views.viewer3d.clearSelection();if(guids.length&&!wallsOnly)$('save-notice').textContent='Picked an IFC element that is not one of the schedule walls.';}
+}
+async function setEngine(name){
+    if(name===engine||name==='speckle'||!views)return;
+    engine=name;
+    document.querySelectorAll('[data-engine]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.engine===engine));
+    const preview=$('preview');
+    if(engine==='aps'){preview.classList.remove('engine-ifc');if(ifcHost)ifcHost.hidden=true;views.resize();return;}
+    if(!ifcHost){ifcHost=document.createElement('div');ifcHost.id='ifc-view';ifcHost.innerHTML='<div class="ifc-canvas"></div><div class="ifc-status" role="status" hidden></div>';preview.append(ifcHost);}
+    ifcHost.hidden=false;preview.classList.add('engine-ifc');
+    try{
+        if(!ifc){const {createIfcEngine}=await import('./ifc-engine.mjs');ifc=await createIfcEngine(ifcHost.querySelector('.ifc-canvas'),{onStatus:t=>ifcStatus(t),onPick:pickFromIfc});}
+        if(!ifc.loaded)await loadIfcModel();
+        if(engine!=='ifc')return;
+        wallGuids();bridgeIfc();
+        const g=levelGuids();
+        await ifc.setColors(ifcColors(views.colors));await ifc.section(g);await ifc.frame(g,'iso');
+        ifc.select(views.viewer3d.getSelection().map(id=>guidOfWall.get(id)).filter(Boolean));
+        ifcStatus('');
+    }catch(err){console.warn('IFC viewer:',err);ifcStatus(`IFC viewer: ${err.message||err}`,{error:true});}
+}
+document.querySelectorAll('[data-engine]').forEach(b=>b.onclick=()=>setEngine(b.dataset.engine));

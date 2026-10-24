@@ -46,10 +46,11 @@ export function activityQuantities(walls){
     return{count:walls.length,length:round(length),measured,units:/^ft|feet/i.test(units)?'ft':/^m$|meter/i.test(units)?'m':units,
         types:[...types.values()].map(t=>({...t,length:round(t.length)})).sort((a,b)=>b.length-a.length||b.count-a.count||a.type.localeCompare(b.type))};
 }
-// all: every activity in those weeks (the schedule viewer), not only open ones (the tracker).
-export function lookaheadWeeks(activities,from,{all=false}={}){
+// all: every activity in those weeks (the schedule viewer), not only open ones (the tracker). weeks: how many (1-12).
+export function lookaheadWeeks(activities,from,{all=false,weeks:count=3}={}){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(from||'')||!Number.isFinite(dayMs(from))||new Date(dayMs(from)).toISOString().slice(0,10)!==from)throw Error('Choose a lookahead start date.');
     const open=all?activities:activities.filter(a=>(a.pct??0)<100),scheduled=open.filter(a=>a.start&&a.finish&&a.start<=a.finish),weeks=[];
-    for(let i=0;i<3;i++){const start=addDays(from,i*7),finish=addDays(start,6);weeks.push({start,finish,activities:scheduled.filter(a=>a.start<=finish&&a.finish>=start).sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id))});}
+    count=Math.min(12,Math.max(1,Math.round(+count)||3));
+    for(let i=0;i<count;i++){const start=addDays(from,i*7),finish=addDays(start,6);weeks.push({start,finish,activities:scheduled.filter(a=>a.start<=finish&&a.finish>=start).sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id))});}
     return{weeks,unscheduled:open.length-scheduled.length,unique:new Set(weeks.flatMap(w=>w.activities.map(a=>a.id))).size};
 }

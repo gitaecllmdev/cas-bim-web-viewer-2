@@ -65,7 +65,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.modelSelectionIds = [];
         const params = new URLSearchParams(location.search);
         // Standalone: a model schedule viewer (the schedule on the model by date), no field progress tracking.
-        this.tabs=this.options.standalone?{gantt:'Timeline',calendar:'Calendar',lookahead:'Next 3 weeks'}:TABS;
+        this.tabs=this.options.standalone?{gantt:'Timeline',calendar:'Calendar',lookahead:'Lookahead'}:TABS;
         this.tab = this.tabs[params.get('tab')] ? params.get('tab') : this.options.standalone?'gantt':'stages';
         this.colorMode = 'actual';
         // Schedule views: only the walls linked to the schedule, the floors apart (views.setLevelsApart), all floor plans.
@@ -75,6 +75,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
         this.gantt = { scale: 'week', show: 'all', links: 'selected', fold: 'done', collapsed: new Set(), filters: new Map(), sort: null };
         try { this.gantt.hiddenCols = new Set(JSON.parse(localStorage.getItem('cas-project-dashboard:gantt-columns') || '[]')); } catch { this.gantt.hiddenCols = new Set(); }
         this.selectedAct = null;
+        this.lookWeeks = 3; // the schedule viewer's lookahead: 3, 6 or 12 weeks (remembered in this browser)
+        try { const w = +localStorage.getItem('cas-project-dashboard:lookahead-weeks'); if ([3, 6, 12].includes(w)) this.lookWeeks = w; } catch {}
         this.demoMove = true;
         try { this.demoMove = localStorage.getItem('drywall-demos:schedule-demo-shift') !== 'false'; } catch {}
         // Schedule search: keywords in use, the text being typed, any / all, and the history of keywords used.
@@ -458,7 +460,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     saveReviewed(){if(this.reviewKey)try{localStorage.setItem(this.reviewKey,JSON.stringify(this.reviewed));}catch{}}
 
     render() {
-        const nav=this.options.standalone?{gantt:'P6 Gantt',lookahead:'Next 3 weeks'}:this.tabs;
+        const nav=this.options.standalone?{gantt:'P6 Gantt',lookahead:'Lookahead'}:this.tabs;
         const s = this.schedule;
         const d = s?.source.demo;
         this.panel.innerHTML = `<div class="demo-panel pg ${this.tab==='management'?'management':''}">
@@ -961,6 +963,7 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     renderLookahead(body) {
+        if(this.options.standalone){this.renderLookaheadBoard(body);return;}
         const plan=this.options.standalone?lookaheadWeeks(this.visibleActivities('all'),this.cursor,{all:true}):lookaheadWeeks(this.visibleActivities('open'),this.cursor);const focus=this.selectedAct&&this.activity(this.selectedAct),outside=focus&&!plan.weeks.some(w=>w.activities.some(a=>a.id===focus.id));
         body.innerHTML=`<div class="lookahead-head"><div><span class="eyebrow">SHORT-INTERVAL PLANNING</span><h3>Three weeks ahead</h3><p class="muted">${plan.unique} ${this.options.standalone?'':'open '}activities · from ${this.fmtDay(this.cursor)}. Activities spanning weeks appear in each relevant week.</p></div><label>Start date <input type="date" data-lookahead-date value="${this.cursor}" min="${this.span[0]}" max="${this.span[1]}"></label></div>
             ${outside?`<article class="decision-outlook-focus"><b>${this.options.standalone?'Selected activity':'Decision to review in this outlook'}: ${escapeHtml(focus.name)}</b><p>Original schedule dates: ${this.fmtDay(focus.start)} – ${this.fmtDay(focus.finish)}. ${focus.pct===100?'Schedule says complete; field progress still needs review.':'The original dates fall outside these three weeks.'}</p><small>${escapeHtml(focus.id)} · original schedule dates are retained</small></article>`:''}<div class="pg-main float"><div class="lookahead-weeks">${plan.weeks.map((w,i)=>`<section class="lookahead-week"><header><span>WEEK ${i+1}</span><b>${this.fmtDay(w.start)} – ${this.fmtDay(w.finish)}</b><small>${w.activities.length} activities</small></header>${w.activities.map(a=>{const m=this.modelOf(a),c=compare(m,a.pct);return `<button class="lookahead-card ${a.id===this.selectedAct?'selected':''}" data-look-act="${escapeHtml(a.id)}" style="--stage-color:${this.colorOf(a)}"><small>${escapeHtml(a.level||'Project')} · ${escapeHtml(a.stage||'Coordination')}</small><b>${escapeHtml(a.name)}</b><span>${escapeHtml(a.id)} · ${this.fmtDay(a.start)} – ${this.fmtDay(a.finish)}</span><div><em>P6 ${a.pct??'–'}%</em>${this.options.standalone?'':`<em>Model ${m?m.pct+'%':'not linked'}</em>${c?.state==='behind'?'<em class="behind">Behind plan</em>':''}`}</div></button>`;}).join('')||`<p class="lookahead-empty">${this.options.standalone?'No activities':'No open activities'} in this week.</p>`}</section>`).join('')}</div><div class="pg-side" data-details></div></div>${plan.unscheduled?`<p class="note">${plan.unscheduled} open activities need valid start/finish dates and are not placed in a week.</p>`:''}`;
@@ -1176,20 +1179,26 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
     // Planned wall length (LF) by the shown date, per stage, and the planned curve over the schedule (weekly). Lengths
     // and the curve are worked out once per schedule / link change (the linked list is rebuilt then).
-    // With a level chosen, only that level's walls count (an assigned wall set counts its walls on that level).
+    // With a level chosen, only that level's walls count (an assigned wall set counts its walls on that level). Only
+    // the activities the model shows count (scheduleKeep: the picked activity, hidden stages, keywords, Gantt filters),
+    // so the strip and the model agree; the time axis stays the whole schedule.
     plannedLf() {
         if (!this.schedule || !this.walls) return null;
         const linked = this.linked, names = this.stageNames || [], level = this.views.level?.name || null;
+        const keep = this.scheduleKeep(), kept = linked.filter(keep), scope = kept.map(a => a.id).join('|');
         if (this.lfCache?.linked !== linked) this.lfCache = { linked, byLevel: new Map() };
-        if (!this.lfCache.byLevel.has(level)) {
+        const key = level + '\n' + scope;
+        if (!this.lfCache.byLevel.has(key)) {
+            if (this.lfCache.byLevel.size > 40) this.lfCache.byLevel.clear();
             const walls = level ? this.walls.filter(w => w.level === level) : this.walls;
-            const acts = level ? linked.map(a => (a.walls ? { ...a, walls: a.walls.filter(w => w.level === level) } : a)) : linked;
+            const acts = level ? kept.map(a => (a.walls ? { ...a, walls: a.walls.filter(w => w.level === level) } : a)) : kept;
             const lengths = activityLengths(walls, acts), from = projectStart(this.schedule.activities) || this.span[0];
             const to = linked.map(a => a.finish).filter(Boolean).sort().at(-1) || this.span[1];
-            this.lfCache.byLevel.set(level, { acts, lengths, from, to, curve: plannedCurve(acts, lengths, from, to, this.cal, names) });
+            this.lfCache.byLevel.set(key, { acts, lengths, from, to, curve: plannedCurve(acts, lengths, from, to, this.cal, names) });
         }
-        const { acts, lengths, from, to, curve } = this.lfCache.byLevel.get(level);
-        return { ...plannedLengths(acts, lengths, this.cursor, this.cal, names), from, to, curve, level };
+        const { acts, lengths, from, to, curve } = this.lfCache.byLevel.get(key), focus = this.focusActivity();
+        const filtered = focus ? focus.id : kept.length < linked.length ? 'filtered' : null;
+        return { ...plannedLengths(acts, lengths, this.cursor, this.cal, names), from, to, curve, level, filtered };
     }
 
     refreshSchedule() {
@@ -1484,6 +1493,30 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     // --- Gantt tab -----------------------------------------------------------------------------------------------------
+
+    // The schedule viewer's lookahead: 3, 6 or 12 weeks as a compact board, one slim row per activity with its bar
+    // across the week columns (the tracker keeps the week cards above).
+    renderLookaheadBoard(body) {
+        const n=this.lookWeeks||3,plan=lookaheadWeeks(this.visibleActivities('all'),this.cursor,{all:true,weeks:n});
+        const from=this.cursor,days=n*7,end=plan.weeks.at(-1).finish,focus=this.selectedAct&&this.activity(this.selectedAct);
+        const seen=new Set(),acts=plan.weeks.flatMap(w=>w.activities).filter(a=>!seen.has(a.id)&&seen.add(a.id)).sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id));
+        const outside=focus&&!seen.has(focus.id),short=d=>new Date(dayMs(d)).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+        const month=d=>new Date(dayMs(d)).toLocaleDateString('en-US',{month:'short',timeZone:'UTC'});
+        const pos=d=>Math.min(days,Math.max(0,(dayMs(d)-dayMs(from))/864e5));
+        const stats=[['Activities',acts.length],['Starting',acts.filter(a=>a.start>=from).length],['Finishing',acts.filter(a=>a.finish<=end).length],['In progress',acts.filter(a=>(a.pct??0)>0&&(a.pct??0)<100).length]];
+        body.innerHTML=`<div class="la-head"><div><span class="eyebrow">LOOKAHEAD</span><h3>Next ${n} weeks</h3><p>${this.fmtDay(from)} – ${this.fmtDay(end)}</p></div>
+            <div class="la-stats">${stats.map(([k,v])=>`<span><b>${v}</b>${k}</span>`).join('')}</div>
+            <div class="la-controls"><div class="la-range" role="group" aria-label="Lookahead length">${[3,6,12].map(w=>`<button data-look-weeks="${w}" aria-pressed="${w===n}">${w} wk</button>`).join('')}</div><label>From <input type="date" data-lookahead-date value="${from}" min="${this.span[0]}" max="${this.span[1]}"></label></div></div>
+            ${outside?`<p class="la-focus"><b>${escapeHtml(focus.name)}</b> (${this.fmtDay(focus.start)} – ${this.fmtDay(focus.finish)}) falls outside these ${n} weeks.</p>`:''}
+            <div class="pg-main float"><div class="la-board" style="--weeks:${n}">
+                <div class="la-row la-top"><span class="la-name">${acts.length} activities</span><div class="la-weeks">${plan.weeks.map((w,i)=>`<div class="lookahead-week" title="Week ${i+1}: ${this.fmtDay(w.start)} – ${this.fmtDay(w.finish)} · ${w.activities.length} activities"><small>${i===0||month(w.start)!==month(plan.weeks[i-1].start)?month(w.start):'&nbsp;'}</small><b>${short(w.start)}</b><i>${w.activities.length}</i></div>`).join('')}</div></div>
+                ${acts.map(a=>{const l=pos(a.start)/days*100,r=pos(addDays(a.finish,1))/days*100,pct=a.pct??0;return `<button class="la-row lookahead-card ${a.id===this.selectedAct?'selected':''}" data-look-act="${escapeHtml(a.id)}" style="--stage-color:${this.colorOf(a)}" title="${escapeHtml(a.name)} · ${escapeHtml(a.id)} · ${this.fmtDay(a.start)} – ${this.fmtDay(a.finish)} · P6 ${pct}%"><span class="la-name"><b>${escapeHtml(a.name)}</b><small>${escapeHtml(a.level||'Project')} · ${short(a.start)} – ${short(a.finish)}</small></span><span class="la-weeks"><i class="la-bar ${a.start<from?'from-before':''} ${a.finish>end?'past-end':''}" style="left:${l}%;width:${Math.max(1.5,r-l)}%"><i style="width:${pct}%"></i></i><em>${pct}%</em></span></button>`;}).join('')||'<p class="lookahead-empty">No activities in these weeks.</p>'}
+            </div><div class="pg-side" data-details></div></div>${plan.unscheduled?`<p class="note">${plan.unscheduled} activities need valid start/finish dates and are not shown.</p>`:''}`;
+        body.querySelector('[data-lookahead-date]').onchange=e=>{if(e.target.value)this.setCursor(e.target.value,{move:true});};
+        body.querySelectorAll('[data-look-weeks]').forEach(b=>b.onclick=()=>{this.lookWeeks=+b.dataset.lookWeeks;try{localStorage.setItem('cas-project-dashboard:lookahead-weeks',String(this.lookWeeks));}catch{}this.renderBody();});
+        body.querySelectorAll('[data-look-act]').forEach(b=>b.onclick=()=>this.selectActivity(b.dataset.lookAct));
+        this.renderDetails(body.querySelector('[data-details]'));
+    }
 
     // --- Excel-style column filters (Gantt headers; they also slice the Calendar, lookahead and the model) ------------
 
