@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><script type="importmap">{"imports":{"./schedule-link-guide.mjs":"./schedule-link-guide.mjs?v=e83e39dadb","./p6-table.mjs":"./p6-table.mjs?v=7d77a8dea4","./ifc-guid.mjs":"./ifc-guid.mjs?v=30042e571d","./ifc-engine.mjs":"./ifc-engine.mjs?v=c68b14c377","./speckle-engine.mjs":"./speckle-engine.mjs?v=f9f8d11bbb","./install-progress.js":"./install-progress.js?v=e04ab95034","./project-dashboard.mjs":"./project-dashboard.mjs?v=a7a7a51de1","./viewer.js":"./viewer.js?v=dd6c3e531c","./views.js":"./views.js?v=d21bc395da","./helpers.js":"./helpers.js?v=a4c6ee7e12","./tools.js":"./tools.js?v=3c4dc607dc","./toolbar.js":"./toolbar.js?v=b2e2243c0a","./state-merge.mjs":"./state-merge.mjs?v=e829f31b72","./schedule-store.mjs":"./schedule-store.mjs?v=5635fdfd0b","./plan-pop.mjs":"./plan-pop.mjs?v=8f3f3c2183","./frame-move.mjs":"./frame-move.mjs?v=b23a307372","./p6-keywords.mjs":"./p6-keywords.mjs?v=8034e8b4cf","./demos/03-progress/extension.js":"./demos/03-progress/extension.js?v=cd34c7ef1d","./demos/03-progress/p6.mjs":"./demos/03-progress/p6.mjs?v=94a9900317","./demos/03-progress/schedule-views.js":"./demos/03-progress/schedule-views.js?v=4987222de5","./demos/03-progress/all-plans.js":"./demos/03-progress/all-plans.js?v=0a28044e15","./demos/03-progress/presentation.mjs":"./demos/03-progress/presentation.mjs?v=38dfd42250","./demos/common/xlsx.mjs":"./demos/common/xlsx.mjs?v=c9c18f1970","./demos/common/sha256.mjs":"./demos/common/sha256.mjs?v=d9abf65c91","./demos/common/pdf-reader.mjs":"./demos/common/pdf-reader.mjs?v=99317acfe8","./demos/common/p6-pdf.mjs":"./demos/common/p6-pdf.mjs?v=5dece5e2ba","./demos/common/table-export.mjs":"./demos/common/table-export.mjs?v=3b66df20be","./p6-converter.js":"./p6-converter.js?v=45c785015a","./config.js":"./config.js?v=4981ab5a31"}}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P6 Converter · CAS BIM</title>
+    <!-- Standalone tool: no model, no viewer code, nothing shared with the viewers (its own keyword history only). -->
+    <link rel="stylesheet" href="panel.css?v=a3793797eb">
+    <link rel="stylesheet" href="p6-converter.css?v=bb341e9dd8">
+</head>
+<body>
+    <header class="bar"><a class="brand" href="./">Schedule dashboard</a><span>P6 Converter</span><span class="standalone">Standalone tool · no model needed</span></header>
+    <main id="converter">
+        <section class="card intro">
+            <div><span class="eyebrow">SCHEDULE TO SPREADSHEET</span><h1 id="intro-title">P6 Converter</h1><p id="intro-text">Turn a printed P6 schedule into a table you can search, review, edit and download.</p>
+            <p class="muted">Your PDF is processed in this browser. Nothing is uploaded. Download your work before closing or reloading this page.</p></div>
+            <div><label class="button">Choose schedule PDF<input id="pdf-file" type="file" accept=".pdf,application/pdf" hidden></label><button id="cancel" class="secondary" hidden>Cancel import</button>
+            <p class="muted">Text-based P6 layouts · up to 100 MB / 500 pages</p></div>
+        </section>
+        <p id="status" role="status" aria-live="polite">Choose a PDF to begin. Scanned pages need OCR before importing.</p>
+        <progress id="progress" hidden aria-label="PDF import progress"></progress>
+        <section id="results" hidden>
+            <div class="card"><div class="row"><h2 id="summary"></h2><span class="spacer"></span>
+                    <div class="scope" role="radiogroup" aria-label="Rows to download"><span class="muted">Rows:</span>
+                        <label title="Every checked row"><input type="radio" name="scope" value="all" checked><span id="scope-all">All checked</span></label>
+                        <label title="Only the checked rows your keywords show"><input type="radio" name="scope" value="filtered"><span id="scope-filtered">Filtered only</span></label></div>
+                    <button id="excel">Download Excel</button><button id="csv" class="secondary">Download CSV</button></div>
+                <p id="export-summary" class="muted"></p>
+                <details><summary>Choose export columns</summary><div id="columns"></div><div class="row"><button id="all-columns" class="secondary">Include all columns</button><button id="no-columns" class="secondary">Exclude all columns</button></div></details>
+                <label class="filters"><input id="summaries" type="checkbox" checked> Include summary / WBS rows</label>
+            </div>
+            <details class="card" id="warning-box"><summary id="warning-count">Import notes</summary><ul id="warnings"></ul></details>
+            <section class="card">
+                <div class="row"><h2>Find &amp; choose rows</h2><span class="muted">Type keywords to find activities, then check the ones to export. Edit a cell directly.</span></div>
+                <div class="kw-bar">
+                    <input id="kw" type="search" autocomplete="off" aria-label="Keywords"
+                        placeholder='Keywords: type, then Enter to keep one (e.g. frame, drywall L3, "level 3")'>
+                    <button id="kw-add" class="secondary">Add keyword</button>
+                    <label title="Show rows that match every keyword, instead of any of them"><input id="kw-all" type="checkbox"> Match all keywords</label>
+                    <button id="kw-clear" class="secondary" hidden>Clear keywords</button>
+                </div>
+                <p class="muted kw-help">Several keywords: separate them with commas or add them one by one. Words in one keyword must all appear (any order); "quotes" keep a phrase. Rows matching any keyword are shown below (every keyword, with Match all).</p>
+                <div id="kw-active" class="chips" aria-label="Keywords in use"></div>
+                <div id="kw-history-row" class="chips history" hidden><span class="muted">History:</span><span id="kw-history"></span><button id="kw-forget" class="link" title="Forget every keyword used in this browser">Clear history</button></div>
+                <div class="row bulk">
+                    <button id="check-all" class="secondary" title="Check every row for export">✓ Check all</button>
+                    <button id="uncheck-all" class="secondary" title="Uncheck every row">✗ Uncheck all</button>
+                    <span class="sep" aria-hidden="true"></span>
+                    <button id="check-shown" title="Check the rows the keywords show (all pages)">✓ Check shown</button>
+                    <button id="uncheck-shown" class="secondary" title="Uncheck the rows the keywords show">✗ Uncheck shown</button>
+                    <button id="only-shown" class="secondary" title="Uncheck everything, then check only the rows shown">Only shown</button>
+                    <span class="spacer"></span><span id="checked-count" class="muted"></span>
+                </div>
+                <div id="table-wrap"><table id="preview"></table></div>
+                <div class="row paging"><button id="prev" class="secondary">Previous</button><span id="page-label"></span><button id="next" class="secondary">Next</button></div>
+            </section>
+        </section>
+    </main>
+    <script type="module" src="p6-converter.js?v=45c785015a"></script>
+</body>
+</html>

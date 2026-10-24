@@ -321,15 +321,24 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
     }
 
     // A P6 export: .xer, or a layout exported to Excel (.xlsx) or CSV.
-    async importFile(file) {
+    // A PDF reviewed in the P6 Converter (rows checked, cells edited there): loaded as an uploaded PDF would be.
+    async importReviewed(doc, fileName, bytes) {
+        if (this.importController) return;
+        this.importController = new AbortController();
+        try { await this.importFile(new File([bytes || new Uint8Array()], fileName || 'schedule.pdf', { type: 'application/pdf' }), { reviewed: doc }); }
+        catch (err) { if (err.name !== 'AbortError') this.message(`Could not load ${fileName}: ${err.message}`, 'warn'); }
+        finally { this.importController = null; }
+    }
+
+    async importFile(file, { reviewed = null } = {}) {
         const ext = file.name.split('.').pop().toLowerCase();
         if (!['pdf', 'xer', 'xlsx', 'csv', 'txt'].includes(ext)) throw new Error('Choose a PDF, XER, XLSX or CSV file.');
         const buffer = ext === 'pdf' ? null : await file.arrayBuffer();
         let s, pdfNotes = '', pdfBytes = null;
         if (ext === 'pdf') {
-            const doc = await readSchedulePdf(file, { signal: this.importController?.signal, onProgress: message => this.message(message, 'warn') });
+            const doc = reviewed || await readSchedulePdf(file, { signal: this.importController?.signal, onProgress: message => this.message(message, 'warn') });
             s = scheduleFromRows(scheduleRows(doc), { file: file.name, format: 'pdf', dataDate: parseDateText(doc.dataDate).day });
-            pdfNotes = ` PDF: ${doc.warnings.length} import notes; no relationships or calendar in a PDF (Monday–Friday used).`;
+            pdfNotes = ` PDF${reviewed ? ' (reviewed in the P6 Converter)' : ''}: ${doc.warnings.length} import notes; no relationships or calendar in a PDF (Monday–Friday used).`;
             s.source.warnings = doc.warnings;
             // Where each activity is printed (page, y in points): "Show in the PDF" in its details.
             s.source.pdfRows = Object.fromEntries(doc.rows.filter(r => r.kind === 'Activity').map(r => [r.cells.id, [r.page, Math.round(r.y)]]));
@@ -507,6 +516,8 @@ class ProgressExtension extends Autodesk.Viewing.Extension {
             const file = e.target.files[0];
             e.target.value = '';
             if (!file || this.importController) return;
+            // The schedule viewer reviews a PDF in the P6 Converter first; it comes back through importReviewed.
+            if (this.options.reviewPdf && /\.pdf$/i.test(file.name)) { this.options.reviewPdf(file); return; }
             this.importController = new AbortController(); e.target.disabled = true;
             try { await this.importFile(file); }
             catch (err) { if (err.name !== 'AbortError') this.message(`Could not read ${file.name}: ${err.message}`, 'warn'); }

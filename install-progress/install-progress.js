@@ -257,7 +257,7 @@ async function start(){
     // The model opens in an iso (3/4) view, fitted with a margin, once its floors are known.
     let firstView=false;
     onModelReady(viewer,m=>views.setModel(m).then(()=>{if(firstView)return;firstView=true;tools?.look([1,-1,.8]);views.fitShown();}).catch(()=>{$('save-notice').textContent='Model loaded; floor-plan setup needs a retry.';}));
-    tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel});
+    tracker=await viewer.loadExtension('Drywall.Progress',{panel:$('panel'),views,standalone:true,hotelDemo:hotel,reviewPdf:file=>openP6('import',file)});
     mountHoverProperties();
     mountModelExtras(viewer);
     // Clicking an element opens its properties (Properties on), docked by the Viewer beside the 3D view.
@@ -586,3 +586,40 @@ function addFitMenu(viewer){
     if(!viewer||viewer.__fitMenu)return;viewer.__fitMenu=true;
     viewer.registerContextMenuCallback('cas-fit-3d-plan',(menu,status)=>{if(status.hasSelected)menu.unshift({title:'Fit selection in 3D and plan',target:()=>fitSelectionBoth(viewer.getSelection())});});
 }
+
+// --- P6 Converter in the team site: the same tool as the standalone P6 Converter page (p6-converter.html), in a dialog.
+// Header "P6 Converter": the demo (download only, never touches the dashboard). Upload of a PDF: the import copy gets
+// the file; the user reviews it there and "Load into dashboard" sends the reviewed rows back (importReviewed). Two
+// separate frames, so the demo stays isolated; messages are taken only from the import frame, same origin.
+const p6Frames={};
+function p6Dialog(){
+    let d=$('p6-dialog');if(d)return d;
+    d=document.createElement('dialog');d.id='p6-dialog';
+    d.innerHTML='<header><b data-p6-title></b><span data-p6-note></span><button data-p6-close>Close</button></header><div class="p6-frames"></div>';
+    document.body.append(d);
+    d.querySelector('[data-p6-close]').onclick=()=>d.close();
+    return d;
+}
+function p6Frame(mode){
+    if(p6Frames[mode])return p6Frames[mode];
+    const f=document.createElement('iframe');f.title=mode==='import'?'P6 Converter: review the upload':'P6 Converter demo';f.dataset.mode=mode;
+    f.ready=new Promise(resolve=>{f.markReady=resolve;});
+    f.src=`p6-converter.html?embed=${mode}`;
+    p6Dialog().querySelector('.p6-frames').append(f);
+    return p6Frames[mode]=f;
+}
+async function openP6(mode,file=null){
+    const d=p6Dialog(),f=p6Frame(mode);
+    for(const [m,frame] of Object.entries(p6Frames))frame.hidden=m!==mode;
+    d.querySelector('[data-p6-title]').textContent=mode==='import'?`Review ${file?.name||'the schedule'} before loading`:'P6 Converter · demo';
+    d.querySelector('[data-p6-note]').textContent=mode==='import'?'Same tool as the P6 Converter; Load into dashboard when ready.':'Separate from the dashboard: downloads only.';
+    if(!d.open)d.showModal();
+    if(file){await f.ready;f.contentWindow.postMessage({type:'p6-converter:file',file},location.origin);}
+}
+window.addEventListener('message',async e=>{
+    if(e.origin!==location.origin)return;
+    const frame=Object.values(p6Frames).find(f=>f.contentWindow===e.source);if(!frame)return;
+    if(e.data?.type==='p6-converter:ready')frame.markReady();
+    if(e.data?.type==='p6-converter:load'&&frame.dataset.mode==='import'){p6Dialog().close();await tracker?.importReviewed(e.data.doc,e.data.file,e.data.bytes);}
+});
+$('p6-open').onclick=()=>openP6('demo');
